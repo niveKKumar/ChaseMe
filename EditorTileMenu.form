@@ -2,73 +2,91 @@
 <form xmlns="http://www.intellij.com/uidesigner/form/" version="1" bind-to-class="EditorTileMenu">
   <grid id="cbd77" binding="contentPane" layout-manager="BorderLayout" hgap="0" vgap="0">
     <constraints>
-      <xy x="48" y="54" width="436" height="450"/>
+      <xy x="48" y="54" width="10068" height="1010"/>
     </constraints>
     <properties/>
     <border type="none"/>
     <children>
-      <grid id="e3588" binding="west" layout-manager="FlowLayout" hgap="5" vgap="5" flow-align="1">
+      <grid id="e3588" binding="west" layout-manager="BorderLayout" hgap="0" vgap="0">
         <constraints border-constraint="West"/>
         <properties>
-          <minimumSize width="200" height="250"/>
+          <maximumSize width="300" height="350"/>
+          <minimumSize width="50" height="50"/>
           <preferredSize width="200" height="250"/>
         </properties>
         <border type="none"/>
         <children>
-          <scrollpane id="7b646" binding="tilePane">
-            <constraints/>
-            <properties/>
+          <scrollpane id="7b646" binding="scrollPane" custom-create="true">
+            <constraints border-constraint="Center"/>
+            <properties>
+              <alignmentX value="1.0"/>
+              <autoscrolls value="false"/>
+              <horizontalScrollBarPolicy value="31"/>
+              <maximumSize width="300" height="350"/>
+              <minimumSize width="50" height="50"/>
+              <opaque value="true"/>
+              <preferredSize width="50" height="300"/>
+              <requestFocusEnabled value="true"/>
+              <verticalScrollBarPolicy value="22"/>
+            </properties>
             <border type="none"/>
             <children>
-              <grid id="37899" binding="tilePanel" layout-manager="FlowLayout" hgap="5" vgap="5" flow-align="1">
+              <grid id="d2fdc" binding="tilePanel" layout-manager="FlowLayout" hgap="5" vgap="5" flow-align="1">
                 <constraints/>
                 <properties>
-                  <preferredSize width="150" height="400"/>
+                  <maximumSize width="0" height="0"/>
+                  <minimumSize width="50" height="50"/>
+                  <preferredSize width="50" height="150"/>
                 </properties>
                 <border type="none"/>
-                <children/>
+                <children>
+                  <component id="4602" class="javax.swing.JTextField" binding="txtEingabe" custom-create="true">
+                    <constraints/>
+                    <properties>
+                      <maximumSize width="50" height="50"/>
+                      <minimumSize width="50" height="50"/>
+                      <preferredSize width="50" height="50"/>
+                    </properties>
+                  </component>
+                </children>
               </grid>
             </children>
           </scrollpane>
         </children>
       </grid>
-      <grid id="94766" binding="south" layout-manager="FlowLayout" hgap="5" vgap="5" flow-align="1">
+      <grid id="31bff" binding="south" layout-manager="FlowLayout" hgap="5" vgap="5" flow-align="1">
         <constraints border-constraint="South"/>
-        <properties>
-          <minimumSize width="10" height="10"/>
-          <preferredSize width="500" height="50"/>
-        </properties>
-        <border type="none"/>
-        <children>
-          <grid id="9538f" layout-manager="FlowLayout" hgap="5" vgap="5" flow-align="1">
-            <constraints/>
-            <properties>
-              <minimumSize width="200" height="50"/>
-            </properties>
-            <border type="none"/>
-            <children>
-              <component id="e7465" class="javax.swing.JButton" binding="buttonOK">
-                <constraints/>
-                <properties>
-                  <text value="OK"/>
-                </properties>
-              </component>
-            </children>
-          </grid>
-        </children>
-      </grid>
-      <grid id="31bff" binding="center" layout-manager="FlowLayout" hgap="5" vgap="5" flow-align="1">
-        <constraints border-constraint="Center"/>
         <properties/>
         <border type="none"/>
         <children>
-          <component id="f8650" class="javax.swing.JLabel" binding="selectedTile">
+          <component id="881e8" class="javax.swing.JButton" binding="btOk">
             <constraints/>
             <properties>
-              <text value="selected Tile:"/>
+              <horizontalTextPosition value="2"/>
+              <maximumSize width="300" height="50"/>
+              <minimumSize width="100" height="50"/>
+              <preferredSize width="100" height="50"/>
+              <text value="Bestaetigen"/>
+            </properties>
+          </component>
+          <component id="1452" class="javax.swing.JLabel" binding="selectedTile">
+            <constraints/>
+            <properties>
+              <horizontalAlignment value="0"/>
+              <horizontalTextPosition value="2"/>
+              <maximumSize width="100" height="100"/>
+              <preferredSize width="50" height="50"/>
+              <text value=""/>
+              <verifyInputWhenFocusTarget value="false"/>
             </properties>
           </component>
         </children>
+      </grid>
+      <grid id="18464" binding="north" layout-manager="BorderLayout" hgap="0" vgap="0">
+        <constraints border-constraint="North"/>
+        <properties/>
+        <border type="none"/>
+        <children/>
       </grid>
     </children>
   </grid>

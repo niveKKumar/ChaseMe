@@ -208,14 +208,7 @@ public class GUI extends JFrame implements ActionListener{
         this.requestFocus();
         break;
       case "Tile Auswaehlen":
-        // Wie sonst aufrufen ?
-//        EditorTileMenu test = new EditorTileMenu();
-//        test.main(null);
-        // Normalweise:
         editor.createTileMenu();
-//
-//        editor.graphicID = editor.tileMenu.getSelected();
-
         this.requestFocus();
         break;
 
@@ -223,13 +216,22 @@ public class GUI extends JFrame implements ActionListener{
   }
   
   public static void main(String[] args) {
+//    try {
+//      UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+//    }catch(Exception e) {
+//      JOptionPane.showMessageDialog(null,"Das LookAndFeel des Betriebssystems kann nicht geladen werden!\nDas Programm wird daher jetzt im Java-LookAndFeel angezeigt.","Allgemeine Ausnahme",JOptionPane.ERROR_MESSAGE);
+//    }
     new GUI();
   } // end of main
   
   public Camera getCamera() {
     return camera;
   }
-  
+
+  public void setCamera(int pXSize, int pYSize) {
+    camera = new Camera(pXSize, pYSize);
+  }
+
   public GamePanel getSpielpanel(){
     return gamePanel;
   }
@@ -313,7 +315,8 @@ public class GUI extends JFrame implements ActionListener{
           
         case 1:  // TUTORIAL
           menuButtonsVisible(true);
-//          editor.setMenuVisible(false);
+          editor.setMenuVisible(false);
+          // TODO: 13.03.2019 Level Klasse --> Obriges als eigene Methode 
           maps[0].renderMap(g2d);
           mover.draw(g2d);
           maps[1].renderMap(g2d);
@@ -325,7 +328,7 @@ public class GUI extends JFrame implements ActionListener{
           
         case 2:
           menuButtonsVisible(true);
-//          editor.setMenuVisible(false);
+          editor.setMenuVisible(false);
           break;
           
         case 3:
@@ -338,11 +341,21 @@ public class GUI extends JFrame implements ActionListener{
     public void mouseClicked(MouseEvent e) {
         if (level != 0) {
         for (int i = 0; i < maps.length; i++) {
-          start = maps[i].mapTiles[(int) mover.getLocation().getX() / 64][(int) mover.getLocation().getY() / 64];
-          target = maps[i].mapTiles[(e.getX() + camera.getXOffset()) / maps[i].tileWidth][(e.getY() + camera.getYOffset()) / maps[i].tileHeight];
+          if (maps[i].isActiveInPosition(new Point(e.getX()+camera.xOffset,e.getY()+camera.yOffset))){
+            System.out.println(i);
+            start = maps[i].mapTiles[(int) mover.getLocation().getX() / 64][(int) mover.getLocation().getY() / 64];
+            target = maps[i].mapTiles[(e.getX() + camera.getXOffset()) / maps[i].tileWidth][(e.getY() + camera.getYOffset()) / maps[i].tileHeight];
+            pathfinder.searchPath(start,target);
+          }else{continue;}
+
+//          try {
+//            pathfinder.searchPath(start,target);
+//          } catch (Exception e1) {
+//            System.out.println("Start oder Target sind faul");
+//          }
         }
-        pathfinder.searchPath(start,target);
       }
+      // TODO: 13.03.2019 Feature von Editor nicht von GUI 
       if (level == 0) {
         shift = keyManager.shift;
         click++;

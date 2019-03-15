@@ -75,6 +75,14 @@ public class Map {
     active = i;
   }
 
+  public boolean isActiveInPosition(Point position) {
+    boolean active = false;
+    if (position.getX() <= (getMapSizeX() * tileWidth) && position.getY() <= (getMapSizeY()*tileHeight)) {
+      active = true;
+    }
+    return active;
+  }
+
   public void setBorderOrItemsBlocked(){
     if (mapStatus.equals("Empty")){
       System.out.println("Empty");;}

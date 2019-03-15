@@ -134,7 +134,7 @@ public class Mover{
 //            System.out.println("Map:"+i+"Y:"+temp.y+"X:"+temp.x);
             if (temp.x   > map[i].getMapSizeX() || temp.y  > map[i].getMapSizeY() ){
                 map[i].setActive(false);
-                System.out.println("false");
+//                System.out.println("false");
             }else{
                 map[i].setActive(true);
               }

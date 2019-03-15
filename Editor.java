@@ -1,5 +1,8 @@
 import javax.swing.*;
 import java.awt.*;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
 
 public class Editor {
   private GUI gui;
@@ -7,11 +10,12 @@ public class Editor {
   private String mapPlanPath;
   private TileSet tileSet;
   private int mapSizeX, mapSizeY;
-  public Tile mapTiles[];
+  public Tile mapTiles[][];
   public int graphicID = 28;
   private boolean visible = true;
   private JButton [] editorbuttons = new JButton[3];
   public EditorTileMenu tileMenu;
+  private int use = 0;
 
   private JLabel idAnzeige;
   private JFileChooser fileChooser = new JFileChooser();
@@ -24,10 +28,13 @@ public class Editor {
     tileSet = pTileSet;
     createMenu();
     createEditorMap();
+    createTileMenu();
+    tileMenu.setVisible(false);
   }
   public void createMenu(){
     idAnzeige = new JLabel();
-    idAnzeige.setText("ID:  ");
+    idAnzeige.setText("Kein Tile ausgewählt");
+    idAnzeige.setBorder(BorderFactory.createLineBorder(Color.black));
     gui.east.add(idAnzeige);
 
     for (int i = 0 ;i<editorbuttons.length;i++) {
@@ -44,17 +51,19 @@ public class Editor {
     for (int i = 0; i <editorbuttons.length ; i++) {
       editorbuttons[i].setVisible(visible);
     }
+
   }
   public void createEditorMap(){
-     mapTiles = new Tile [mapSizeX][mapSizeY];
+     mapTiles = new Tile[mapSizeX][mapSizeY];
      int i = 2;
      for (int zeile=0;zeile < mapSizeX;zeile++) {
        for (int spalte=0;spalte < mapSizeY;spalte++ ) {
-         mapTiles[zeile][spalte] = tileSet.tileSet[22];
+         mapTiles[zeile][spalte] = tileSet.tileSet[22].clone();
          mapTiles[zeile][spalte].setID(22);
          i++;
        }
      }
+    gui.setCamera(mapSizeX, mapSizeY);
     }
   public void renderEditor(Graphics2D g2d){
     for (int zeile =0; zeile < mapSizeX;zeile++ ) {
@@ -64,7 +73,6 @@ public class Editor {
     }
   }
   public void setTile(Point clickedCord){
-//    selectedImage = tileSet.tileSet[graphicID].tileImage;;
     int x = clickedCord.x;
     int y = clickedCord.y;
     mapTiles[x][y] = tileSet.tileSet[graphicID];
@@ -94,10 +102,38 @@ public class Editor {
   }
 
   public void createTileMenu(){
-    tileMenu = new EditorTileMenu();
-//    tileMenu.main(null);
+    if (use<1){
+      tileMenu = new EditorTileMenu(gui, true, this);
+    } else {
+      tileMenu.setVisible(true);
+    } // Damit kein erneutes Starten immer entsteht
     graphicID = tileMenu.getSelected();
-    System.out.println("Graphic ID im Editor:  "+graphicID);
+    tileMenu.selectedinLabel(idAnzeige);
+    idAnzeige.setText("ID: " + Integer.toString(graphicID));
+    use++;
+  }
+
+  public void saveMap() {
+    File temp = setMapPath();
+    try (BufferedWriter out = new BufferedWriter(new FileWriter(temp))) {
+      out.write(mapSizeX + " ");
+      out.write(Integer.toString(mapSizeY));
+      out.newLine();
+
+      for (int i = 0; i < mapTiles.length; i++) {
+        for (int j = 0; j < mapTiles.length; j++) {
+          out.write(mapTiles[i][j].getID() + " ");
+        }
+        out.newLine();
+      }
+      JOptionPane.showMessageDialog(gui, "Daten gesichert.");
+    } catch (Exception e) {
+      e.printStackTrace();
+      JOptionPane.showMessageDialog(gui, "Daten nicht gesichert.");
+    }
+  }
+
+  public void loadMap() {
   }
 
   public EditorTileMenu getTileMenu() {
@@ -113,17 +149,15 @@ public class Editor {
   }
 
 
-
-
-  //  public File saveMap() {             //Methode des Filechosers; offnet einen Speicher-Dialog
-//    fileChooser.setCurrentDirectory(new File("./res"));  //Verweis auf das aktuelle Programmverzeichnis
-//    if (fileChooser.showSaveDialog(this) == JFileChooser.APPROVE_OPTION) {  //Wenn der Ok-Button gedrueckt wird...
-//      return fileChooser.getSelectedFile();
-//    } else {                                                               //Enn der Ok.Button nicht gedreckt wird.
-//      JOptionPane.showMessageDialog(this, "Speichern abgebrochen");
-//      return null;
-//    }
-//  }
+  public File setMapPath() {             //Methode des Filechosers; offnet einen Speicher-Dialog
+    fileChooser.setCurrentDirectory(new File("./res"));  //Verweis auf das aktuelle Programmverzeichnis
+    if (fileChooser.showSaveDialog(gui) == JFileChooser.APPROVE_OPTION) {  //Wenn der Ok-Button gedrueckt wird...
+      return fileChooser.getSelectedFile();
+    } else {                                                               //Wenn der Ok.Button nicht gedreckt wird.
+      JOptionPane.showMessageDialog(gui, "Speichern abgebrochen");
+      return null;
+    }
+  }
 
 
 }

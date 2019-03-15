@@ -6,6 +6,7 @@ import java.io.File;
 class EditorTileButton extends JButton {
     private int id;
     private TileSet tileSet;
+    private int size = 50;
 
     public EditorTileButton(){
         super();
@@ -20,7 +21,7 @@ class EditorTileButton extends JButton {
         id = pID;
         try{
         Image img = tileSet.tileSet[id].tileImage;
-        img = img.getScaledInstance(50,50, Image.SCALE_SMOOTH);
+        img = img.getScaledInstance(size,size, Image.SCALE_SMOOTH);
         ImageIcon icon = new ImageIcon(img);
         this.setIcon(icon);
     } catch(Exception e) {
@@ -34,4 +35,5 @@ class EditorTileButton extends JButton {
     public int getId() {
         return id;
     }
+
 }
