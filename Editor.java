@@ -1,8 +1,7 @@
 import javax.swing.*;
 import java.awt.*;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
+import java.awt.event.MouseEvent;
+import java.io.*;
 
 public class Editor {
   private GUI gui;
@@ -11,20 +10,22 @@ public class Editor {
   private TileSet tileSet;
   private int mapSizeX, mapSizeY;
   public Tile mapTiles[][];
-  public int graphicID = 28;
+  public int graphicID = 22;
   private boolean visible = true;
   private JButton [] editorbuttons = new JButton[3];
   public EditorTileMenu tileMenu;
   private int use = 0;
+private KeyManager keyManager;
+    private int click = 0,firstX,firstY,secondX,secondY;
 
   private JLabel idAnzeige;
   private JFileChooser fileChooser = new JFileChooser();
 
-  public Editor(GUI pGUI,int pMapSizeX,int pMapSizeY/*, String pMapPlanPath*/, TileSet pTileSet){
+  public Editor(GUI pGUI,int pMapSizeX,int pMapSizeY,KeyManager pKeyManager, TileSet pTileSet){
     gui = pGUI;
     mapSizeX = pMapSizeX;
     mapSizeY = pMapSizeY;
-//    mapPlanPath = pMapPlanPath;
+    keyManager = pKeyManager;
     tileSet = pTileSet;
     createMenu();
     createEditorMap();
@@ -48,7 +49,7 @@ public class Editor {
   }
   public void setMenuVisible(boolean b){
     visible = b;
-    for (int i = 0; i <editorbuttons.length ; i++) {
+    for (int i = 0; i < editorbuttons.length ; i++) {
       editorbuttons[i].setVisible(visible);
     }
 
@@ -58,8 +59,8 @@ public class Editor {
      int i = 2;
      for (int zeile=0;zeile < mapSizeX;zeile++) {
        for (int spalte=0;spalte < mapSizeY;spalte++ ) {
-         mapTiles[zeile][spalte] = tileSet.tileSet[22].clone();
-         mapTiles[zeile][spalte].setID(22);
+         mapTiles[zeile][spalte] = tileSet.tileSet[graphicID].clone();
+         mapTiles[zeile][spalte].setID(graphicID);
          i++;
        }
      }
@@ -72,33 +73,43 @@ public class Editor {
       }
     }
   }
-  public void setTile(Point clickedCord){
-    int x = clickedCord.x;
-    int y = clickedCord.y;
+  public void setTile(MouseEvent e){
+    int x = (int) Math.round(e.getX() +gui.getCamera().getXOffset() ) / tilewidth;
+    int y = (int) Math.round(e.getY()+ gui.getCamera().getYOffset() ) / tileheight;
     mapTiles[x][y] = tileSet.tileSet[graphicID];
   }
-  public void setTileRect(Point first, Point second) {
-    int firstX = (int) Math.round(first.getX());
-    int firstY = (int) Math.round(first.getY());
-    int secondX = (int) Math.round(second.getX());
-    int secondY = (int) Math.round(second.getY());
+  public void setTileRect(MouseEvent e) {
+      if (keyManager.shift) {
+          click++;
+          if (click == 1) {
+               firstX = ((int) Math.round(e.getX() +gui.getCamera().getXOffset() ) / tilewidth);
+               firstY = ((int) Math.round(e.getY()+ gui.getCamera().getYOffset() ) / tileheight);}
+          if (click == 2) {
+               secondX = (int) Math.round(e.getX() + gui.getCamera().getXOffset()) / tilewidth;
+               secondY = (int) Math.round(e.getY() + gui.getCamera().getYOffset()) / tileheight ;
 
-    if (firstX > secondX) {
-      int swap;
-      swap = firstX;
-      firstX = secondX;
-      secondX = swap;
-    }
-    if (firstY > secondY) {
-      int swap = firstY;
-      firstY = secondY;
-      secondY = swap;
-    }
-    for (int zeile = firstX; zeile < secondX + 1; zeile++) {
-      for (int spalte = firstY; spalte < secondY + 1; spalte++) {
-        mapTiles[zeile][spalte] = tileSet.tileSet[graphicID];
+
+              if (firstX > secondX) {
+                  int swap;
+                  swap = firstX;
+                  firstX = secondX;
+                  secondX = swap;
+              }
+              if (firstY > secondY) {
+                  int swap = firstY;
+                  firstY = secondY;
+                  secondY = swap;
+              }
+              for (int zeile = firstX; zeile < secondX + 1; zeile++) {
+                  for (int spalte = firstY; spalte < secondY + 1; spalte++) {
+                      mapTiles[zeile][spalte] = tileSet.tileSet[graphicID];
+                  }
+                  click=0;
+              }}
+      } else {
+          click = 0;
       }
-    }
+
   }
 
   public void createTileMenu(){
@@ -126,14 +137,39 @@ public class Editor {
         }
         out.newLine();
       }
-      JOptionPane.showMessageDialog(gui, "Daten gesichert.");
+      JOptionPane.showMessageDialog(gui, "Daten erfolgreich gespeichert.");
     } catch (Exception e) {
-      e.printStackTrace();
-      JOptionPane.showMessageDialog(gui, "Daten nicht gesichert.");
+      JOptionPane.showMessageDialog(gui, "Daten nicht gespeichert.","",JOptionPane.ERROR_MESSAGE);
     }
   }
 
   public void loadMap() {
+    File path = setMapPath();                //Der Filechooeser liefert die Pfadangabe zu dem selektierten Speicherort.
+    String mapString = null;
+    try (BufferedReader in = new BufferedReader(new FileReader(path))) {     //Bufferedreader liest die Datei an dem von Filechooser zurückgelieferten Speicherort aus.
+      String line = in.readLine();
+      mapString = line;
+      while ((line = in.readLine()) != null) {
+        mapString = mapString + " " + line;}
+
+        String [] temp = mapString.split("\\s+");
+        mapSizeX = Integer.parseInt(temp[0]);
+        mapSizeY = Integer.parseInt(temp[1]);
+
+        int i = 2;
+        for (int zeile=0;zeile < mapSizeX;zeile++) {
+          for (int spalte=0;spalte < mapSizeY;spalte++ ) {
+            mapTiles[spalte][zeile] = tileSet.tileSet[Integer.parseInt(temp[i])].clone();
+            mapTiles[spalte][zeile].setID(Integer.parseInt(temp[i]));
+            i++;
+          }
+        }
+      JOptionPane.showMessageDialog(gui, "Map erfolgreich geladen.");
+    } catch(Exception e){
+      JOptionPane.showMessageDialog(gui, "Map konnte nicht geladen werden.","",JOptionPane.ERROR_MESSAGE);
+
+    }
+
   }
 
   public EditorTileMenu getTileMenu() {
@@ -154,7 +190,7 @@ public class Editor {
     if (fileChooser.showSaveDialog(gui) == JFileChooser.APPROVE_OPTION) {  //Wenn der Ok-Button gedrueckt wird...
       return fileChooser.getSelectedFile();
     } else {                                                               //Wenn der Ok.Button nicht gedreckt wird.
-      JOptionPane.showMessageDialog(gui, "Speichern abgebrochen");
+      JOptionPane.showMessageDialog(gui, "Keine Datei ausgewählt.","",JOptionPane.WARNING_MESSAGE);
       return null;
     }
   }

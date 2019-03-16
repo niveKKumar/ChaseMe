@@ -12,7 +12,7 @@ public class Runner extends Mover {
         super(pGUI,tileXPos, tileYPos, pWidth, pHeight, pSpriteSheet, pMap);
 //        int pXpos = tileXPos*pMap.tileWidth;
 //        int pYpos = tileYPos*pMap.tileHeight;
-        pathfinder = new PathFinder(map,this,gui);
+        pathfinder = new PathFinder(gui,map,this);
     }
 
     public void enemystraightrun(int pBorder,/*int pDelay, */int pSpeed, int x, int y) {   //Gegner der nur gerade aus läuft (Delay = 1 - Kein Delay)

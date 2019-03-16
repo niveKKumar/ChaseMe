@@ -12,10 +12,10 @@ public class PathFinder{
   public LinkedList <Tile> pathTiles = new LinkedList<Tile>();;
   private LinkedList <Point2D> pointsOnPath = new LinkedList<Point2D>();
   private GUI gui;
-  public PathFinder(Map [] pMap, Mover pMover, GUI pgui){
+  public PathFinder(GUI pGUI,Map [] pMap, Mover pMover){
     map = pMap;
     mover = pMover;
-    gui = pgui;
+    gui = pGUI;
   }
 
   public Shape getPathShape(){

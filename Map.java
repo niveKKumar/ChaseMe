@@ -42,12 +42,12 @@ public class Map {
     }
     
     //Erstellen des Arrays mit den Tiles der Map:
-    System.out.println("Splitten der Mapteile");
+//    System.out.println("Splitten der Mapteile");
     String [] temp = mapString.split("\\s+");
     mapSizeX = Integer.parseInt(temp[0]);
     mapSizeY = Integer.parseInt(temp[1]);
     mapTiles = new Tile[mapSizeX][mapSizeY];
-    System.out.println("Erstellen der Map Tiles");
+//    System.out.println("Erstellen der Map Tiles");
     
     int i = 2;
     for (int zeile=0;zeile < mapSizeX;zeile++) {
@@ -57,6 +57,7 @@ public class Map {
         i++;
       }
     }
+//    System.out.println("Map Tiles fertig erstellt");
     setBorderOrItemsBlocked();
     setNeighbours();
   }
@@ -143,9 +144,9 @@ public class Map {
     }
   }
   public void renderMap(Graphics2D g2d){
-    for (int spalte =0; spalte < mapSizeX;spalte++ ) {
-        for (int zeile =0; zeile < mapSizeY; zeile++ ) {
-        mapTiles [spalte] [zeile].renderTile(g2d, spalte*tileWidth - gui.getCamera().getXOffset() , zeile*tileHeight - gui.getCamera().getYOffset() );
+    for (int zeile =0; zeile < mapSizeX;zeile++ ) {
+        for (int spalte =0; spalte < mapSizeY; spalte++ ) {
+          mapTiles [zeile] [spalte].renderTile(g2d, zeile*64 - gui.getCamera().getXOffset() , spalte*64 - gui.getCamera().getYOffset() );
       } 
     }
   }
