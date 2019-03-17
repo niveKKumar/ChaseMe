@@ -4,8 +4,6 @@ import java.io.BufferedReader;
 import java.util.*;
 
 public class Map {
-  public static final int tileWidth = 64;
-  public static final int tileHeight = 64;
   private String mapPlanPath;
   private TileSet tileSet;
   public Tile mapTiles [] []; 
@@ -22,7 +20,7 @@ public class Map {
     mapPlanPath = pMapPlanPath;
     tileSet = pTileSet;
     mapStatus = pStatus;
-    chapterOffset = pChapterOffset*tileWidth;
+    chapterOffset = pChapterOffset* Tile.TILEWIDTH;
     createMap();
   }
 
@@ -33,7 +31,6 @@ public class Map {
       BufferedReader br = new BufferedReader(new FileReader(mapPlanPath));
       String line = br.readLine();
       mapString = line;
-      System.out.println("Einlesen der Map");
       while ((line = br.readLine()) != null) {
         mapString = mapString + " " + line;
       }
@@ -78,7 +75,7 @@ public class Map {
 
   public boolean isActiveInPosition(Point position) {
     boolean active = false;
-    if (position.getX() <= (getMapSizeX() * tileWidth) && position.getY() <= (getMapSizeY()*tileHeight)) {
+    if (position.getX() <= (getMapSizeX() *  Tile.TILEWIDTH) && position.getY() <= (getMapSizeY()* Tile.TILEHEIGHT)) {
       active = true;
     }
     return active;
@@ -143,13 +140,13 @@ public class Map {
       }
     }
   }
-  public void renderMap(Graphics2D g2d){
-    for (int zeile =0; zeile < mapSizeX;zeile++ ) {
-        for (int spalte =0; spalte < mapSizeY; spalte++ ) {
-          mapTiles [zeile] [spalte].renderTile(g2d, zeile*64 - gui.getCamera().getXOffset() , spalte*64 - gui.getCamera().getYOffset() );
-      } 
+    public void renderMap(Graphics2D g2d){
+        for (int spalte =0; spalte < mapSizeX;spalte++ ) {
+            for (int zeile =0; zeile < mapSizeY; zeile++ ) {
+                mapTiles [spalte] [zeile].renderTile(g2d, spalte* Tile.TILEWIDTH - gui.getCamera().getXOffset() , zeile* Tile.TILEHEIGHT - gui.getCamera().getYOffset() );
+            }
+        }
     }
-  }
   public void setNeighbours(){
     for (int spalte = 0;spalte<mapTiles.length ;spalte++ ) {
       for (int zeile = 0;zeile<mapTiles.length ;zeile++ ) {

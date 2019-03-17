@@ -7,33 +7,21 @@ public class PathFinder{
   private Path2D pathShape;
   private Map[] map;
   private Mover mover;
-  private LinkedList <Tile> closedList = new LinkedList<Tile>();
+  private LinkedList closedList = new LinkedList();
   private PriorityList openList = new PriorityList();
-  public LinkedList <Tile> pathTiles = new LinkedList<Tile>();;
-  private LinkedList <Point2D> pointsOnPath = new LinkedList<Point2D>();
-  private GUI gui;
-  public PathFinder(GUI pGUI,Map [] pMap, Mover pMover){
+  public LinkedList pathTiles = new LinkedList();;
+  private LinkedList pointsOnPath = new LinkedList();
+  GUI gui;
+
+
+  public PathFinder(Map[] pMap, Mover pMover, GUI pGui){
     map = pMap;
     mover = pMover;
-    gui = pGUI;
+    gui = pGui;
   }
 
   public Shape getPathShape(){
     return pathShape;
-  }
-
-  private void setBlockedTilesToClosedList(){
-    for (int m = 0; m < map.length; m++) {
-//      System.out.println("Map Laenge Pathfinder"+m);
-      for (int i = 0; i < map[m].mapTiles.length; i++) {
-        for (int j = 0; j < map[m].mapTiles.length; j++) {
-          if (map[m].mapTiles[i][j].isBlocked()) {
-//            System.out.printf("Map 2 Tiles blocked");
-            closedList.add(map[m].mapTiles[i][j]);} // end of if
-        } // end of for
-      }
-
-    }//end of for - Map
   }
 
   public void searchPath(Tile pStart, Tile pTarget){
@@ -43,19 +31,17 @@ public class PathFinder{
     openList.clear();
     closedList.clear();
     setBlockedTilesToClosedList();
-    pStart.setCostFromStart(0);
-    pStart.setPathParent(null);
+    pStart.costFromStart=0;
+    pStart.pathParent = null;
     pStart.setEstimatedCostToGoal(pTarget);
-    openList.add((Tile) pStart);
+    openList.add(pStart);
     while (!openList.isEmpty()) {
       Tile current = (Tile) openList.removeFirst();
       if (current == pTarget){
         constructPathTilesList(pTarget);
         return;
       }
-
-      //System.out.println("start"+pStart.getNeighbours());
-      closedList.add((Tile) current);
+      closedList.add(current);
       LinkedList neighbours = current.getNeighbours();
       for (int i=0;i<neighbours.size();i++ ) {
         Tile neighbourTile = (Tile) neighbours.get(i);
@@ -66,31 +52,46 @@ public class PathFinder{
           neighbourTile.setEstimatedCostToGoal(pTarget);
           neighbourTile.setCostFromStart(costFromStart);
           neighbourTile.setPathParent(current);
-          if(isOnClosed){
-            closedList.remove(neighbourTile);}
-          if(!isOnOpen){
+          if (isOnClosed) {
+            closedList.remove(neighbourTile);
+          }
+          if (!isOnOpen) {
             openList.add((Tile)neighbourTile);
-          }}
+          }
+        }
       }
     }
   }
 
+  private void setBlockedTilesToClosedList(){
+    for (int m = 0; m < map.length; m++) {
+
+      for (int i = 0; i < map[m].mapTiles.length; i++) {
+        for (int j = 0; j < map[m].mapTiles.length; j++) {
+          if (map[m].mapTiles[i][j].isBlocked()) {
+            closedList.add(map[m].mapTiles[i][j]);} // end of if
+        } // end of for
+      }
+
+    }//end of for - Map
+  }
 
   private void constructPathTilesList(Tile pTile){
     pathTiles.clear();
-    while (pTile.getPathParent() != null) {
-      pathTiles.addFirst((Tile) pTile);
-      pTile = pTile.getPathParent();
+    while (pTile.pathParent != null) {
+      pathTiles.addFirst(pTile);
+      pTile = pTile.pathParent;
     }
     constructMovingPath();
   }
+
   private void constructMovingPath(){
     pathShape = new Path2D.Double();
-    pathShape.moveTo(mover.getLocation().getX()+64/2,mover.getLocation().getY()+64/2);
+    pathShape.moveTo(mover.getLocation().getX()+mover.width/2, mover.getLocation().getY()+mover.width/2);    ///
     Tile t;
     for (int i =0;i< pathTiles.size();i++) {
       t = (Tile) pathTiles.get(i);
-      pathShape.lineTo((t.getX()+64/2)+gui.getCamera().getXOffset(), (t.getY()+64/2)+gui.getCamera().getYOffset());
+      pathShape.lineTo((t.getX() + Tile.TILEHEIGHT/2) + (gui.getCamera().getXOffset()), (t.getY()+Tile.TILEHEIGHT/2) + (gui.getCamera().getYOffset()));
     }
     calculateMovingPointsOnPath(pathShape);
   }
@@ -108,7 +109,7 @@ public class PathFinder{
           Point2D p1 = (Point2D) pointsOnPath.get(pointsOnPath.size() - 1);
           Point2D p2 = new Point2D.Double(koordinaten[0], koordinaten[1]);
           double d = p1.distance(p2);
-          double i = d / 1.5;
+          double i = d / 1.5;   ///Das ist der Faktor, mit dem man die Anzahl der Punkte manipulieren kann!!! Je kleiner, desto mehr Punkte.
           for (int j = 0; j < i; j++) {
             Point2D p3 = new Point2D.Double(p1.getX() + (j / i) * (p2.getX() - p1.getX()), p1.getY() + (j / i) * (p2.getY() - p1.getY()));
             pointsOnPath.add(p3);
@@ -130,13 +131,14 @@ public class PathFinder{
   class PriorityList extends LinkedList{
 
     public void add(Comparable object){
-      for (int i=0;i < this.size();i++) {
-        if(object.compareTo(this.get(i)) <=0) {
-          add(i,object);
-          return;}
+      for (int i=0;i<this.size();i++) {
+        if (object.compareTo(this.get(i)) <= 0) {
+          add(i, object);
+          return;
+        }
       }
       addLast(object);
-    }}
+    }
+  }
 
-} // end of for
-
+}

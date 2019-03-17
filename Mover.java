@@ -103,13 +103,13 @@ public class Mover{
         checkPointRight.setLocation(xPos+width - hitBoxCenter , yPos + height/2 );
         for (int i = 0;i < map.length ;i++ ) {
             Tile[] temp1 = new Tile[map.length];
-            if (map[i].isActive()){temp1[i] = map[i].mapTiles [(int) checkPointUp.getX()/64] [ (int) checkPointUp.getY()/64];}else{continue;}
+            if (map[i].isActive()){temp1[i] = map[i].mapTiles [(int) checkPointUp.getX()/width] [ (int) checkPointUp.getY()/height];}else{continue;}
             Tile[] temp2 = new Tile[map.length];
-            if (map[i].isActive()){temp2[i] = map[i].mapTiles [(int) checkPointDown.getX()/64] [ (int) checkPointDown.getY()/64];}else{continue;}
+            if (map[i].isActive()){temp2[i] = map[i].mapTiles [(int) checkPointDown.getX()/width] [ (int) checkPointDown.getY()/height];}else{continue;}
             Tile[] temp3 = new Tile[map.length];
-            if (map[i].isActive()){temp3[i] = map[i].mapTiles [(int) checkPointLeft.getX()/64] [ (int) checkPointLeft.getY()/64];}else{continue;}
+            if (map[i].isActive()){temp3[i] = map[i].mapTiles [(int) checkPointLeft.getX()/width] [ (int) checkPointLeft.getY()/height];}else{continue;}
             Tile[] temp4 = new Tile[map.length];
-            if (map[i].isActive()){temp4[i] = map[i].mapTiles [(int) checkPointRight.getX()/64] [ (int) checkPointRight.getY()/64];}else{continue;}
+            if (map[i].isActive()){temp4[i] = map[i].mapTiles [(int) checkPointRight.getX()/width] [ (int) checkPointRight.getY()/height];}else{continue;}
                 if (temp1[i].isBlocked() || temp2[i].isBlocked() || temp3[i].isBlocked() || temp4[i].isBlocked()){
                     blocked = true;}
 
@@ -119,15 +119,15 @@ public class Mover{
     public Point moverOnMapTile(){
         Point temp = new Point();
         for (int i = 0; i < map.length ; i++) {
-            for (int y = 0; y < map[i].getMapSizeY() ; y++) {
-                if (this.getLocation().y + this.height / 2 > Map.tileHeight * y && this.getLocation().y + this.height / 2 < Map.tileHeight * (y + 1)) {
+                for (int y = 0; y < map[i].getMapSizeY() ; y++) {
+                if (this.getLocation().y + this.height / 2 > Tile.TILEHEIGHT * y && this.getLocation().y + this.height / 2 < Tile.TILEHEIGHT * (y + 1)) {
                     temp.y = y;
                 }
             }
             for (int x = 1; x < map[i].getMapSizeX() ; x++) {
 //                int right = this.getLocation().x + width;
 //                System.out.println(right);
-                if ( this.getLocation().x + this.width / 2 >= Map.tileWidth * x && this.getLocation().x + this.width/2 <= Map.tileWidth * (x+1) ) {
+                if ( this.getLocation().x + this.width / 2 >= Tile.TILEWIDTH * x && this.getLocation().x + this.width/2 <= Tile.TILEWIDTH * (x+1) ) {
                     temp.x = x + 2 ;// weil bei 0
                 }
             }
@@ -197,4 +197,5 @@ public class Mover{
             return;
         }
     }
+
 }  

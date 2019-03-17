@@ -10,8 +10,6 @@ public class TileSet{
   private BufferedImage tileSetImage;
   public Tile tileSet[];
   private int border;
-  private int tileWidth = 64; 
-  private int tileHeight = 64; 
   
   
   public TileSet(String pTileSetImagePath, int pNumberOfTilesX, int pNumberOfTilesY, int pBorder){
@@ -34,7 +32,7 @@ public class TileSet{
     int i = 0;
       for(int y = 0; y < numberOfTilesY; y++) {
         for(int x = 0; x < numberOfTilesX; x++) {
-        BufferedImage bi = tileSetImage.getSubimage(x * (tileWidth+border), y * (tileHeight+border), tileWidth, tileHeight);
+        BufferedImage bi = tileSetImage.getSubimage(x * (Tile.TILEWIDTH+border), y * (Tile.TILEHEIGHT+border), Tile.TILEWIDTH, Tile.TILEHEIGHT);
         tileSet[i++] = new Tile(bi);
       }
     }

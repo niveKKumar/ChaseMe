@@ -52,13 +52,13 @@ public class EditorTileMenu extends JDialog implements ActionListener {
             }
         });
         createTile();
-        setVisible(true);
+        setVisible(false);
 //        pack();
 
     }
 
     private void onOK() {
-        System.out.println("Selected:" + selected);
+//        System.out.println("Selected:" + selected);
         setVisible(false);
     }
 
@@ -113,7 +113,7 @@ public class EditorTileMenu extends JDialog implements ActionListener {
                 JOptionPane.showMessageDialog(this, "Ungültige Zahl.", "", JOptionPane.WARNING_MESSAGE);
             }
         }
-        System.out.println("NF check");
+//        System.out.println("NF check");
     }
 
 

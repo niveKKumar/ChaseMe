@@ -7,7 +7,7 @@ import java.util.*;
 
 public class Tile extends JPanel implements Cloneable, Comparable{
   protected boolean blocked = false;
-  public static final int TILEWIDTH = 64, TILEHEIGHT = 64;
+  public static int TILEWIDTH = 64, TILEHEIGHT = 64;
   public Image tileImage;
   protected LinkedList neighbours;
   protected boolean showImage = true;
@@ -73,7 +73,6 @@ public class Tile extends JPanel implements Cloneable, Comparable{
   public void setID(int pID) {
     id = pID;
   }
-
   public void setTileImage(Image pTileImage) {
     tileImage = pTileImage;
   }
@@ -87,14 +86,9 @@ public class Tile extends JPanel implements Cloneable, Comparable{
   public float getCostForNextStep(Tile pTile){
     float cost = 0;
     LinkedList neighbours = pTile.getNeighbours();
-//    for (int i =0;i< neighbours.size();i++) {
-//      Tile temp = (Tile) neighbours.get(i);
-//      if (temp.isBlocked()) {
-        int dx = pTile.getX() - this.getX();   //
-        int dy = pTile.getY() - this.getY();
-        cost = (float) Math.sqrt((dx*dx)+(dy*dy));   
-//      }
-//    }
+    int dx = pTile.getX() - this.getX();   //
+    int dy = pTile.getY() - this.getY();
+    cost = (float) Math.sqrt((dx*dx)+(dy*dy));
     return cost;
   }
   public Tile getPathParent(){
@@ -108,5 +102,13 @@ public class Tile extends JPanel implements Cloneable, Comparable{
     float otherValue = ((Tile) other).getCost();
     float v = thisValue - otherValue;
     return (v>0)?1:(v<0)?-1:0; 
-  }   
+  }
+
+  public static void setTILEWIDTH(int TILEWIDTH) {
+    Tile.TILEWIDTH = TILEWIDTH;
+  }
+
+  public static void setTILEHEIGHT(int TILEHEIGHT) {
+    Tile.TILEHEIGHT = TILEHEIGHT;
+  }
 }
