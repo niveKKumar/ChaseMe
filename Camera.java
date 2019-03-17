@@ -40,12 +40,12 @@
     }
      public void centerOnEditor(Editor.Pointer pointer){
          xOffset = (int) pointer.getxPos() - (GUI.FRAME_WIDTH/2);
-         yOffset = (int) pointer.getyPos() - (GUI.FRAME_HEIGHT/2);
+         yOffset = (int) pointer.getyPos()- (GUI.FRAME_HEIGHT/2) ;
 
          if (xOffset < 0) {
              xOffset = 0;
          }else {
-             tX = xSize * Tile.TILEWIDTH - GUI.FRAME_WIDTH + 80;
+             tX = xSize * Tile.TILEWIDTH - GUI.FRAME_WIDTH ;
              if (xOffset > tX) {
                  xOffset = tX;
              } // end of if
@@ -54,11 +54,13 @@
          if (yOffset < 0) {
              yOffset = 0;
          }else {
-             tY = ySize * Tile.TILEHEIGHT - GUI.FRAME_HEIGHT - 80;
+             tY = ySize * Tile.TILEHEIGHT - GUI.FRAME_HEIGHT ;
              if (yOffset > tY) {
                  yOffset = tY;
              } // end of if
          } // end of if-else
+         System.out.println("XView: "+ tX);
+         System.out.println(xOffset+"|"+yOffset);
      }
      public void refreshOffset(){
          tY = ySize * Tile.TILEHEIGHT - GUI.FRAME_HEIGHT - 80;

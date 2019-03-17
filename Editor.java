@@ -69,6 +69,20 @@ public class Editor {
     }
     mapTiles[mapSizeX/2] [mapSizeY/2] = tileSet.tileSet[6].clone();
     camerapoint = new Pointer(mapSizeX*Tile.TILEWIDTH/2,mapSizeY*Tile.TILEHEIGHT/2);
+    gui.camera = new Camera(mapSizeX,mapSizeY);
+    gui.camera.centerOnEditor(camerapoint);
+  }
+  public void createBlankEditiorMap(){
+    mapTiles = new Tile[mapSizeX][mapSizeY];
+    int i = 2;
+    for (int zeile = 0; zeile < mapSizeX; zeile++) {
+      for (int spalte = 0; spalte < mapSizeY; spalte++) {
+        mapTiles[zeile][spalte] = tileSet.tileSet[6].clone();
+        mapTiles[zeile][spalte].setID(6);
+        i++;
+      }
+    }
+    gui.camera = new Camera(mapSizeX,mapSizeY);
     gui.camera.centerOnEditor(camerapoint);
   }
 
@@ -78,6 +92,7 @@ public class Editor {
         mapTiles[zeile][spalte].renderTile(g2d, zeile * Tile.TILEWIDTH - gui.getCamera().getXOffset(), spalte * Tile.TILEHEIGHT - gui.getCamera().getYOffset());
       }
     }
+    camerapoint.renderPointer(g2d);
   }
 
   public void setTile(MouseEvent e) {
@@ -239,18 +254,43 @@ public class Editor {
   class Pointer{
 
     private int xPos,yPos;
-    private int speed = 5;
+    private int xView,yView;
+    private int speed = 10;
 
     public Pointer(int  xPos,int yPos){
       this.xPos = xPos;
       this.yPos = yPos;
     }
-    public void setMove(Point pMove){
-      gui.getCamera().centerOnEditor(this);
-      xPos += pMove.getX()*speed;
-      yPos += pMove.getY()*speed;
-      System.out.println(xPos+"POINTER"+yPos);
+    public void setMove(Point pMove) {
+      gui.camera.centerOnEditor(this);
+      speed = (int) Math.round(speed);
+      xView = (int) xPos - (GUI.FRAME_WIDTH / 2);
+      yView = (int) yPos - (GUI.FRAME_HEIGHT / 2);
+
+      //BEWEGENDER POINTER:
+      if (pMove.getX() > 0 && xView < mapSizeX * Tile.TILEWIDTH - GUI.FRAME_WIDTH) {
+        xPos += pMove.getX() * speed;
+      } else {
+        xPos += 1;
+        if (pMove.getX() < 0 && xView > GUI.FRAME_WIDTH / 2) {
+          xPos += pMove.getX() * speed;
+        } else {
+          xPos -= 1;
+        }
+
+        if (pMove.getY() > 0 && yView < mapSizeY * Tile.TILEHEIGHT - GUI.FRAME_WIDTH) {
+          yPos += pMove.getY() * speed;
+        } else {
+          yPos += 1;
+          if (pMove.getY() < 0 && yView > GUI.FRAME_HEIGHT / 2) {
+            yPos += pMove.getY() * speed;
+          } else {
+            yPos -= 1;
+          }
+        }
+      }
     }
+
 
     public int getxPos() {
       return xPos;
@@ -259,13 +299,19 @@ public class Editor {
     public int getyPos() {
       return yPos;
     }
-
     public void setxPos(int xPos) {
       this.xPos = xPos;
     }
 
     public void setyPos(int yPos) {
       this.yPos = yPos;
+    }
+
+    public void renderPointer(Graphics2D g2d){
+      BasicStroke stroke1 = new BasicStroke(20 , BasicStroke.CAP_BUTT, BasicStroke.JOIN_ROUND );
+      g2d.setColor(Color.black);
+      g2d.setStroke(stroke1);
+      g2d.drawLine(xPos - gui.getCamera().getXOffset(),yPos- gui.getCamera().getYOffset(),xPos - gui.getCamera().getXOffset()+10,yPos- gui.getCamera().getYOffset());
     }
   }
 }

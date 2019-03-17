@@ -200,7 +200,6 @@ public class EditorTileMenu extends JDialog implements ActionListener {
     }
 
     private void createUIComponents() {
-        // TODO: place custom component creation code here
         scrollPane = new JScrollPane();
         scrollPane.getVerticalScrollBar().setUnitIncrement(16);
         txtEingabe = new JTextField();
@@ -224,13 +223,13 @@ public class EditorTileMenu extends JDialog implements ActionListener {
 
         JMenuBar menubar = new JMenuBar();   //Menüleiste erzeugen
         this.setJMenuBar(menubar);  //Menüleiste dem Fenster hinzufügen
+
         JMenuItem open = new JMenuItem("Öffnen");
         open.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
                 belongingEditor.loadMap();
             }
         });
-        menubar.add(open);
 
         JMenuItem save = new JMenuItem("Speichern");
         save.addActionListener(new ActionListener() {
@@ -238,6 +237,24 @@ public class EditorTileMenu extends JDialog implements ActionListener {
                 belongingEditor.saveMap();
             }
         });
+
+        JMenu newMap = new JMenu("Neue Map anlegen");
+        JMenuItem newMapWithSelection = new JMenuItem("Neue Map mit dem ausgewählten Tile erstellen");
+        newMapWithSelection.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent evt) {
+                belongingEditor.createEditorMap();
+            }
+        });
+        JMenuItem newBlankMap = new JMenuItem("Neue Map blanke");
+        newBlankMap.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent evt) {
+                belongingEditor.createBlankEditiorMap();
+            }
+        });
+        menubar.add(newMap);
+        newMap.add(newMapWithSelection);
+        newMap.add(newBlankMap);
+        menubar.add(open);
         menubar.add(save);
     }
 }

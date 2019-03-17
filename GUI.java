@@ -139,12 +139,14 @@ public class GUI extends JFrame implements ActionListener {
       case "+":
         System.out.println("Zoom rein");
         editor.zoom(true);
+        camera.centerOnEditor(editor.camerapoint);
         this.requestFocus();
         break;
         
       case "-":
         System.out.println("Zoom raus");
         editor.zoom(false);
+        camera.centerOnEditor(editor.camerapoint);
         this.requestFocus();
         break;
       case "Tile Auswaehlen":
@@ -206,9 +208,10 @@ public class GUI extends JFrame implements ActionListener {
     keyManager.update();
     //        System.out.println("Level Status: " + level.level);
     if (level.level != 0) {
-      level.update();
+      level.updateLevel();
       taAnzeige.setText("X:" + level.mover.moverOnMapTile().x + "Y:" + level.mover.moverOnMapTile().y);
     }else { //Editor:
+
       if ( keyInputToMove().getX() != 0||keyInputToMove().getY() != 0) {
         editor.camerapoint.setMove(keyInputToMove());}
     }
@@ -239,6 +242,7 @@ public class GUI extends JFrame implements ActionListener {
           
         case 0:  // EDITOR
           editor.setMenuVisible(true);
+//          System.out.println("editor");
           editor.renderEditor(g2d);
           break;
           
@@ -418,7 +422,7 @@ public class GUI extends JFrame implements ActionListener {
       
     }
 
-    public void update() {
+    public void updateLevel() {
       if ( keyInputToMove().getX() != 0||keyInputToMove().getY() != 0) {
         mover.setMove(keyInputToMove());
         pathFinder.resetPath();
