@@ -49,8 +49,8 @@ public class Map {
     int i = 2;
     for (int zeile=0;zeile < mapSizeX;zeile++) {
       for (int spalte=0;spalte < mapSizeY;spalte++ ) {
-        mapTiles[spalte][zeile] = tileSet.tileSet[Integer.parseInt(temp[i])].clone();
-        mapTiles[spalte][zeile].setID(Integer.parseInt(temp[i]));
+        mapTiles[zeile][spalte] = tileSet.tileSet[Integer.parseInt(temp[i])].clone();
+        mapTiles[zeile][spalte].setID(Integer.parseInt(temp[i]));
         i++;
       }
     }
@@ -133,41 +133,42 @@ public class Map {
     for (int zeile =0;zeile < mapSizeX;zeile++) {
       for (int spalte = 0; spalte < mapSizeY; spalte++) {
         for (int i = 0; i < blockedIDs.size();i++){
-          if (mapTiles [spalte] [zeile].getID() == blockedIDs.get(i)){
-            mapTiles [spalte] [zeile].setBlocked(true);
+          if (mapTiles [zeile] [spalte].getID() == blockedIDs.get(i)){
+            mapTiles [zeile] [spalte].setBlocked(true);
           }
         }
       }
     }
   }
+  //Erst kommt die Zeile, dann kommt die Spalte!!!!!! Die Zeile definiert die YPos; Die Spalte definiert die XPos; erst kommt X, dann kommt Y;
     public void renderMap(Graphics2D g2d){
-        for (int spalte =0; spalte < mapSizeX;spalte++ ) {
-            for (int zeile =0; zeile < mapSizeY; zeile++ ) {
-                mapTiles [spalte] [zeile].renderTile(g2d, spalte* Tile.TILEWIDTH - gui.getCamera().getXOffset() , zeile* Tile.TILEHEIGHT - gui.getCamera().getYOffset() );
-            }
+      for (int zeile = 0; zeile < mapSizeX; zeile++) {
+        for (int spalte = 0; spalte < mapSizeY; spalte++) {
+          mapTiles[zeile][spalte].renderTile(g2d, zeile * Tile.TILEWIDTH - gui.getCamera().getXOffset(), spalte * Tile.TILEHEIGHT - gui.getCamera().getYOffset());
+        }
         }
     }
   public void setNeighbours(){
-    for (int spalte = 0;spalte<mapTiles.length ;spalte++ ) {
-      for (int zeile = 0;zeile<mapTiles.length ;zeile++ ) {
+    for (int zeile = 0;zeile<mapTiles.length ;zeile++ ) {
+      for (int spalte = 0;spalte<mapTiles.length ;spalte++ ) {
         LinkedList temp = new LinkedList();
-        try {temp.addFirst(mapTiles[spalte-1][zeile-1]);
+        try {temp.addFirst(mapTiles[zeile-1][spalte-1]);
         } catch(Exception e) {}
-        try {temp.addFirst(mapTiles[spalte][zeile-1]);
+        try {temp.addFirst(mapTiles[zeile][spalte-1]);
         } catch(Exception e) {} 
-        try {temp.addFirst(mapTiles[spalte+1][zeile-1]);
+        try {temp.addFirst(mapTiles[zeile+1][spalte-1]);
         } catch(Exception e) {} 
-        try {temp.addFirst(mapTiles[spalte-1][zeile]);
+        try {temp.addFirst(mapTiles[zeile-1][spalte]);
         } catch(Exception e) {} 
-        try {temp.addFirst(mapTiles[spalte+1][zeile]);
-        } catch(Exception e) {} 
-        try {temp.addFirst(mapTiles[spalte-1][zeile+1]);
+        try {temp.addFirst(mapTiles[zeile+1][spalte]);
         } catch(Exception e) {}
-        try {temp.addFirst(mapTiles[spalte][zeile+1]);
+        try {temp.addFirst(mapTiles[zeile-1][spalte+1]);
         } catch(Exception e) {}
-        try {temp.addFirst(mapTiles[spalte+1][zeile]);
+        try {temp.addFirst(mapTiles[zeile][spalte+1]);
+        } catch(Exception e) {}
+        try {temp.addFirst(mapTiles[zeile+1][spalte]);
         } catch(Exception e) {}    
-        mapTiles[spalte][zeile].setNeighbours(temp);    
+        mapTiles[zeile][spalte].setNeighbours(temp);
       } // end of for
     } // end of for
   }

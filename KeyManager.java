@@ -1,3 +1,5 @@
+import sun.awt.SunHints;
+
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 
@@ -5,6 +7,7 @@ public class KeyManager implements KeyListener {
   public boolean [] keys;
   public boolean up,down,left,right,upLeft,upRight,downLeft,downRight;
   public boolean shift;
+  public boolean strZ;
   
   public KeyManager(){
     keys = new boolean[256];
@@ -28,6 +31,12 @@ public class KeyManager implements KeyListener {
     upLeft = keys[KeyEvent.VK_Q];
     upRight = keys[KeyEvent.VK_E];
     downLeft = keys[KeyEvent.VK_Y];
-    downRight = keys[KeyEvent.VK_C]; 
+    downRight = keys[KeyEvent.VK_C];
+
+    /*if (keys[KeyEvent.VK_Z] && keys[KeyEvent.CTRL_MASK]){
+      strZ = true;
+      System.out.println("strz");
+    }*/
+
   }
 }

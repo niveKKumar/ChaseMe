@@ -62,7 +62,7 @@ public class GUI extends JFrame implements ActionListener {
     cp.add(north, BorderLayout.NORTH);
     east.add(taAnzeige);
     taAnzeige.setBorder(BorderFactory.createLineBorder(Color.black));
-    taAnzeige.setPreferredSize(new Dimension(90, 750));
+    taAnzeige.setMaximumSize(new Dimension(50,750));
     taAnzeige.append("Score: ");
     lbTitel.setFont(new Font("Dialog", 1, 10));
     lbTitel.setText("Das tolle Spiel");
@@ -126,7 +126,6 @@ public class GUI extends JFrame implements ActionListener {
         break;
       case "Tutorial":
         level.createlevel1();
-        //        level1EnemyMove();
         this.requestFocus();
         break;
         
@@ -139,14 +138,14 @@ public class GUI extends JFrame implements ActionListener {
       case "+":
         System.out.println("Zoom rein");
         editor.zoom(true);
-        camera.centerOnEditor(editor.camerapoint);
+        camera.centerOnObject(editor.camerapoint.getLocation());
         this.requestFocus();
         break;
         
       case "-":
         System.out.println("Zoom raus");
         editor.zoom(false);
-        camera.centerOnEditor(editor.camerapoint);
+        camera.centerOnObject(editor.camerapoint.getLocation());
         this.requestFocus();
         break;
       case "Tile Auswaehlen":
@@ -158,11 +157,12 @@ public class GUI extends JFrame implements ActionListener {
   }
   
   public static void main(String[] args) {
-    //    try {
-    //      UIManager.setLookAndFeel(UIManager.());
-    //    }catch(Exception e) {
-    //      JOptionPane.showMessageDialog(null,"Das LookAndFeel des Betriebssystems kann nicht geladen werden!\nDas Programm wird daher jetzt im Java-LookAndFeel angezeigt.","Allgemeine Ausnahme",JOptionPane.ERROR_MESSAGE);
-    //    }
+      //https://www.java-forum.org/thema/swing-komponenten-standart-windows-design.34019/
+      try {
+          UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+        }catch(Exception e) {
+          JOptionPane.showMessageDialog(null,"Das LookAndFeel des Betriebssystems kann nicht geladen werden!\nDas Programm wird daher jetzt im Java-LookAndFeel angezeigt.","Allgemeine Ausnahme",JOptionPane.ERROR_MESSAGE);
+        }
     new GUI();
   } // end of main
   
@@ -209,9 +209,7 @@ public class GUI extends JFrame implements ActionListener {
     //        System.out.println("Level Status: " + level.level);
     if (level.level != 0) {
       level.updateLevel();
-      taAnzeige.setText("X:" + level.mover.moverOnMapTile().x + "Y:" + level.mover.moverOnMapTile().y);
     }else { //Editor:
-
       if ( keyInputToMove().getX() != 0||keyInputToMove().getY() != 0) {
         editor.camerapoint.setMove(keyInputToMove());}
     }
@@ -227,7 +225,6 @@ public class GUI extends JFrame implements ActionListener {
       this.addMouseMotionListener(this);
       Container container = getContentPane();
       container.setLayout(null);
-      this.setBorder(BorderFactory.createLineBorder(Color.black, 4));
       
     }
 
@@ -355,7 +352,7 @@ public class GUI extends JFrame implements ActionListener {
       gui.setCamera(maps[0].getMapSizeX(), maps[0].getMapSizeY());
       // Intialisierung der Spieler:
       mover = new Mover(gui, 100, 100, 64, 64, playersheet, maps);
-      camera.centerOnMover(mover);
+      camera.centerOnObject(mover.getLocation());
       pathFinder = new PathFinder(maps, mover,gui);
 
       for (int i = 0; i < maps.length ; i++) {
@@ -379,7 +376,7 @@ public class GUI extends JFrame implements ActionListener {
       gui.setCamera(maps[0].getMapSizeX(), maps[0].getMapSizeY());
       // Intialisierung der Spieler:
       mover = new Mover(gui, (int) mover.getLocation().getX(), (int) mover.getLocation().getY(), 64, 64, playersheet, maps);
-      camera.centerOnMover(mover);
+      camera.centerOnObject(mover.getLocation());
       for (int i = 0; i < enemy.length; i++) {
         enemy[i] = new Runner(gui, (2) * 64, (5) * 64, 64, 64, playersheet, maps);
       }
@@ -438,8 +435,8 @@ public class GUI extends JFrame implements ActionListener {
           level1EnemyMove();
           break;
       }
-
-
+//      taAnzeige.setText("X:" + mover.moverOnMapTile().x + "Y:" + mover.moverOnMapTile().y);
+      camera.centerOnObject(mover.getLocation());
     }
 
     public void menuButtons(boolean menu, boolean editormenu) {

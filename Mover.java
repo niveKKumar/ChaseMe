@@ -32,15 +32,16 @@ public class Mover{
         img = sprites.getSpriteElement(0,1);
         width = pWidth;
         height = pHeight;
+        gui.getCamera().centerOnObject(this.getLocation());
     }
 
     public void setMove(Point pMove){
-        gui.getCamera().centerOnMover(this);
         int oldXPos = xPos;
         int oldYPos = yPos;
 
         xPos += pMove.getX()*speed;
         yPos += pMove.getY()*speed;
+
         moveSeqSleep++;
         if (moveSeqSleep == 5 ) {
             if (moveSeq < 2) {
@@ -61,7 +62,7 @@ public class Mover{
 
     }
     public void setPathMove(Point2D from ,Point2D to ) {
-        gui.getCamera().centerOnMover(this);
+        gui.getCamera().centerOnObject(this.getLocation());
         getAngle(from, to);
         moveSeqSleep++;
         if (moveSeqSleep == 5 ) {
@@ -120,7 +121,7 @@ public class Mover{
         Point temp = new Point();
         for (int i = 0; i < map.length ; i++) {
                 for (int y = 0; y < map[i].getMapSizeY() ; y++) {
-                if (this.getLocation().y + this.height / 2 > Tile.TILEHEIGHT * y && this.getLocation().y + this.height / 2 < Tile.TILEHEIGHT * (y + 1)) {
+                if (this.getLocation().y + this.height / 2 >= Tile.TILEHEIGHT * y && this.getLocation().y + this.height / 2 <= Tile.TILEHEIGHT * (y + 1)) {
                     temp.y = y;
                 }
             }

@@ -1,21 +1,24 @@
 import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.File;
 
-class EditorTileButton extends JButton {
+class EditorTileButton extends JButton  {
     private int id;
-    private TileSet tileSet;
+    private TileSet tileSet = new TileSet("res/tileSet.png", 12,12,3);;
     private int size = 50;
 
     public EditorTileButton(){
         super();
-        tileSet = new TileSet("res/tileSet.png", 12,12,3);
         loadImage(id);
     }
-    public void setTile(){
-
+    public EditorTileButton(int id){
+        super();
+        loadImage(id);
     }
+
     public void loadImage(int pID){
         this.setBorder(null);
         id = pID;
