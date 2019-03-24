@@ -248,7 +248,6 @@ public class EditorTileMenu extends JDialog implements ActionListener {
         newMapWithSelection.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
                 belongingEditor.graphicID = selected;
-                System.out.println("");
                 belongingEditor.createEditorMap();
             }
         });

@@ -6,7 +6,7 @@ import java.util.*;
 public class Map {
   private String mapPlanPath;
   private TileSet tileSet;
-  public Tile mapTiles [] []; 
+  public Tile[][] mapTiles;
   public int mapSizeX;  
   public int mapSizeY;
   private int chapterOffset;
@@ -83,7 +83,8 @@ public class Map {
 
   public void setBorderOrItemsBlocked(){
     if (mapStatus.equals("Empty")){
-      System.out.println("Empty");;}
+      System.out.println("Empty");
+    }
     if (mapStatus.equals("Item")){
       itemBlock();}
     if (mapStatus.equals("Border")){

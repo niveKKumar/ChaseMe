@@ -8,7 +8,7 @@ public class TileSet{
   private String tileSetImagePath;
   private int numberOfTilesX, numberOfTilesY;
   private BufferedImage tileSetImage;
-  public Tile tileSet[];
+    public Tile[] tileSet;
   private int border;
   
   

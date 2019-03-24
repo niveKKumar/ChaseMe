@@ -7,7 +7,7 @@ import java.io.File;
 
 class EditorTileButton extends JButton  {
     private int id;
-    private TileSet tileSet = new TileSet("res/tileSet.png", 12,12,3);;
+    private TileSet tileSet = new TileSet("res/tileSet.png", 12,12,3);
     private int size = 50;
 
     public EditorTileButton(){

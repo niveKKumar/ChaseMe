@@ -9,8 +9,8 @@ public class GUI extends JFrame implements ActionListener {
   private JPanel north = new JPanel(new FlowLayout());
   public JPanel east = new JPanel(new FlowLayout());
   private JPanel west = new JPanel(new FlowLayout());
-  private JButton[] buttons = new JButton[4];
-  private JTextArea taAnzeige = new JTextArea();
+  private JButton[] buttons = new JButton[5];
+  public JTextArea taAnzeige = new JTextArea();
   
   
   private JLabel lbTitel = new JLabel();
@@ -28,7 +28,10 @@ public class GUI extends JFrame implements ActionListener {
   public Camera camera;
   private Level level;
   private Editor editor;
-  
+
+
+//  private  Mover.SpeechBubble temp;
+
   public GUI() {
     super();
     this.setBackground(Color.white);
@@ -58,17 +61,16 @@ public class GUI extends JFrame implements ActionListener {
     cp.add(gamePanel, BorderLayout.CENTER);
     cp.add(south, BorderLayout.SOUTH);
     cp.add(east, BorderLayout.EAST);
+    east.setPreferredSize(new Dimension(150,750));
     cp.add(west, BorderLayout.WEST);
     cp.add(north, BorderLayout.NORTH);
     east.add(taAnzeige);
     taAnzeige.setBorder(BorderFactory.createLineBorder(Color.black));
     taAnzeige.setMaximumSize(new Dimension(50,750));
-    taAnzeige.append("Score: ");
-    lbTitel.setFont(new Font("Dialog", 1, 10));
+    lbTitel.setFont(new Font("Dialog", 1, 8));
     lbTitel.setText("Das tolle Spiel");
     north.add(lbTitel);
-    String btNamesMenu[] = {"Exit", "gridLines", "Tutorial", "Editor"};
-    
+    String[] btNamesMenu = {"Exit", "gridLines", "Tutorial", "Editor","Sprechblase"};
     for (int i = 0; i < buttons.length; i++) {
       buttons[i] = new JButton(btNamesMenu[i]);
       buttons[i].addActionListener(this);
@@ -133,7 +135,13 @@ public class GUI extends JFrame implements ActionListener {
         createEditor();
         this.requestFocus();
         break;
-        
+
+      case "Sprechblase":
+        createSpeechBubble();
+        cp.add(temp);
+
+        break;
+
         ///EDITOR Buttons:
       case "+":
         System.out.println("Zoom rein");
@@ -155,7 +163,11 @@ public class GUI extends JFrame implements ActionListener {
         
     }
   }
-  
+
+  private void createSpeechBubble() {
+//    temp = new Mover.SpeechBubble("Das ist nur ein Text Test");
+  }
+
   public static void main(String[] args) {
       //https://www.java-forum.org/thema/swing-komponenten-standart-windows-design.34019/
       try {
@@ -213,7 +225,7 @@ public class GUI extends JFrame implements ActionListener {
       if ( keyInputToMove().getX() != 0||keyInputToMove().getY() != 0) {
         editor.camerapoint.setMove(keyInputToMove());}
     }
-
+requestFocus();
     repaint();
   }
 
@@ -263,11 +275,11 @@ public class GUI extends JFrame implements ActionListener {
     public void mouseClicked(MouseEvent e) {
       if (level.level != 0){
         level.mouseClicked(e);
-      }
-      
-      if (level.level == 0) {
+      }else{
         editor.setTileRect(e);
+        editor.selectTile(e);
       }
+
     }
 
     public void mousePressed(MouseEvent e) {
@@ -391,13 +403,14 @@ public class GUI extends JFrame implements ActionListener {
       level = 1;
     }
 
-    public void level1EnemyMove() {
-      enemy[2].movetotarget(mover);
-      enemy[0].enemystraightrun(64, 5, 1, 0);
+    public void level1GameMechanic() {
+//      enemy[2].movetotarget(mover);
+      enemy[0].enemystraightrun(64, 1, 100,100);
+      if (mover.getLocation().getX() > 150 ){
+        mover.saySomething("Wo bin ich?")
+        ;}
     }
-        //////////////////////////////////////////////////////////////////////////////////
-        //////////////////////////////////////////////////////////////////////////////////
-        //////////////////////////////////////////////////////////////////////////////////
+
 
     public void renderLevel(Graphics2D g2d) {
       maps[0].renderMap(g2d);
@@ -406,8 +419,8 @@ public class GUI extends JFrame implements ActionListener {
       if (enemy.length >0) {
         for (int enemyamount = 0; enemyamount < enemy.length; enemyamount++) {
           enemy[enemyamount].draw(g2d);
-        }
-      }
+        }}
+
       
       for (int mapsAmount = 1; mapsAmount < maps.length; mapsAmount++) {
         //IF Mover is on Map
@@ -432,12 +445,15 @@ public class GUI extends JFrame implements ActionListener {
 
       switch (level){
         case 1 :
-          level1EnemyMove();
+          level1GameMechanic();
+          taAnzeige.setText("X:" + mover.moverOnMapTile().x + "Y:" + mover.moverOnMapTile().y);
           break;
       }
-//      taAnzeige.setText("X:" + mover.moverOnMapTile().x + "Y:" + mover.moverOnMapTile().y);
       camera.centerOnObject(mover.getLocation());
     }
+    //////////////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////////////
 
     public void menuButtons(boolean menu, boolean editormenu) {
       for (int i = 0; i < gui.buttons.length; i++) {
@@ -452,7 +468,7 @@ public class GUI extends JFrame implements ActionListener {
       if (level != 0) {
         for (int i = 0; i < maps.length; i++) {
           if (maps[i].isActiveInPosition(new Point(e.getX() + camera.xOffset, e.getY() + camera.yOffset))) {
-            start = maps[i].mapTiles[(int) mover.getLocation().getX() / Tile.TILEWIDTH][(int) mover.getLocation().getY() / Tile.TILEHEIGHT];
+            start = maps[i].mapTiles[(int) (mover.getLocation().getX() / Tile.TILEWIDTH)][(int) mover.getLocation().getY() / Tile.TILEHEIGHT];
             target = maps[i].mapTiles[(e.getX() + camera.getXOffset()) /  Tile.TILEWIDTH ][(e.getY() + camera.getYOffset()) / Tile.TILEHEIGHT];
             pathFinder.searchPath(start, target);
           } else {continue;}}

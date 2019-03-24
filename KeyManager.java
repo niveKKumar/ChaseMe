@@ -8,6 +8,7 @@ public class KeyManager implements KeyListener {
   public boolean up,down,left,right,upLeft,upRight,downLeft,downRight;
   public boolean shift;
   public boolean strZ;
+  public boolean str;
   
   public KeyManager(){
     keys = new boolean[256];
@@ -15,6 +16,7 @@ public class KeyManager implements KeyListener {
 
   public void keyPressed(KeyEvent e) {
     keys[e.getKeyCode()] = true;
+//    System.out.println(e.getKeyCode());
   }
   public void keyReleased(KeyEvent e) {
    keys[e.getKeyCode()] = false;
@@ -23,6 +25,7 @@ public class KeyManager implements KeyListener {
   
   public void update() {
     shift = keys[16];
+    str = keys[17];
     up = keys[KeyEvent.VK_W];
     down = keys[KeyEvent.VK_S];
     left = keys[KeyEvent.VK_A];

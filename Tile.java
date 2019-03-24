@@ -16,6 +16,7 @@ public class Tile extends JPanel implements Cloneable, Comparable{
   public float costFromStart;
   protected float estimatedCostToGoal;
   protected boolean item;
+  boolean pointed;
   
   public Tile(Image pTileImage)  {
     super();
@@ -33,7 +34,14 @@ public class Tile extends JPanel implements Cloneable, Comparable{
     showImage = b;
   }
 
-  
+  public boolean isPointed() {
+    return pointed;
+  }
+
+  public void setPointed(boolean pointed) {
+    this.pointed = pointed;
+  }
+
   public void setBlocked(boolean b){
     blocked = b;
     }

@@ -9,7 +9,7 @@ public class PathFinder{
   private Mover mover;
   private LinkedList closedList = new LinkedList();
   private PriorityList openList = new PriorityList();
-  public LinkedList pathTiles = new LinkedList();;
+  public LinkedList pathTiles = new LinkedList();
   private LinkedList pointsOnPath = new LinkedList();
   GUI gui;
 
@@ -56,7 +56,7 @@ public class PathFinder{
             closedList.remove(neighbourTile);
           }
           if (!isOnOpen) {
-            openList.add((Tile)neighbourTile);
+            openList.add(neighbourTile);
           }
         }
       }

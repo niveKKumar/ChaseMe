@@ -11,7 +11,7 @@ public class Editor {
     private GUI gui;
     private TileSet tileSet;
     public int mapSizeX, mapSizeY;
-    public Tile mapTiles[][];
+    public Tile[][] mapTiles;
     public int graphicID = 22;
     private boolean visible = true;
     private JButton[] editorbuttons = new JButton[3];
@@ -34,6 +34,7 @@ public class Editor {
         mapSizeX = pMapSizeX;
         mapSizeY = pMapSizeY;
         keyManager = pKeyManager;
+        gui.addKeyListener(keyManager);
         tileSet = pTileSet;
         createMenu();
         createEditorMap();
@@ -100,29 +101,44 @@ public class Editor {
         for (int zeile = 0; zeile < mapSizeX; zeile++) {
             for (int spalte = 0; spalte < mapSizeY; spalte++) {
                 mapTiles[zeile][spalte].renderTile(g2d, zeile * Tile.TILEWIDTH - gui.getCamera().getXOffset(), spalte * Tile.TILEHEIGHT - gui.getCamera().getYOffset());
+            if (mapTiles[zeile][spalte].isPointed()){
+                g2d.setStroke(new BasicStroke(3 , BasicStroke.CAP_BUTT, BasicStroke.JOIN_ROUND ));
+                g2d.setColor(Color.black);
+                g2d.drawRect(mapTiles [zeile] [spalte].getX(), mapTiles [zeile] [spalte].getY(), Tile.TILEWIDTH, Tile.TILEHEIGHT);}
             }
         }
 //        camerapoint.renderPointer(g2d);
     }
 
-    public void setTile(MouseEvent e) {
+      public void setTile(MouseEvent e) {
         int x = (int) Math.round(e.getX() + gui.getCamera().getXOffset()) / Tile.TILEWIDTH;
         int y = (int) Math.round(e.getY() + gui.getCamera().getYOffset()) / Tile.TILEHEIGHT;
         mapTiles[x][y] = tileSet.tileSet[graphicID];
         mapTiles[x][y].setID(graphicID);
-        System.out.println(x+"|"+y);
     }
-
+    public void selectTile(MouseEvent e){
+        int x = Math.round(e.getX() + gui.getCamera().getXOffset()) / Tile.TILEWIDTH;
+        int y = Math.round(e.getY() + gui.getCamera().getYOffset()) / Tile.TILEHEIGHT;
+        if (keyManager.str) {
+            mapTiles[x][y].setPointed(true);
+            gui.taAnzeige.append("Markiert unter: " + x +" und " + y +"\n");
+        } else {
+            mapTiles[x][y].setPointed(false);
+        }
+    }
     public void setTileRect(MouseEvent e) {
         if (keyManager.shift) {
             click++;
+            gui.taAnzeige.setText("Shift gedrückt");
             if (click == 1) {
-                firstX = ((int) Math.round(e.getX() + gui.getCamera().getXOffset()) / Tile.TILEWIDTH);
-                firstY = ((int) Math.round(e.getY() + gui.getCamera().getYOffset()) / Tile.TILEHEIGHT);
+                firstX = (Math.round(e.getX() + gui.getCamera().getXOffset()) / Tile.TILEWIDTH);
+                firstY = (Math.round(e.getY() + gui.getCamera().getYOffset()) / Tile.TILEHEIGHT);
+                System.out.println("Erster Klick");
             }
             if (click == 2) {
-                secondX = (int) Math.round(e.getX() + gui.getCamera().getXOffset()) / Tile.TILEWIDTH;
-                secondY = (int) Math.round(e.getY() + gui.getCamera().getYOffset()) / Tile.TILEHEIGHT;
+                secondX = Math.round(e.getX() + gui.getCamera().getXOffset()) / Tile.TILEWIDTH;
+                secondY = Math.round(e.getY() + gui.getCamera().getYOffset()) / Tile.TILEHEIGHT;
+                System.out.println("Zweiter Klick");
 
 
                 if (firstX > secondX) {
@@ -144,6 +160,7 @@ public class Editor {
                 }
             }
         } else {
+            gui.taAnzeige.setText("");
             click = 0;
             setTile(e);
         }
@@ -158,7 +175,7 @@ public class Editor {
         } // Damit kein erneutes Starten immer entsteht
         addRecently(graphicID);
         tileMenu.selectedinLabel(idAnzeige);
-        idAnzeige.setText("ID: " + Integer.toString(graphicID));
+        idAnzeige.setText("ID: " + graphicID);
         use++;
     }
 
@@ -231,6 +248,7 @@ public class Editor {
         }
     }
 
+
     public void setGraphicID(int graphicID) {
         this.graphicID = graphicID;
     }
@@ -293,7 +311,7 @@ public class Editor {
         }
         public void setMove(Point pMove) {
             gui.getCamera().centerOnObject(this.getLocation());
-            speed = (int) Math.round(speed);
+            speed = Math.round(speed);
 
             int oldXPos = xPos;
             int oldYPos = yPos;
@@ -305,26 +323,10 @@ public class Editor {
             boolean rightBorder;
             boolean upBorder;
             boolean downBorder;
-            if (xPos < 0 + GUI.FRAME_WIDTH / 2) {
-                leftBorder = true;
-            } else {
-                leftBorder = false;
-            }
-            if (xPos > mapSizeX * Tile.TILEWIDTH - GUI.FRAME_WIDTH / 2) {
-                rightBorder = true;
-            } else {
-                rightBorder = false;
-            }
-            if (yPos < 0 + GUI.FRAME_HEIGHT / 2) {
-                upBorder = true;
-            } else {
-                upBorder = false;
-            }
-            if (yPos > mapSizeY * Tile.TILEHEIGHT - GUI.FRAME_WIDTH / 2) {
-                downBorder = true;
-            } else {
-                downBorder = false;
-            }
+            leftBorder = xPos < 0 + GUI.FRAME_WIDTH / 2;
+            rightBorder = xPos > mapSizeX * Tile.TILEWIDTH - GUI.FRAME_WIDTH / 2;
+            upBorder = yPos < 0 + GUI.FRAME_HEIGHT / 2;
+            downBorder = yPos > mapSizeY * Tile.TILEHEIGHT - GUI.FRAME_WIDTH / 2;
             //BEWEGENDER POINTER:
             if (leftBorder || rightBorder || upBorder || downBorder) {
                 xPos = oldXPos;

@@ -5,7 +5,7 @@ import java.awt.geom.AffineTransform ;
 public class Runner extends Mover {
     private PathFinder pathfinder;
     private int border;
-    private int delay;
+    private int delay = 1;
     private int speed;
 
     public Runner(GUI pGUI, int tileXPos, int tileYPos, int pWidth, int pHeight, SpriteSheet pSpriteSheet, Map[] pMap) {
@@ -13,12 +13,11 @@ public class Runner extends Mover {
         pathfinder = new PathFinder(map,this,gui);
     }
 
-    public void enemystraightrun(int pBorder,/*int pDelay, */int pSpeed, int x, int y) {   //Gegner der nur gerade aus läuft (Delay = 1 - Kein Delay)
+    public void enemystraightrun(int pBorder, int pSpeed, int x, int y) {   //Gegner der nur gerade aus läuft (Delay = 1 - Kein Delay)
         border = pBorder;
         Point richtung = new Point (x,y);
-
+        int collisionduration = 0;
         //Delay:
-        /*delay = pDelay;*/
         speed = pSpeed;
         this.setSpeed(speed);
         if (!this.collisionCheck()) {
@@ -26,15 +25,17 @@ public class Runner extends Mover {
             if (delay < speed) {
                 delay++;
             } else {
-                richtung = new Point(richtung); // Richtung (x,y)
                 this.setMove(richtung);
                 delay = 0;
             } // end of if-else
-            if (this.getLocation().getX() <= border) {
-                System.out.println("Gegner an Grenze dann remove");
-            } // end of if
+
+            }else{
+            collisionduration++;
+            if (collisionduration > 10){
+                System.out.println("ich laufe gegen wand");
+            }
         }
-    }
+        }
 
 
     public void movetotarget(Mover character) {                     //Dynamischer Gegner

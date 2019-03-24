@@ -1,7 +1,10 @@
+import javax.swing.*;
+import javax.swing.border.LineBorder;
 import java.awt.*;
+import java.awt.geom.Area;
 import java.awt.geom.Point2D;
 import java.awt.geom.AffineTransform ;
-
+import java.awt.geom.RoundRectangle2D;
 
 
 public class Mover{
@@ -15,6 +18,8 @@ public class Mover{
     protected Map[] map;
     protected double angleCheck;
     protected double angle ;
+    protected boolean speaking;
+    protected JTextArea speechBubble;
 //    protected boolean blocked;
 
     protected Point checkPointUp = new Point();
@@ -22,6 +27,7 @@ public class Mover{
     protected Point checkPointLeft = new Point();
     protected Point checkPointRight = new Point();
     protected GUI gui;
+    protected boolean mayIMove = true;
 
     public Mover(GUI pGUI,int pXpos,int pYpos,int pWidth,int pHeight,SpriteSheet pSpriteSheet, Map[] pMap){
         gui = pGUI;
@@ -32,50 +38,55 @@ public class Mover{
         img = sprites.getSpriteElement(0,1);
         width = pWidth;
         height = pHeight;
+        gui.south.add(speechBubble = new JTextArea("Mover:"));
+        speechBubble.setVisible(false);
         gui.getCamera().centerOnObject(this.getLocation());
     }
 
     public void setMove(Point pMove){
-        int oldXPos = xPos;
-        int oldYPos = yPos;
+        if (mayIMove == true) {
+            int oldXPos = xPos;
+            int oldYPos = yPos;
 
-        xPos += pMove.getX()*speed;
-        yPos += pMove.getY()*speed;
+            xPos += pMove.getX() * speed;
+            yPos += pMove.getY() * speed;
 
-        moveSeqSleep++;
-        if (moveSeqSleep == 5 ) {
-            if (moveSeq < 2) {
-                moveSeq++;
-            }else {
-                //        System.out.println("else moveSeqSleep");
-                moveSeq =0;
-            } // end of if-else
-            moveSeqSleep =0;
-        } // end of if
-        setCurrentImage((int) pMove.getX(), (int) pMove.getY(),moveSeq);
-        moverOnMapTile();
-
+            moveSeqSleep++;
+            if (moveSeqSleep == 5) {
+                if (moveSeq < 2) {
+                    moveSeq++;
+                } else {
+                    //        System.out.println("else moveSeqSleep");
+                    moveSeq = 0;
+                } // end of if-else
+                moveSeqSleep = 0;
+            } // end of if
+            setCurrentImage((int) pMove.getX(), (int) pMove.getY(), moveSeq);
             if (collisionCheck()) {
-                xPos = oldXPos ;
-                yPos = oldYPos ;}
+                xPos = oldXPos;
+                yPos = oldYPos;
+            }
+        }
 
 
     }
     public void setPathMove(Point2D from ,Point2D to ) {
-        gui.getCamera().centerOnObject(this.getLocation());
-        getAngle(from, to);
-        moveSeqSleep++;
-        if (moveSeqSleep == 5 ) {
-            if (moveSeq < 2) {
-                moveSeq++;
-            }else {
-                moveSeq =0;
-            } // end of if-else
-            moveSeqSleep =0;
-        } // end of if
-        setSprite();
-        this.xPos = (int) to.getX() - this.width/2;
-        this.yPos = (int) to.getY() -this.height/2;
+        if (mayIMove == true) {
+            gui.getCamera().centerOnObject(this.getLocation());
+            getAngle(from, to);
+            moveSeqSleep++;
+            if (moveSeqSleep == 5) {
+                if (moveSeq < 2) {
+                    moveSeq++;
+                } else {
+                    moveSeq = 0;
+                } // end of if-else
+                moveSeqSleep = 0;
+            } // end of if
+            setSprite();
+            this.xPos = (int) to.getX() - this.width / 2;
+            this.yPos = (int) to.getY() - this.height / 2;
+        }
     }
     public void draw(Graphics2D g2d){
         AffineTransform at = new AffineTransform();
@@ -198,5 +209,31 @@ public class Mover{
             return;
         }
     }
+    public void saySomething(String text){
+        speechBubble.setText("");
+        speechBubble.setVisible(true);
+        for(int i = 0; i < text.length(); i++){
+            speechBubble.append(String.valueOf(text.charAt(i)));
+            try{
+                Thread.sleep(50);//Delay des Textes
+                mayIMove = false;
+            }catch(InterruptedException ex){
+                Thread.currentThread().interrupt();
+            }
+        }
+        mayIMove = true;
 
-}  
+    }
+
+
+//    // TODO: 24.03.2019 Komplett neu bedenken!!!
+//    public static class SpeechBubble extends JTextArea {
+//        public SpeechBubble(String text){
+//            super();
+//            setPreferredSize(new Dimension(100,100));
+//            System.out.println("Sprechblaase wurde erstellt");
+//        }
+//
+//    }
+}
+

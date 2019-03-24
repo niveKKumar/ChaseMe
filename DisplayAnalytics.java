@@ -40,8 +40,8 @@ public class DisplayAnalytics{
         if (showGridLines) {
           map.mapTiles [spalte] [zeile].showImage(false);
           g2d.drawRect(map.mapTiles [spalte] [zeile].getX(), map.mapTiles [spalte] [zeile].getY(), 64, 64);
-          g2d.drawString(Integer.toString(spalte) + "/" + Integer.toString(zeile), map.mapTiles [spalte] [zeile].getX()+10, map.mapTiles [spalte] [zeile].getY()+10);
-          g2d.drawString(Integer.toString(map.mapTiles [spalte] [zeile].getX()) + "/" + Integer.toString(map.mapTiles [spalte] [zeile].getY()), map.mapTiles [spalte] [zeile].getX()+10, map.mapTiles [spalte] [zeile].getY()+20);
+          g2d.drawString(spalte + "/" + zeile, map.mapTiles [spalte] [zeile].getX()+10, map.mapTiles [spalte] [zeile].getY()+10);
+          g2d.drawString(map.mapTiles[spalte][zeile].getX() + "/" + map.mapTiles[spalte][zeile].getY(), map.mapTiles [spalte] [zeile].getX()+10, map.mapTiles [spalte] [zeile].getY()+20);
         } else {
           map.mapTiles [spalte] [zeile].showImage(true);
           }
@@ -61,7 +61,7 @@ public class DisplayAnalytics{
         }
         
         if (displayBlockedTiles && map.mapTiles [spalte] [zeile].isBlocked()) {
-          g2d.fillRect(map.mapTiles [spalte] [zeile].getX(), map.mapTiles [spalte] [zeile].getY(), 64, 64);
+          g2d.fillRect(map.mapTiles [spalte] [zeile].getX(), map.mapTiles[spalte] [zeile].getY(), 64, 64);
         }
       }  
       if (displayPathTiles && !pathFinder.pathTiles.isEmpty()) {
