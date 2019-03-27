@@ -1,5 +1,3 @@
-import sun.awt.SunHints;
-
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 

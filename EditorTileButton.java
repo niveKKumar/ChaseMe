@@ -8,7 +8,7 @@ import java.io.File;
 class EditorTileButton extends JButton  {
     private int id;
     private TileSet tileSet = new TileSet("res/tileSet.png", 12,12,3);
-    private int size = 50;
+    public static int size = 50;
 
     public EditorTileButton(){
         super();
@@ -19,11 +19,10 @@ class EditorTileButton extends JButton  {
         loadImage(id);
     }
 
-    public void loadImage(int pID){
+    public void loadImage(int imageno){
         this.setBorder(null);
-        id = pID;
         try{
-        Image img = tileSet.tileSet[id].tileImage;
+        Image img = tileSet.tileSet[imageno].tileImage;
         img = img.getScaledInstance(size,size, Image.SCALE_SMOOTH);
         ImageIcon icon = new ImageIcon(img);
         this.setIcon(icon);

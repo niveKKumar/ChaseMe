@@ -9,17 +9,16 @@ public class GUI extends JFrame implements ActionListener {
   private JPanel north = new JPanel(new FlowLayout());
   public JPanel east = new JPanel(new FlowLayout());
   private JPanel west = new JPanel(new FlowLayout());
-  private JButton[] buttons = new JButton[5];
+  public JButton[] buttons = new JButton[5];
   public JTextArea taAnzeige = new JTextArea();
   
-  
-  private JLabel lbTitel = new JLabel();
+
   private Loop loop = new Loop();
   private Thread t = new Thread(loop);
   public static final int FPS = 60; //(Bilder pro Sekunde)
   public static final long maxLoopTime = 1000 / FPS;
   public static final int FRAME_WIDTH = 900;
-  public static final int FRAME_HEIGHT = 900;
+  public static final int FRAME_HEIGHT = 850;
   public Container cp;
   private KeyManager keyManager;
   private DisplayAnalytics[] analytics;
@@ -28,9 +27,8 @@ public class GUI extends JFrame implements ActionListener {
   public Camera camera;
   private Level level;
   private Editor editor;
+  private Meldungen temp;
 
-
-//  private  Mover.SpeechBubble temp;
 
   public GUI() {
     super();
@@ -67,10 +65,7 @@ public class GUI extends JFrame implements ActionListener {
     east.add(taAnzeige);
     taAnzeige.setBorder(BorderFactory.createLineBorder(Color.black));
     taAnzeige.setMaximumSize(new Dimension(50,750));
-    lbTitel.setFont(new Font("Dialog", 1, 8));
-    lbTitel.setText("Das tolle Spiel");
-    north.add(lbTitel);
-    String[] btNamesMenu = {"Exit", "gridLines", "Tutorial", "Editor","Sprechblase"};
+    String[] btNamesMenu = {"Exit","Neustart", "gridLines", "Tutorial", "Editor"};
     for (int i = 0; i < buttons.length; i++) {
       buttons[i] = new JButton(btNamesMenu[i]);
       buttons[i].addActionListener(this);
@@ -85,10 +80,12 @@ public class GUI extends JFrame implements ActionListener {
   }
   
   private void createEditor() {
-    EditorAbfrage temp = new EditorAbfrage(this, true);
+    temp = new Meldungen(this,true,"Map");
     TileSet ts = new TileSet("res/tileSet.png", 12, 12, 3);
     SpriteSheet playersheet = new SpriteSheet("res/playersheet.png", 4, 3);
-    editor = new Editor(this, temp.getMapSizeX(), temp.getMapSizeY(), keyManager, ts);
+    System.out.println(temp.getUserInput(1));
+    int sizeX = Integer.parseInt(temp.getUserInput(0)),sizeY = Integer.parseInt(temp.getUserInput(1));
+    editor = new Editor(this, sizeX,sizeY , keyManager, ts);
     level.setLevel(0);
   }
   
@@ -136,10 +133,9 @@ public class GUI extends JFrame implements ActionListener {
         this.requestFocus();
         break;
 
-      case "Sprechblase":
-        createSpeechBubble();
-        cp.add(temp);
-
+      case "Neustart":
+        dispose();
+        GUI gui = new GUI();
         break;
 
         ///EDITOR Buttons:
@@ -164,9 +160,6 @@ public class GUI extends JFrame implements ActionListener {
     }
   }
 
-  private void createSpeechBubble() {
-//    temp = new Mover.SpeechBubble("Das ist nur ein Text Test");
-  }
 
   public static void main(String[] args) {
       //https://www.java-forum.org/thema/swing-komponenten-standart-windows-design.34019/
@@ -340,6 +333,8 @@ requestFocus();
     public Runner[] enemy;
     public PathFinder pathFinder;
     public DisplayAnalytics[] analytics;
+    public int click = 0;
+    boolean[] dialog;
 
     public Level(GUI gui) {
       this.gui = gui;
@@ -378,7 +373,6 @@ requestFocus();
         //////////////////////////////////////////////////////////////////////////////////
     public void createlevel1() {
       createLevelObject(2, 5);
-      
       TileSet ts = new TileSet("res/tileSet.png", 12, 12, 3);
       TileSet tsItems = new TileSet("res/tileSetB.png", 16, 16, 0);
       SpriteSheet playersheet = new SpriteSheet("res/playersheet.png", 4, 3);
@@ -396,6 +390,11 @@ requestFocus();
       enemy[2] = new Runner(gui, (13) * 64, (6) * 64, 64, 64, playersheet, maps);
       
       pathFinder = new PathFinder(maps, mover,gui);
+      dialog = new boolean[2];
+      for (int i = 0; i < dialog.length ; i++) {
+        dialog[i] = false;
+      }
+      dialog[0] = true; // erste Sprechblase
 
       for (int i = 0; i < maps.length ; i++) {
         analytics[i] = new DisplayAnalytics(gui,maps[i],pathFinder);
@@ -405,10 +404,19 @@ requestFocus();
 
     public void level1GameMechanic() {
 //      enemy[2].movetotarget(mover);
-      enemy[0].enemystraightrun(64, 1, 100,100);
-      if (mover.getLocation().getX() > 150 ){
-        mover.saySomething("Wo bin ich?")
-        ;}
+      System.out.println(click);
+
+      enemy[0].enemystraightrun(64, mover.speed/2, 0,1);
+      // TODO: 26.03.2019 Eigene Game Dialog Klasse/ Textdatei für Level
+      if (dialog[0] && mover.isOnThisMap(5,5) ){
+        mover.saySomething("Wo bin ich?"+"\n"+ "(Klicken für weiteren Dialog)",true);
+        dialog[0] = false;
+        dialog[1] = true;
+        click = 0;
+      }
+      if(dialog[1] && click == 1){
+        mover.saySomething("W-A-S-D drücken um sich zu bewegen",true);}
+      dialog[1] = false;
     }
 
 
@@ -423,7 +431,6 @@ requestFocus();
 
       
       for (int mapsAmount = 1; mapsAmount < maps.length; mapsAmount++) {
-        //IF Mover is on Map
         maps[mapsAmount].renderMap(g2d);
       }
       for (int analyticsamount = 0; analyticsamount < analytics.length; analyticsamount++) {
@@ -433,15 +440,19 @@ requestFocus();
     }
 
     public void updateLevel() {
-      if ( keyInputToMove().getX() != 0||keyInputToMove().getY() != 0) {
+      if (keyInputToMove().getX() != 0||keyInputToMove().getY() != 0) {
         mover.setMove(keyInputToMove());
         pathFinder.resetPath();
       } // end of if
       Point2D from = pathFinder.getNextStep();
       Point2D to = pathFinder.getNextStep();
-      if ( to != null && keyInputToMove().getX() == 0 && keyInputToMove().getY() == 0) {
+      if (mover.mayIMove && to != null && keyInputToMove().getX() == 0 && keyInputToMove().getY() == 0) {
         mover.setPathMove(from,to);
       } // end of if
+
+      //////////////////////////////////////////////////////////////////////////////////
+      //////////////////////////////////////////////////////////////////////////////////
+      //////////////////////////////////////////////////////////////////////////////////
 
       switch (level){
         case 1 :
@@ -451,9 +462,6 @@ requestFocus();
       }
       camera.centerOnObject(mover.getLocation());
     }
-    //////////////////////////////////////////////////////////////////////////////////
-    //////////////////////////////////////////////////////////////////////////////////
-    //////////////////////////////////////////////////////////////////////////////////
 
     public void menuButtons(boolean menu, boolean editormenu) {
       for (int i = 0; i < gui.buttons.length; i++) {
@@ -471,6 +479,7 @@ requestFocus();
             start = maps[i].mapTiles[(int) (mover.getLocation().getX() / Tile.TILEWIDTH)][(int) mover.getLocation().getY() / Tile.TILEHEIGHT];
             target = maps[i].mapTiles[(e.getX() + camera.getXOffset()) /  Tile.TILEWIDTH ][(e.getY() + camera.getYOffset()) / Tile.TILEHEIGHT];
             pathFinder.searchPath(start, target);
+            click++;
           } else {continue;}}
       }
     }

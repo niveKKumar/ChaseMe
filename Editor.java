@@ -8,7 +8,7 @@ import java.util.LinkedList;
 import java.util.Queue;
 
 public class Editor {
-    private GUI gui;
+    private static GUI gui;
     private TileSet tileSet;
     public int mapSizeX, mapSizeY;
     public Tile[][] mapTiles;
@@ -27,7 +27,7 @@ public class Editor {
 
     private JLabel idAnzeige;
     private JPanel recent = new JPanel();
-    private JFileChooser fileChooser = new JFileChooser();
+    private static JFileChooser fileChooser = new JFileChooser();
 
     public Editor(GUI pGUI, int pMapSizeX, int pMapSizeY, KeyManager pKeyManager, TileSet pTileSet) {
         gui = pGUI;
@@ -49,6 +49,7 @@ public class Editor {
         recent.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
         recent.setPreferredSize(new Dimension(64,maxRecent*64+ (maxRecent+1)*5));
         gui.east.add(recent);
+        gui.buttons[4].setVisible(false);
 
         for (int i = 0; i < editorbuttons.length; i++) {
             String[] btNamesEditor = {"+", "-", "Tile Auswaehlen",};
@@ -73,8 +74,8 @@ public class Editor {
         int i = 2;
         for (int zeile = 0; zeile < mapSizeX; zeile++) {
             for (int spalte = 0; spalte < mapSizeY; spalte++) {
-                mapTiles[zeile][spalte] = tileSet.tileSet[graphicID].clone();
-                mapTiles[zeile][spalte].setID(graphicID);
+                mapTiles[spalte][zeile] = tileSet.tileSet[graphicID].clone();
+                mapTiles[spalte][zeile].setID(graphicID);
                 i++;
             }
         }
@@ -88,8 +89,8 @@ public class Editor {
         int i = 2;
         for (int zeile = 0; zeile < mapSizeX; zeile++) {
             for (int spalte = 0; spalte < mapSizeY; spalte++) {
-                mapTiles[zeile][spalte] = tileSet.tileSet[6].clone();
-                mapTiles[zeile][spalte].setID(6);
+                mapTiles[spalte][zeile] = tileSet.tileSet[6].clone();
+                mapTiles[spalte][zeile].setID(6);
                 i++;
             }
         }
@@ -98,13 +99,13 @@ public class Editor {
     }
 
     public void renderEditor(Graphics2D g2d) {
-        for (int zeile = 0; zeile < mapSizeX; zeile++) {
-            for (int spalte = 0; spalte < mapSizeY; spalte++) {
-                mapTiles[zeile][spalte].renderTile(g2d, zeile * Tile.TILEWIDTH - gui.getCamera().getXOffset(), spalte * Tile.TILEHEIGHT - gui.getCamera().getYOffset());
-            if (mapTiles[zeile][spalte].isPointed()){
+        for (int zeile = 0; zeile < mapSizeY; zeile++) {
+            for (int spalte = 0; spalte < mapSizeX; spalte++) {
+                mapTiles[spalte][zeile].renderTile(g2d, zeile * Tile.TILEWIDTH - gui.getCamera().getXOffset(), spalte * Tile.TILEHEIGHT - gui.getCamera().getYOffset());
+            if (mapTiles[spalte][zeile].isPointed()){
                 g2d.setStroke(new BasicStroke(3 , BasicStroke.CAP_BUTT, BasicStroke.JOIN_ROUND ));
                 g2d.setColor(Color.black);
-                g2d.drawRect(mapTiles [zeile] [spalte].getX(), mapTiles [zeile] [spalte].getY(), Tile.TILEWIDTH, Tile.TILEHEIGHT);}
+                g2d.drawRect(mapTiles [spalte] [zeile].getX(), mapTiles [zeile] [spalte].getY(), Tile.TILEWIDTH, Tile.TILEHEIGHT);}
             }
         }
 //        camerapoint.renderPointer(g2d);
@@ -113,8 +114,8 @@ public class Editor {
       public void setTile(MouseEvent e) {
         int x = (int) Math.round(e.getX() + gui.getCamera().getXOffset()) / Tile.TILEWIDTH;
         int y = (int) Math.round(e.getY() + gui.getCamera().getYOffset()) / Tile.TILEHEIGHT;
-        mapTiles[x][y] = tileSet.tileSet[graphicID];
-        mapTiles[x][y].setID(graphicID);
+        mapTiles[y][x] = tileSet.tileSet[graphicID];
+        mapTiles[y][x].setID(graphicID);
     }
     public void selectTile(MouseEvent e){
         int x = Math.round(e.getX() + gui.getCamera().getXOffset()) / Tile.TILEWIDTH;
@@ -129,16 +130,15 @@ public class Editor {
     public void setTileRect(MouseEvent e) {
         if (keyManager.shift) {
             click++;
-            gui.taAnzeige.setText("Shift gedrückt");
             if (click == 1) {
                 firstX = (Math.round(e.getX() + gui.getCamera().getXOffset()) / Tile.TILEWIDTH);
                 firstY = (Math.round(e.getY() + gui.getCamera().getYOffset()) / Tile.TILEHEIGHT);
-                System.out.println("Erster Klick");
+                gui.taAnzeige.setText("Fläche zeichnen :"+"\n"+" erster Klick");
             }
             if (click == 2) {
                 secondX = Math.round(e.getX() + gui.getCamera().getXOffset()) / Tile.TILEWIDTH;
                 secondY = Math.round(e.getY() + gui.getCamera().getYOffset()) / Tile.TILEHEIGHT;
-                System.out.println("Zweiter Klick");
+                gui.taAnzeige.setText("Fläche zeichnen :"+ "\n"+"zweiter Klick");
 
 
                 if (firstX > secondX) {
@@ -154,7 +154,7 @@ public class Editor {
                 }
                 for (int zeile = firstX; zeile < secondX + 1; zeile++) {
                     for (int spalte = firstY; spalte < secondY + 1; spalte++) {
-                        mapTiles[zeile][spalte] = tileSet.tileSet[graphicID];
+                        mapTiles[spalte][zeile] = tileSet.tileSet[graphicID];
                     }
                     click = 0;
                 }
@@ -182,12 +182,12 @@ public class Editor {
     public void saveMap() {
         File temp = setMapPath();
         try (BufferedWriter out = new BufferedWriter(new FileWriter(temp))) {
-            out.write(mapSizeX + " ");
+            out.write(Integer.toString(mapSizeX) + " ");
             out.write(Integer.toString(mapSizeY));
             out.newLine();
 
-            for (int i = 0; i < mapTiles.length; i++) {
-                for (int j = 0; j < mapTiles.length; j++) {
+            for (int i = 0; i < mapSizeX; i++) {
+                for (int j = 0; j < mapSizeY; j++) {
                     out.write(mapTiles[i][j].getID()+" ");
                 }
                 out.newLine();
@@ -211,12 +211,13 @@ public class Editor {
             String[] temp = mapString.split("\\s+");
             mapSizeX = Integer.parseInt(temp[0]);
             mapSizeY = Integer.parseInt(temp[1]);
+            mapTiles = new Tile[mapSizeX][mapSizeY];
 
             int i = 2;
-            for (int zeile = 0; zeile < mapSizeX; zeile++) {
-                for (int spalte = 0; spalte < mapSizeY; spalte++) {
-                    mapTiles[zeile][spalte] = tileSet.tileSet[Integer.parseInt(temp[i])].clone();
-                    mapTiles[zeile][spalte].setID(Integer.parseInt(temp[i]));
+            for (int zeile = 0; zeile < mapSizeY; zeile++) {
+                for (int spalte = 0; spalte < mapSizeX; spalte++) {
+                    mapTiles[spalte][zeile] = tileSet.tileSet[Integer.parseInt(temp[i])].clone();
+                    mapTiles[spalte][zeile].setID(Integer.parseInt(temp[i]));
                     i++;
                 }
             }
@@ -258,7 +259,7 @@ public class Editor {
     }
 
 
-    public File setMapPath() {             //Methode des Filechosers; offnet einen Speicher-Dialog
+    public static File setMapPath() {             //Methode des Filechosers; offnet einen Speicher-Dialog
         fileChooser.setCurrentDirectory(new File("./res"));  //Verweis auf das aktuelle Programmverzeichnis
         if (fileChooser.showSaveDialog(gui) == JFileChooser.APPROVE_OPTION) {  //Wenn der Ok-Button gedrueckt wird...
             return fileChooser.getSelectedFile();

@@ -6,7 +6,7 @@ import java.util.*;
 public class Map {
   private String mapPlanPath;
   private TileSet tileSet;
-  public Tile[][] mapTiles;
+  public Tile [][] mapTiles;
   public int mapSizeX;  
   public int mapSizeY;
   private int chapterOffset;
@@ -41,6 +41,8 @@ public class Map {
     //Erstellen des Arrays mit den Tiles der Map:
 //    System.out.println("Splitten der Mapteile");
     String [] temp = mapString.split("\\s+");
+    Tile.setTILEHEIGHT(64);
+    Tile.setTILEWIDTH(64);
     mapSizeX = Integer.parseInt(temp[0]);
     mapSizeY = Integer.parseInt(temp[1]);
     mapTiles = new Tile[mapSizeX][mapSizeY];
@@ -49,8 +51,8 @@ public class Map {
     int i = 2;
     for (int zeile=0;zeile < mapSizeX;zeile++) {
       for (int spalte=0;spalte < mapSizeY;spalte++ ) {
-        mapTiles[zeile][spalte] = tileSet.tileSet[Integer.parseInt(temp[i])].clone();
-        mapTiles[zeile][spalte].setID(Integer.parseInt(temp[i]));
+        mapTiles[spalte][zeile] = tileSet.tileSet[Integer.parseInt(temp[i])].clone();
+        mapTiles[spalte][zeile].setID(Integer.parseInt(temp[i]));
         i++;
       }
     }
@@ -134,8 +136,8 @@ public class Map {
     for (int zeile =0;zeile < mapSizeX;zeile++) {
       for (int spalte = 0; spalte < mapSizeY; spalte++) {
         for (int i = 0; i < blockedIDs.size();i++){
-          if (mapTiles [zeile] [spalte].getID() == blockedIDs.get(i)){
-            mapTiles [zeile] [spalte].setBlocked(true);
+          if (mapTiles [spalte] [zeile].getID() == blockedIDs.get(i)){
+            mapTiles [spalte] [zeile].setBlocked(true);
           }
         }
       }
@@ -145,7 +147,7 @@ public class Map {
     public void renderMap(Graphics2D g2d){
       for (int zeile = 0; zeile < mapSizeX; zeile++) {
         for (int spalte = 0; spalte < mapSizeY; spalte++) {
-          mapTiles[zeile][spalte].renderTile(g2d, zeile * Tile.TILEWIDTH - gui.getCamera().getXOffset(), spalte * Tile.TILEHEIGHT - gui.getCamera().getYOffset());
+          mapTiles[spalte][zeile].renderTile(g2d, zeile * Tile.TILEWIDTH - gui.getCamera().getXOffset(), spalte * Tile.TILEHEIGHT - gui.getCamera().getYOffset());
         }
         }
     }
@@ -169,7 +171,7 @@ public class Map {
         } catch(Exception e) {}
         try {temp.addFirst(mapTiles[zeile+1][spalte]);
         } catch(Exception e) {}    
-        mapTiles[zeile][spalte].setNeighbours(temp);
+        mapTiles[spalte][zeile].setNeighbours(temp);
       } // end of for
     } // end of for
   }

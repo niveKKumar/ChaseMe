@@ -7,6 +7,7 @@ public class Runner extends Mover {
     private int border;
     private int delay = 1;
     private int speed;
+    int collisionduration = 0;
 
     public Runner(GUI pGUI, int tileXPos, int tileYPos, int pWidth, int pHeight, SpriteSheet pSpriteSheet, Map[] pMap) {
         super(pGUI,tileXPos, tileYPos, pWidth, pHeight, pSpriteSheet, pMap);
@@ -16,7 +17,6 @@ public class Runner extends Mover {
     public void enemystraightrun(int pBorder, int pSpeed, int x, int y) {   //Gegner der nur gerade aus läuft (Delay = 1 - Kein Delay)
         border = pBorder;
         Point richtung = new Point (x,y);
-        int collisionduration = 0;
         //Delay:
         speed = pSpeed;
         this.setSpeed(speed);
@@ -31,7 +31,7 @@ public class Runner extends Mover {
 
             }else{
             collisionduration++;
-            if (collisionduration > 10){
+            if (collisionduration > 5){
                 System.out.println("ich laufe gegen wand");
             }
         }

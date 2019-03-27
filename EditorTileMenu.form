@@ -16,42 +16,12 @@
         </properties>
         <border type="none"/>
         <children>
-          <scrollpane id="7b646" binding="scrollPane" custom-create="true">
+          <tabbedpane id="83913" binding="tsTabPane" custom-create="true">
             <constraints border-constraint="Center"/>
-            <properties>
-              <alignmentX value="1.0"/>
-              <autoscrolls value="false"/>
-              <horizontalScrollBarPolicy value="31"/>
-              <maximumSize width="300" height="350"/>
-              <minimumSize width="50" height="50"/>
-              <opaque value="true"/>
-              <preferredSize width="50" height="300"/>
-              <requestFocusEnabled value="true"/>
-              <verticalScrollBarPolicy value="22"/>
-            </properties>
+            <properties/>
             <border type="none"/>
-            <children>
-              <grid id="d2fdc" binding="tilePanel" layout-manager="FlowLayout" hgap="5" vgap="5" flow-align="1">
-                <constraints/>
-                <properties>
-                  <maximumSize width="0" height="0"/>
-                  <minimumSize width="50" height="50"/>
-                  <preferredSize width="50" height="150"/>
-                </properties>
-                <border type="none"/>
-                <children>
-                  <component id="4602" class="javax.swing.JTextField" binding="txtEingabe" custom-create="true">
-                    <constraints/>
-                    <properties>
-                      <maximumSize width="50" height="50"/>
-                      <minimumSize width="50" height="50"/>
-                      <preferredSize width="50" height="50"/>
-                    </properties>
-                  </component>
-                </children>
-              </grid>
-            </children>
-          </scrollpane>
+            <children/>
+          </tabbedpane>
         </children>
       </grid>
       <grid id="31bff" binding="south" layout-manager="FlowLayout" hgap="5" vgap="5" flow-align="1">

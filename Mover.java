@@ -1,10 +1,7 @@
 import javax.swing.*;
-import javax.swing.border.LineBorder;
 import java.awt.*;
-import java.awt.geom.Area;
 import java.awt.geom.Point2D;
 import java.awt.geom.AffineTransform ;
-import java.awt.geom.RoundRectangle2D;
 
 
 public class Mover{
@@ -19,7 +16,7 @@ public class Mover{
     protected double angleCheck;
     protected double angle ;
     protected boolean speaking;
-    protected JTextArea speechBubble;
+    public JTextArea speechBubble;
 //    protected boolean blocked;
 
     protected Point checkPointUp = new Point();
@@ -115,13 +112,13 @@ public class Mover{
         checkPointRight.setLocation(xPos+width - hitBoxCenter , yPos + height/2 );
         for (int i = 0;i < map.length ;i++ ) {
             Tile[] temp1 = new Tile[map.length];
-            if (map[i].isActive()){temp1[i] = map[i].mapTiles [(int) checkPointUp.getX()/width] [ (int) checkPointUp.getY()/height];}else{continue;}
+            if (map[i].isActive()){temp1[i] = map[i].mapTiles [(int) checkPointUp.getY()/width] [ (int) checkPointUp.getX()/height];}else{continue;}
             Tile[] temp2 = new Tile[map.length];
-            if (map[i].isActive()){temp2[i] = map[i].mapTiles [(int) checkPointDown.getX()/width] [ (int) checkPointDown.getY()/height];}else{continue;}
+            if (map[i].isActive()){temp2[i] = map[i].mapTiles [(int) checkPointDown.getY()/width] [ (int) checkPointDown.getX()/height];}else{continue;}
             Tile[] temp3 = new Tile[map.length];
-            if (map[i].isActive()){temp3[i] = map[i].mapTiles [(int) checkPointLeft.getX()/width] [ (int) checkPointLeft.getY()/height];}else{continue;}
+            if (map[i].isActive()){temp3[i] = map[i].mapTiles [(int) checkPointLeft.getY()/width] [ (int) checkPointLeft.getX()/height];}else{continue;}
             Tile[] temp4 = new Tile[map.length];
-            if (map[i].isActive()){temp4[i] = map[i].mapTiles [(int) checkPointRight.getX()/width] [ (int) checkPointRight.getY()/height];}else{continue;}
+            if (map[i].isActive()){temp4[i] = map[i].mapTiles [(int) checkPointRight.getY()/width] [ (int) checkPointRight.getX()/height];}else{continue;}
                 if (temp1[i].isBlocked() || temp2[i].isBlocked() || temp3[i].isBlocked() || temp4[i].isBlocked()){
                     blocked = true;}
 
@@ -153,6 +150,20 @@ public class Mover{
         }
 
         return temp;
+    }
+    public boolean isOnThisMap(int xPos,int yPos){
+        boolean x = false;
+        boolean y = false;
+        if(moverOnMapTile().getLocation().getX() == xPos){
+            System.out.println("X ist mit Angabe identisch");
+            x = true;
+            }
+
+        if(moverOnMapTile().getLocation().getY() == yPos){
+            System.out.println("Y ist mit Angabe identisch");
+            y = true;
+        }
+        if (x && y){return true;}else{return false;}
     }
     public void setSpeed(int pSpeed){
         speed = pSpeed;
@@ -209,22 +220,28 @@ public class Mover{
             return;
         }
     }
-    public void saySomething(String text){
-        speechBubble.setText("");
+    public void saySomething(String text, boolean clear){
+        if (clear){
+            speechBubble.setText("");
+        }
+        speaking = true;
+        mayIMove = false;
         speechBubble.setVisible(true);
         for(int i = 0; i < text.length(); i++){
             speechBubble.append(String.valueOf(text.charAt(i)));
             try{
-                Thread.sleep(50);//Delay des Textes
-                mayIMove = false;
+                Thread.sleep(100);//Delay des Textes
             }catch(InterruptedException ex){
                 Thread.currentThread().interrupt();
             }
         }
-        mayIMove = true;
+//        speechBubble.setVisible(false);
 
     }
 
+    public void setMayIMove(boolean mayIMove) {
+        this.mayIMove = mayIMove;
+    }
 
 //    // TODO: 24.03.2019 Komplett neu bedenken!!!
 //    public static class SpeechBubble extends JTextArea {

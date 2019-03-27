@@ -37,8 +37,9 @@ public class TileSet{
       }
     }
   }
-  
-  
-  
+
+  public String getTileSetImagePath() {
+    return tileSetImagePath;
+  }
 }
 

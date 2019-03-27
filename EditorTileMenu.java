@@ -1,48 +1,37 @@
 import javax.swing.*;
+import javax.swing.border.TitledBorder;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.TextEvent;
-import java.awt.event.TextListener;
-import java.util.LinkedList;
+import java.io.File;
 
 public class EditorTileMenu extends JDialog implements ActionListener {
     private JPanel contentPane;
     private JPanel west;
-    private JScrollPane scrollPane;
+    private JScrollPane[] scrollPane;
     private JPanel south;
     private JLabel selectedTile;
-    private JTextField txtEingabe;
-    private JPanel tilePanel;
+    private JTextField[] txtEingabe;
+    private JPanel[] tilePanel;
     private JButton btOk;
     private JPanel north;
     private JPanel Center;
     private JPanel recentlyPanel;
+    private JTabbedPane tsTabPane;
     private int selected;
     private EditorTileButton[] tileMenuButtons;
-    private TileSet tileSet;
+    private TileSet[] tileSet = new TileSet[1];
     private Editor belongingEditor;
+    private JMenuBar menubar = new JMenuBar();   //Menüleiste erzeugen
+    private JFrame owner;
 
-    public EditorTileMenu() {
-        $$$setupUI$$$();
-        setContentPane(contentPane);
-        setModal(true);
-        getRootPane().setDefaultButton(btOk);
-        btOk.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                onOK();
-            }
-        });
-        createTile();
-
-
-    }
+    private boolean firstStart = true;
 
     public EditorTileMenu(JFrame owner, boolean modal, Editor pBelongingEditor) {
         super(owner, modal);
-
+        this.owner = owner;
         belongingEditor = pBelongingEditor;
 
         $$$setupUI$$$();
@@ -54,38 +43,54 @@ public class EditorTileMenu extends JDialog implements ActionListener {
                 onOK();
             }
         });
-        createTile();
         setVisible(false);
+        createTileSet();
 //        pack();
-
+        this.setJMenuBar(menubar);  //Menüleiste dem Fenster hinzufügen
     }
 
     private void onOK() {
-//        System.out.println("Selected:" + selected);
+
         setVisible(false);
     }
 
-    public static void main(String[] args) { // ZUM TESTEN SPÄTER ENTFERNEN!!
-        EditorTileMenu dialog = new EditorTileMenu();
-        dialog.pack();
-        dialog.setVisible(true);
-        System.exit(0);
-    }
+    // TODO: 26.03.2019 Im Moment das Laden von mehreren Tile Sets und damit verbunden überlagernde Maps (Map mit Item) 
+    public void createTileSet() {
+        int newTileSetAmount = tileSet.length;
+        tileSet = new TileSet[newTileSetAmount];
+        createTileSetComponents();
+        //Standard TileSet:
+        if (firstStart) {
+            tileSet[0] = new TileSet("res/tileSet.png", 12, 12, 3); // Standard Tile Set
+            newTileSetAmount = 0;
+        } else {
+            File temp = Editor.setMapPath();
+            tileSet = new TileSet[newTileSetAmount];
+            Meldungen meldung = new Meldungen(owner, true, "TileSet");
 
-    public void createTile() {
-        tileSet = new TileSet("res/tileSet.png", 12, 12, 3); // Standard Tile Set - spaeter aenderbar
-        tileMenuButtons = new EditorTileButton[tileSet.tileSet.length];
-        int spalte = 3;
-        int gap = 5;
-        int height = tileMenuButtons.length / spalte * 50 + (spalte + 2) * gap;
-        tilePanel.setPreferredSize(new Dimension(120, height));
-        for (int i = 0; i < tileSet.tileSet.length; i++) {
+            tileSet[newTileSetAmount] = new TileSet(temp.getAbsolutePath()
+                    , Integer.parseInt(meldung.getUserInput(0))
+                    , Integer.parseInt(meldung.getUserInput(1))
+                    , Integer.parseInt(meldung.getUserInput(3)));
+        }
+
+        for (int i = 0; i < tileSet[newTileSetAmount].tileSet.length; i++) {
+            tileMenuButtons = new EditorTileButton[tileSet[newTileSetAmount].tileSet.length];
             tileMenuButtons[i] = new EditorTileButton();
             tileMenuButtons[i].loadImage(i);
-//            tileMenuButtons[i].setText(Integer.toString(i));
+            tileMenuButtons[i].setId(i);
             tileMenuButtons[i].addActionListener(this);
-            tilePanel.add(tileMenuButtons[i]);
+            tilePanel[newTileSetAmount].add(tileMenuButtons[i]);
         }
+        int gap = 5;
+        int spalte = 5 + EditorTileButton.size + gap;
+        int height = tileMenuButtons.length * (EditorTileButton.size + gap);
+        tilePanel[newTileSetAmount].setPreferredSize(new Dimension(spalte, height));
+    }
+
+    public void loadTileSet() {
+
+
     }
 
 
@@ -93,7 +98,9 @@ public class EditorTileMenu extends JDialog implements ActionListener {
         try {
             EditorTileButton btTile = (EditorTileButton) evt.getSource();
             selected = btTile.getId();
-            txtEingabe.setText("");
+            for (int i = 0; i < tileSet.length; i++) {
+                txtEingabe[i].setText("");
+            }
             selectedinLabel(selectedTile);
 
         } catch (Exception e) {
@@ -103,17 +110,21 @@ public class EditorTileMenu extends JDialog implements ActionListener {
     }
 
     public void nfcheck() {
+        int temp = 0;
         try {
-            if (Integer.parseInt(txtEingabe.getText()) <= tileSet.tileSet.length) {
-                selected = Integer.parseInt(txtEingabe.getText());
-                selectedinLabel(selectedTile);
-            } else {
+            for (int i = 0; i < tileSet.length; i++) {
+                if (Integer.parseInt(txtEingabe[i].getText()) <= tileSet[i].tileSet.length) {
+                    temp++;
+                    selected = Integer.parseInt(txtEingabe[i].getText());
+                    selectedinLabel(selectedTile);
+                } else {
 //                txtEingabe.setText(""); // FIXME: 14.03.2019 Mit Documentlistener muss anders umgegangen werden!
-                JOptionPane.showMessageDialog(this, "Es können nur Tiles von  0 bis " + tileSet.tileSet.length + " verwendet werden", "", JOptionPane.WARNING_MESSAGE);
+                    JOptionPane.showMessageDialog(this, "Es können nur Tiles von  0 bis " + tileSet[i].tileSet.length + " verwendet werden", "", JOptionPane.WARNING_MESSAGE);
+                }
             }
         } catch (NumberFormatException en) {
-            if (!txtEingabe.getText().equals("")) {
-                txtEingabe.setText("");
+            if (!txtEingabe[temp].getText().equals("")) {
+                txtEingabe[temp].setText("");
                 JOptionPane.showMessageDialog(this, "Ungültige Zahl.", "", JOptionPane.WARNING_MESSAGE);
             }
         }
@@ -123,11 +134,60 @@ public class EditorTileMenu extends JDialog implements ActionListener {
 
     public void selectedinLabel(JLabel anzeige) {
         try {
-            anzeige.setIcon(new ImageIcon(tileSet.tileSet[selected].tileImage));
-            belongingEditor.setGraphicID(selected);
+            for (int i = 0; i < tileSet.length; i++) {
+                anzeige.setIcon(new ImageIcon(tileSet[i].tileSet[selected].tileImage));
+                belongingEditor.setGraphicID(selected);
+            }
         } catch (Exception e) {
             anzeige.setText("");
             selected = 0;
+        }
+    }
+
+    public void createTileSetComponents() {
+        scrollPane = new JScrollPane[tileSet.length];
+        tilePanel = new JPanel[tileSet.length];
+        txtEingabe = new JTextField[tileSet.length];
+        for (int i = 0; i < tileSet.length; i++) {
+            scrollPane[i] = new JScrollPane();
+            scrollPane[i].getVerticalScrollBar().setUnitIncrement(16);
+            scrollPane[i].setAlignmentX(1.0f);
+            scrollPane[i].setAutoscrolls(false);
+            scrollPane[i].setHorizontalScrollBarPolicy(31);
+            scrollPane[i].setMaximumSize(new Dimension(300, 350));
+            scrollPane[i].setMinimumSize(new Dimension(50, 50));
+            scrollPane[i].setOpaque(true);
+            scrollPane[i].setPreferredSize(new Dimension(50, 300));
+            scrollPane[i].setRequestFocusEnabled(true);
+            scrollPane[i].setVerticalScrollBarPolicy(22);
+            tilePanel[i] = new JPanel();
+            tilePanel[i].setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
+            tilePanel[i].setMaximumSize(new Dimension(0, 0));
+            tilePanel[i].setMinimumSize(new Dimension(50, 50));
+            tilePanel[i].setPreferredSize(new Dimension(50, 150));
+            scrollPane[i].setViewportView(tilePanel[i]);
+            txtEingabe[i] = new JTextField();
+            txtEingabe[i].setMaximumSize(new Dimension(50, 50));
+            txtEingabe[i].setMinimumSize(new Dimension(50, 50));
+            txtEingabe[i].setPreferredSize(new Dimension(50, 50));
+            txtEingabe[i].getDocument().addDocumentListener(new DocumentListener() {
+                @Override
+                public void insertUpdate(DocumentEvent e) {
+                    nfcheck();
+                }
+
+                @Override
+                public void removeUpdate(DocumentEvent e) {
+                    nfcheck();
+                }
+
+                @Override
+                public void changedUpdate(DocumentEvent e) {
+                    nfcheck();
+                }
+            });
+            tilePanel[i].add(txtEingabe[i]);
+//            tsTabPane.addTab("Tile Set " + i, scrollPane[i]);
         }
     }
 
@@ -148,26 +208,7 @@ public class EditorTileMenu extends JDialog implements ActionListener {
         west.setMinimumSize(new Dimension(50, 50));
         west.setPreferredSize(new Dimension(200, 250));
         contentPane.add(west, BorderLayout.WEST);
-        scrollPane.setAlignmentX(1.0f);
-        scrollPane.setAutoscrolls(false);
-        scrollPane.setHorizontalScrollBarPolicy(31);
-        scrollPane.setMaximumSize(new Dimension(300, 350));
-        scrollPane.setMinimumSize(new Dimension(50, 50));
-        scrollPane.setOpaque(true);
-        scrollPane.setPreferredSize(new Dimension(50, 300));
-        scrollPane.setRequestFocusEnabled(true);
-        scrollPane.setVerticalScrollBarPolicy(22);
-        west.add(scrollPane, BorderLayout.CENTER);
-        tilePanel = new JPanel();
-        tilePanel.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
-        tilePanel.setMaximumSize(new Dimension(0, 0));
-        tilePanel.setMinimumSize(new Dimension(50, 50));
-        tilePanel.setPreferredSize(new Dimension(50, 150));
-        scrollPane.setViewportView(tilePanel);
-        txtEingabe.setMaximumSize(new Dimension(50, 50));
-        txtEingabe.setMinimumSize(new Dimension(50, 50));
-        txtEingabe.setPreferredSize(new Dimension(50, 50));
-        tilePanel.add(txtEingabe);
+        west.add(tsTabPane, BorderLayout.CENTER);
         south = new JPanel();
         south.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
         contentPane.add(south, BorderLayout.SOUTH);
@@ -205,29 +246,7 @@ public class EditorTileMenu extends JDialog implements ActionListener {
     }
 
     private void createUIComponents() {
-        scrollPane = new JScrollPane();
-        scrollPane.getVerticalScrollBar().setUnitIncrement(16);
-        txtEingabe = new JTextField();
-
-        txtEingabe.getDocument().addDocumentListener(new DocumentListener() {
-            @Override
-            public void insertUpdate(DocumentEvent e) {
-                nfcheck();
-            }
-
-            @Override
-            public void removeUpdate(DocumentEvent e) {
-                nfcheck();
-            }
-
-            @Override
-            public void changedUpdate(DocumentEvent e) {
-                nfcheck();
-            }
-        });
-
-        JMenuBar menubar = new JMenuBar();   //Menüleiste erzeugen
-        this.setJMenuBar(menubar);  //Menüleiste dem Fenster hinzufügen
+        menubar = new JMenuBar();   //Menüleiste erzeugen
 
         JMenuItem open = new JMenuItem("Öffnen");
         open.addActionListener(new ActionListener() {
@@ -243,6 +262,7 @@ public class EditorTileMenu extends JDialog implements ActionListener {
             }
         });
 
+
         JMenu newMap = new JMenu("Neue Map anlegen");
         JMenuItem newMapWithSelection = new JMenuItem("Neue Map mit dem ausgewählten Tile erstellen");
         newMapWithSelection.addActionListener(new ActionListener() {
@@ -255,6 +275,14 @@ public class EditorTileMenu extends JDialog implements ActionListener {
         newBlankMap.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
                 belongingEditor.createBlankEditiorMap();
+            }
+        });
+
+
+        JMenuItem load = new JMenuItem("Neues Tile Set laden");
+        load.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent evt) {
+                loadTileSet();
             }
         });
         menubar.add(newMap);
