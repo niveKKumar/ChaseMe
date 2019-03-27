@@ -16,7 +16,7 @@
         </properties>
         <border type="none"/>
         <children>
-          <tabbedpane id="83913" binding="tsTabPane" custom-create="true">
+          <tabbedpane id="83913" binding="tsTabPane">
             <constraints border-constraint="Center"/>
             <properties/>
             <border type="none"/>

@@ -43,10 +43,9 @@ public class EditorTileMenu extends JDialog implements ActionListener {
                 onOK();
             }
         });
-        setVisible(false);
         createTileSet();
+        setVisible(false);
 //        pack();
-        this.setJMenuBar(menubar);  //Menüleiste dem Fenster hinzufügen
     }
 
     private void onOK() {
@@ -187,7 +186,8 @@ public class EditorTileMenu extends JDialog implements ActionListener {
                 }
             });
             tilePanel[i].add(txtEingabe[i]);
-//            tsTabPane.addTab("Tile Set " + i, scrollPane[i]);
+            tsTabPane.addTab("Tile Set " + i, scrollPane[i]);
+
         }
     }
 
@@ -199,7 +199,6 @@ public class EditorTileMenu extends JDialog implements ActionListener {
      * @noinspection ALL
      */
     private void $$$setupUI$$$() {
-        createUIComponents();
         contentPane = new JPanel();
         contentPane.setLayout(new BorderLayout(0, 0));
         west = new JPanel();
@@ -208,6 +207,7 @@ public class EditorTileMenu extends JDialog implements ActionListener {
         west.setMinimumSize(new Dimension(50, 50));
         west.setPreferredSize(new Dimension(200, 250));
         contentPane.add(west, BorderLayout.WEST);
+        tsTabPane = new JTabbedPane();
         west.add(tsTabPane, BorderLayout.CENTER);
         south = new JPanel();
         south.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
@@ -247,6 +247,8 @@ public class EditorTileMenu extends JDialog implements ActionListener {
 
     private void createUIComponents() {
         menubar = new JMenuBar();   //Menüleiste erzeugen
+        this.setJMenuBar(menubar);  //Menüleiste dem Fenster hinzufügen
+        contentPane.add(menubar, BorderLayout.NORTH);
 
         JMenuItem open = new JMenuItem("Öffnen");
         open.addActionListener(new ActionListener() {
@@ -290,5 +292,6 @@ public class EditorTileMenu extends JDialog implements ActionListener {
         newMap.add(newBlankMap);
         menubar.add(open);
         menubar.add(save);
+        menubar.add(load);
     }
 }
