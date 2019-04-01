@@ -1,11 +1,13 @@
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.filechooser.FileFilter;
 import java.awt.*;
 import java.awt.event.*;
+import java.io.File;
 
 public class Meldungen extends JDialog implements ActionListener {
-    private JFrame owner;
+    private static JFrame owner;
 
     private JPanel contentPane;
     private JButton buttonOK;
@@ -16,24 +18,17 @@ public class Meldungen extends JDialog implements ActionListener {
     private JTextArea[] eingabe;
     private String[] userInput;
     private boolean firstStart = true;
+    public static JFileChooser fileChooser = new JFileChooser();
 
     public Meldungen(JFrame owner, boolean modal, String bestimmteAbfrage) {
         super(owner, modal);
-        this.owner = owner;
+        Meldungen.owner = owner;
         $$$setupUI$$$();
-        setContentPane(contentPane);
-        switch (bestimmteAbfrage) {
-            case "Map":
-                mapGroesseAbfrage();
-                break;
-            case "null":
-                System.out.println("Nur Fenster erstellen :)");
-                break;
-            case "TileSet":
-                tileSetAbfrage();
-                break;
-        }
+        int x = (this.getWidth() - getSize().width) / 2;
+        int y = (this.getWidth() - getSize().height) / 2;
+        setLocation(x, y);
         setSize(500, 300);
+        setContentPane(contentPane);
 //        getRootPane().setDefaultButton(buttonOK);
 
         buttonOK.addActionListener(new ActionListener() {
@@ -60,11 +55,25 @@ public class Meldungen extends JDialog implements ActionListener {
             }
         }, KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
 
-        setVisible(true);
+        setVisible(false);
+        requestFocus();
+        switch (bestimmteAbfrage) {
+            case "Map":
+                mapGroesseAbfrage();
+                break;
+            case "null":
+                System.out.println("Nur Fenster erstellen :)");
+                setVisible(false);
+                break;
+            case "TileSet":
+                tileSetAbfrage();
+                break;
+            case "Path":
+                break;
+        }
     }
 
     private void onOK() {
-        System.out.println("Ok");
         setVisible(false);
     }
 
@@ -75,6 +84,7 @@ public class Meldungen extends JDialog implements ActionListener {
         eingabe[1].setText("Map - Höhe");
         eingabe[0].setText("50");
         eingabe[1].setText("50");
+        setVisible(true);
     }
 
     public void tileSetAbfrage() {
@@ -82,6 +92,10 @@ public class Meldungen extends JDialog implements ActionListener {
         eingabe[0].setText("Breite");
         eingabe[1].setText("Höhe");
         eingabe[2].setText("Border");
+        eingabe[0].setText("16");
+        eingabe[1].setText("16");
+        eingabe[2].setText("0");
+        setVisible(true);
     }
 
     public void createComponents(int anzahl, String abfrageText) {
@@ -107,9 +121,81 @@ public class Meldungen extends JDialog implements ActionListener {
                     setUserInput();
                 }
             });
+            int finalI = i;
+            eingabe[i].addKeyListener(new KeyAdapter() {
+                /**
+                 * Invoked when a key has been pressed.
+                 *
+                 * @param e
+                 */
+                @Override
+                public void keyPressed(KeyEvent e) {
+                    if (e.getKeyCode() == KeyEvent.VK_TAB) {
+                        if (e.getModifiers() > 0) {
+                            eingabe[finalI].transferFocus();
+                        } else {
+                            eingabe[finalI].transferFocus();
+                        }
+                        e.consume();
+                    }
+                }
+            });
             center.add(eingabe[i]);
         }
         abfrage.setText(abfrageText);
+    }
+
+    public static File setMapPath(String openOrSaveOrTileSet) {             //Methode des Filechosers; offnet einen Speicher-Dialog
+        fileChooser.setCurrentDirectory(new File("./res"));  //Verweis auf das aktuelle Programmverzeichnis
+        if (openOrSaveOrTileSet.equals("Open")) {
+            String extension = ".txt";
+            setFileFilter(extension);
+            if (fileChooser.showOpenDialog(owner) == JFileChooser.APPROVE_OPTION) {  //Wenn der Ok-Button gedrueckt wird...
+                return fileChooser.getSelectedFile();
+            } else {                                                               //Wenn der Ok.Button nicht gedreckt wird.
+                JOptionPane.showMessageDialog(owner, "Keine Datei ausgewählt.", "", JOptionPane.WARNING_MESSAGE);
+                return null;
+            }
+        }
+        if (openOrSaveOrTileSet.equals("Save")) {
+            String extension = ".txt";
+            setFileFilter(extension);
+            if (fileChooser.showSaveDialog(owner) == JFileChooser.APPROVE_OPTION) {  //Wenn der Ok-Button gedrueckt wird...
+                return fileChooser.getSelectedFile();
+            } else {                                                               //Wenn der Ok.Button nicht gedreckt wird.
+                JOptionPane.showMessageDialog(owner, "Keine Datei ausgewählt.", "", JOptionPane.WARNING_MESSAGE);
+                return null;
+            }
+        }
+        if (openOrSaveOrTileSet.equals("TileSet")) {
+            String extension = ".png";
+            setFileFilter(extension);
+            if (fileChooser.showSaveDialog(owner) == JFileChooser.APPROVE_OPTION) {  //Wenn der Ok-Button gedrueckt wird...
+                return fileChooser.getSelectedFile();
+            } else {                                                               //Wenn der Ok.Button nicht gedreckt wird.
+                JOptionPane.showMessageDialog(owner, "Keine Datei ausgewählt.", "", JOptionPane.WARNING_MESSAGE);
+                return null;
+            }
+        }
+        return null;
+
+    }
+
+    private static void setFileFilter(String extension) {
+        fileChooser.setFileFilter(new FileFilter() {
+            @Override
+            public boolean accept(File f) {
+                if (f.isDirectory()) {
+                    return true;
+                }
+                return f.getName().endsWith(extension);
+            }
+
+            @Override
+            public String getDescription() {
+                return "Text Files" + String.format(" (*%s)", extension);
+            }
+        });
     }
 
     private void setUserInput() {
@@ -123,7 +209,13 @@ public class Meldungen extends JDialog implements ActionListener {
     }
 
     public String getUserInput(int welcheAWBox) {
-        return userInput[welcheAWBox];
+        try {
+            return userInput[welcheAWBox];
+        } catch (Exception e) {
+            e.printStackTrace();
+            return "Falscher Input";
+        }
+
     }
 
     private void onCancel() {
@@ -152,6 +244,7 @@ public class Meldungen extends JDialog implements ActionListener {
     private void $$$setupUI$$$() {
         contentPane = new JPanel();
         contentPane.setLayout(new BorderLayout(0, 0));
+        contentPane.setPreferredSize(new Dimension(300, 125));
         center = new JPanel();
         center.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
         contentPane.add(center, BorderLayout.CENTER);

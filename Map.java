@@ -13,8 +13,7 @@ public class Map {
   private GUI gui;
   private String mapStatus; //Map nach ID geblockt
   private boolean active;
-  
-  
+
   public Map(GUI pGUI, String pMapPlanPath, TileSet pTileSet, String pStatus, int pChapterOffset ){
     gui = pGUI;
     mapPlanPath = pMapPlanPath;

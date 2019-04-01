@@ -8,7 +8,8 @@ public class TileSet{
   private String tileSetImagePath;
   private int numberOfTilesX, numberOfTilesY;
   private BufferedImage tileSetImage;
-    public Tile[] tileSet;
+  public Tile[] tileSet;
+  private int width=64,height=64;
   private int border;
   
   
@@ -32,7 +33,7 @@ public class TileSet{
     int i = 0;
       for(int y = 0; y < numberOfTilesY; y++) {
         for(int x = 0; x < numberOfTilesX; x++) {
-        BufferedImage bi = tileSetImage.getSubimage(x * (Tile.TILEWIDTH+border), y * (Tile.TILEHEIGHT+border), Tile.TILEWIDTH, Tile.TILEHEIGHT);
+        BufferedImage bi = tileSetImage.getSubimage(x * (width +border), y * (height+border), width, height);
         tileSet[i++] = new Tile(bi);
       }
     }

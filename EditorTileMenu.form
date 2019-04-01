@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <form xmlns="http://www.intellij.com/uidesigner/form/" version="1" bind-to-class="EditorTileMenu">
-  <grid id="cbd77" binding="contentPane" layout-manager="BorderLayout" hgap="0" vgap="0">
+  <grid id="cbd77" binding="contentPane" custom-create="true" layout-manager="BorderLayout" hgap="0" vgap="0">
     <constraints>
       <xy x="48" y="54" width="10068" height="1010"/>
     </constraints>
@@ -39,7 +39,7 @@
               <text value="Bestaetigen"/>
             </properties>
           </component>
-          <component id="1452" class="javax.swing.JLabel" binding="selectedTile">
+          <component id="1452" class="javax.swing.JLabel" binding="selected">
             <constraints/>
             <properties>
               <horizontalAlignment value="0"/>
@@ -58,18 +58,11 @@
         <border type="none"/>
         <children/>
       </grid>
-      <grid id="85c69" binding="Center" layout-manager="BorderLayout" hgap="0" vgap="0">
+      <grid id="85c69" binding="center" layout-manager="BorderLayout" hgap="0" vgap="0">
         <constraints border-constraint="Center"/>
         <properties/>
         <border type="none"/>
-        <children>
-          <grid id="94085" binding="recentlyPanel" layout-manager="FlowLayout" hgap="5" vgap="5" flow-align="1">
-            <constraints border-constraint="Center"/>
-            <properties/>
-            <border type="none"/>
-            <children/>
-          </grid>
-        </children>
+        <children/>
       </grid>
     </children>
   </grid>

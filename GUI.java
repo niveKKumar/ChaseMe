@@ -2,14 +2,15 @@ import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
 import java.awt.geom.*;
+import java.io.File;
 
 public class GUI extends JFrame implements ActionListener {
   private GamePanel gamePanel = new GamePanel();
   public JPanel south = new JPanel(new FlowLayout());
   private JPanel north = new JPanel(new FlowLayout());
   public JPanel east = new JPanel(new FlowLayout());
-  private JPanel west = new JPanel(new FlowLayout());
-  public JButton[] buttons = new JButton[5];
+  public JPanel west = new JPanel(new FlowLayout());
+  public JButton[] buttons = new JButton[6];
   public JTextArea taAnzeige = new JTextArea();
   
 
@@ -65,7 +66,7 @@ public class GUI extends JFrame implements ActionListener {
     east.add(taAnzeige);
     taAnzeige.setBorder(BorderFactory.createLineBorder(Color.black));
     taAnzeige.setMaximumSize(new Dimension(50,750));
-    String[] btNamesMenu = {"Exit","Neustart", "gridLines", "Tutorial", "Editor"};
+    String[] btNamesMenu = {"Exit","Neustart", "gridLines", "Tutorial", "Editor","TestButton"};
     for (int i = 0; i < buttons.length; i++) {
       buttons[i] = new JButton(btNamesMenu[i]);
       buttons[i].addActionListener(this);
@@ -85,7 +86,7 @@ public class GUI extends JFrame implements ActionListener {
     SpriteSheet playersheet = new SpriteSheet("res/playersheet.png", 4, 3);
     System.out.println(temp.getUserInput(1));
     int sizeX = Integer.parseInt(temp.getUserInput(0)),sizeY = Integer.parseInt(temp.getUserInput(1));
-    editor = new Editor(this, sizeX,sizeY , keyManager, ts);
+    editor = new Editor(this, sizeX,sizeY , keyManager);
     level.setLevel(0);
   }
   
@@ -137,19 +138,21 @@ public class GUI extends JFrame implements ActionListener {
         dispose();
         GUI gui = new GUI();
         break;
+      case "TestButton":
 
+        break;
         ///EDITOR Buttons:
       case "+":
         System.out.println("Zoom rein");
         editor.zoom(true);
-        camera.centerOnObject(editor.camerapoint.getLocation());
+        camera.centerOnObject(editor.cameraPoint.getLocation());
         this.requestFocus();
         break;
         
       case "-":
         System.out.println("Zoom raus");
         editor.zoom(false);
-        camera.centerOnObject(editor.camerapoint.getLocation());
+        camera.centerOnObject(editor.cameraPoint.getLocation());
         this.requestFocus();
         break;
       case "Tile Auswaehlen":
@@ -216,9 +219,9 @@ public class GUI extends JFrame implements ActionListener {
       level.updateLevel();
     }else { //Editor:
       if ( keyInputToMove().getX() != 0||keyInputToMove().getY() != 0) {
-        editor.camerapoint.setMove(keyInputToMove());}
+        editor.cameraPoint.setMove(keyInputToMove());
+          System.out.println(keyInputToMove());}
     }
-requestFocus();
     repaint();
   }
 
@@ -269,9 +272,11 @@ requestFocus();
       if (level.level != 0){
         level.mouseClicked(e);
       }else{
-        editor.setTileRect(e);
-        editor.selectTile(e);
+        editor.mouseClicked(e);
       }
+
+      JComponent comp = (JComponent) e.getSource();
+      comp.requestFocusInWindow();
 
     }
 
@@ -291,11 +296,7 @@ requestFocus();
     }
 
     public void mouseDragged(MouseEvent e) {
-      switch (level.level) {
-        case 0:
-          editor.setTile(e);
-          break;
-      }
+      if (level.level == 0){editor.mouseDragged(e);}
     }
 
   }

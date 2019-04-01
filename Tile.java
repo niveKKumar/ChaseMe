@@ -34,14 +34,7 @@ public class Tile extends JPanel implements Cloneable, Comparable{
     showImage = b;
   }
 
-  public boolean isPointed() {
-    return pointed;
-  }
-
-  public void setPointed(boolean pointed) {
-    this.pointed = pointed;
-  }
-
+  
   public void setBlocked(boolean b){
     blocked = b;
     }
@@ -56,7 +49,15 @@ public class Tile extends JPanel implements Cloneable, Comparable{
       return null;
     }
   }
-  
+
+  public boolean isPointed() {
+    return pointed;
+  }
+
+  public void setPointed(boolean pointed) {
+    this.pointed = pointed;
+  }
+
   public LinkedList getNeighbours(){
     return neighbours;  
   }

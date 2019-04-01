@@ -4,7 +4,9 @@
     <constraints>
       <xy x="48" y="54" width="630" height="297"/>
     </constraints>
-    <properties/>
+    <properties>
+      <preferredSize width="300" height="125"/>
+    </properties>
     <border type="none"/>
     <children>
       <grid id="e3588" binding="center" layout-manager="FlowLayout" hgap="5" vgap="5" flow-align="1">

@@ -163,7 +163,7 @@ public class Mover{
             System.out.println("Y ist mit Angabe identisch");
             y = true;
         }
-        if (x && y){return true;}else{return false;}
+        return x && y;
     }
     public void setSpeed(int pSpeed){
         speed = pSpeed;

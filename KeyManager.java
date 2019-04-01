@@ -7,14 +7,13 @@ public class KeyManager implements KeyListener {
   public boolean shift;
   public boolean strZ;
   public boolean str;
-  
+
   public KeyManager(){
     keys = new boolean[256];
   }
 
   public void keyPressed(KeyEvent e) {
     keys[e.getKeyCode()] = true;
-//    System.out.println(e.getKeyCode());
   }
   public void keyReleased(KeyEvent e) {
    keys[e.getKeyCode()] = false;

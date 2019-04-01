@@ -61,7 +61,7 @@ public class DisplayAnalytics{
         }
         
         if (displayBlockedTiles && map.mapTiles [spalte] [zeile].isBlocked()) {
-          g2d.fillRect(map.mapTiles [spalte] [zeile].getX(), map.mapTiles[spalte] [zeile].getY(), 64, 64);
+          g2d.fillRect(map.mapTiles [spalte] [zeile].getX(), map.mapTiles [spalte] [zeile].getY(), 64, 64);
         }
       }  
       if (displayPathTiles && !pathFinder.pathTiles.isEmpty()) {
