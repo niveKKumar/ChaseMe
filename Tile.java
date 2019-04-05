@@ -1,9 +1,6 @@
-import java.awt.Graphics;
-import java.awt.*;
-import java.awt.event.*;
 import javax.swing.*;
-import java.awt.image.BufferedImage;
-import java.util.*;
+import java.awt.*;
+import java.util.LinkedList;
 
 public class Tile extends JPanel implements Cloneable, Comparable{
   protected boolean blocked = false;
@@ -15,11 +12,11 @@ public class Tile extends JPanel implements Cloneable, Comparable{
   public Tile pathParent;
   public float costFromStart;
   protected float estimatedCostToGoal;
-  protected boolean item;
   boolean pointed;
   
   public Tile(Image pTileImage)  {
     super();
+    pointed = false;
     tileImage = pTileImage;
   }
     
@@ -27,6 +24,10 @@ public class Tile extends JPanel implements Cloneable, Comparable{
     this.setLocation(pXPos, pYPos);
     if (showImage) {
       g2d.drawImage(tileImage, this.getX(), this.getY(), TILEWIDTH, TILEHEIGHT, null);
+    }
+    if (pointed) {
+      showImage(false);
+      setBorder(BorderFactory.createLineBorder(Color.black, 5));
     }
   }
   
@@ -62,9 +63,6 @@ public class Tile extends JPanel implements Cloneable, Comparable{
     return neighbours;  
   }
 
-  public void setItem(boolean b) {
-    item = b;
-  }
   public void setNeighbours(LinkedList pNeighbours){
     neighbours = pNeighbours;
   }

@@ -1,7 +1,8 @@
-import java.util.*;
-import java.awt.geom.*;
 import java.awt.*;
-import javax.swing.*;
+import java.awt.geom.Path2D;
+import java.awt.geom.PathIterator;
+import java.awt.geom.Point2D;
+import java.util.LinkedList;
 
 public class PathFinder{
   private Path2D pathShape;
@@ -65,7 +66,6 @@ public class PathFinder{
 
   private void setBlockedTilesToClosedList(){
     for (int m = 0; m < map.length; m++) {
-
       for (int i = 0; i < map[m].mapTiles.length; i++) {
         for (int j = 0; j < map[m].mapTiles.length; j++) {
           if (map[m].mapTiles[i][j].isBlocked()) {

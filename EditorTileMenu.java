@@ -35,7 +35,7 @@ public class EditorTileMenu extends JDialog implements ActionListener {
         super(owner, modal);
         this.owner = owner;
         belongingEditor = pBelongingEditor;
-
+        selectedID = 22; // Wiese
         $$$setupUI$$$();
         setContentPane(contentPane);
         setSize(500, 300);
@@ -140,7 +140,7 @@ public class EditorTileMenu extends JDialog implements ActionListener {
     }
 
 
-    public int getSelected() {
+    public int getSelectedID() {
         return selectedID;
     }
 
@@ -195,8 +195,7 @@ public class EditorTileMenu extends JDialog implements ActionListener {
                 }
             });
             tilePanel[i].add(txtEingabe[i]);
-            tsTabPane.addTab("Tile Set " + i, scrollPane[i]);
-
+            tsTabPane.addTab("Tile Set " + tileSet.length, scrollPane[i]);
         }
     }
 
@@ -291,7 +290,7 @@ public class EditorTileMenu extends JDialog implements ActionListener {
             public void actionPerformed(ActionEvent evt) {
                 TileSet tempTS = new TileSet("res/tileSet.png", 12, 12, 3);
                 Meldungen meldung = new Meldungen(owner, true, "Map");
-                belongingEditor.createBlankEditiorMap(Integer.parseInt(meldung.getUserInput(0)), Integer.parseInt(meldung.getUserInput(1)), tempTS);
+                belongingEditor.createBlankEditorMap(Integer.parseInt(meldung.getUserInput(0)), Integer.parseInt(meldung.getUserInput(1)), tempTS);
             }
         });
 
