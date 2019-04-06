@@ -25,10 +25,6 @@ public class Tile extends JPanel implements Cloneable, Comparable{
     if (showImage) {
       g2d.drawImage(tileImage, this.getX(), this.getY(), TILEWIDTH, TILEHEIGHT, null);
     }
-    if (pointed) {
-      showImage(false);
-      setBorder(BorderFactory.createLineBorder(Color.black, 5));
-    }
   }
   
   public void showImage(boolean b){
@@ -55,8 +51,17 @@ public class Tile extends JPanel implements Cloneable, Comparable{
     return pointed;
   }
 
-  public void setPointed(boolean pointed) {
-    this.pointed = pointed;
+  public void setPointed() {
+    if (pointed) {
+      pointed = false;
+      showImage(false);
+      setBorder(BorderFactory.createLineBorder(Color.black, 5));
+    } else {
+      pointed = true;
+      showImage(true);
+      setBorder(null);
+    }
+
   }
 
   public LinkedList getNeighbours(){

@@ -1,3 +1,5 @@
+import com.sun.istack.internal.Nullable;
+
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -5,16 +7,14 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
+import java.util.ArrayList;
 
-public class EditorTileMenu extends JDialog implements ActionListener {
+public class EditorTileMenu extends JDialog {
     //Frame Components:
     private JPanel contentPane;
     private JPanel west;
-    private JScrollPane[] scrollPane;
     private JPanel south;
-    private JLabel selected;
-    private JTextField[] txtEingabe;
-    private JPanel[] tilePanel;
+    private JLabel selectedLabel;
     private JButton btOk;
     private JPanel north;
     private JPanel center;
@@ -23,8 +23,9 @@ public class EditorTileMenu extends JDialog implements ActionListener {
 
     private int selectedID;
     private int selectedTileSet;
+
     private EditorTileButton[] tileMenuButtons;
-    private TileSet[] tileSet = new TileSet[1];
+    private ArrayList tileSet = new ArrayList<TileSet>();
     private Editor belongingEditor;
 
     private JFrame owner;
@@ -51,91 +52,76 @@ public class EditorTileMenu extends JDialog implements ActionListener {
     }
 
     private void onOK() {
-
+        belongingEditor.addRecently(selectedID, ((TileSet) tileSet.get(selectedTileSet)));
         setVisible(false);
     }
 
     public void createTileSet() {
-        int newTileSetAmount = tileSet.length - 1; // INDEX FÜR DAS LETZTE TILE
-        createTileSetComponents();
         //Standard TileSet:
         if (firstStart) {
-            tileSet[newTileSetAmount] = new TileSet("res/tileSet.png", 12, 12, 3); // Standard Tile Set
+            tileSet.add(new TileSet("res/textures/tileSet.png", 12, 12, 3)); // Standard Tile Set)
             firstStart = false;
         } else {
             Meldungen meldung = new Meldungen(owner, true, "null");
             File path = Meldungen.setMapPath("TileSet");
-            meldung.tileSetAbfrage();
-            tileSet[newTileSetAmount] = new TileSet(path.getPath()
-                    , Integer.parseInt(meldung.getUserInput(0))
-                    , Integer.parseInt(meldung.getUserInput(1))
-                    , Integer.parseInt(meldung.getUserInput(2)));
-        }
-        tileMenuButtons = new EditorTileButton[tileSet[newTileSetAmount].tileSet.length - 1];
-        for (int i = 0; i < tileMenuButtons.length; i++) {
-            tileMenuButtons[i] = new EditorTileButton(i, tileSet[newTileSetAmount]);
-            tileMenuButtons[i].loadImage(i);
-            tileMenuButtons[i].addActionListener(this);
-            tilePanel[newTileSetAmount].add(tileMenuButtons[i]);
-        }
-        int gap = 5;
-        int spalte = 5;
-        int height = tileMenuButtons.length * (EditorTileButton.size) / spalte;
-        tilePanel[newTileSetAmount].setPreferredSize(new Dimension(spalte, height));
-    }
+            try {
+                String filename = path.getName();
+                String[] filenameSplit = null;
+                filename = filename.replace(".png", "");
+                filenameSplit = filename.split("x");
 
-
-    public void actionPerformed(ActionEvent evt) {
-        try {
-            EditorTileButton btTile = (EditorTileButton) evt.getSource();
-            selectedID = btTile.getId();
-            for (int i = 0; i < tileSet.length; i++) {
-                if (btTile.getTileSet().equals(tileSet[i])) {
-                    selectedTileSet = i;
+                for (int i = 0; i < filenameSplit.length; i++) {
+                    System.out.println(filenameSplit[i]);
                 }
-            }
-            for (int i = 0; i < txtEingabe.length; i++) {
-                txtEingabe[i].setText("");
-            }
-            selectedinLabel(selected);
 
-        } catch (Exception e) {
-            System.out.println("Action Performed Exception");
+                tileSet.add(new TileSet(path.getPath()
+                        , Integer.parseInt(filenameSplit[0])
+                        , Integer.parseInt(filenameSplit[1])
+                        , Integer.parseInt(filenameSplit[2])));
+
+            } catch (Exception e) {
+                System.out.println(e);
+                System.out.println("Konnte nicht automtisch das TIleSet laden!");
+                meldung.tileSetAbfrage();
+                tileSet.add(new TileSet(path.getPath()
+                        , Integer.parseInt(meldung.getUserInput(0))
+                        , Integer.parseInt(meldung.getUserInput(1))
+                        , Integer.parseInt(meldung.getUserInput(2))));
+            }
         }
-
+        createTileSetComponents();
     }
 
     public void nfcheck() {
         int temp = 0;
-        try {
-            for (int i = 0; i < tileSet.length; i++) {
-                if (Integer.parseInt(txtEingabe[i].getText()) <= tileSet[i].tileSet.length) {
-                    temp++;
-                    selectedID = Integer.parseInt(txtEingabe[i].getText());
-                    selectedinLabel(selected);
-                } else {
-                    txtEingabe[temp].setText(""); // FIXME: 14.03.2019 Mit Documentlistener muss anders umgegangen werden!
-                    JOptionPane.showMessageDialog(this, "Es können nur Tiles von  0 bis " + tileSet[i].tileSet.length + " verwendet werden", "", JOptionPane.WARNING_MESSAGE);
-                }
-            }
-        } catch (NumberFormatException en) {
-            if (!txtEingabe[temp].getText().equals("")) {
-                txtEingabe[temp].setText("");
-                JOptionPane.showMessageDialog(this, "Ungültige Zahl.", "", JOptionPane.WARNING_MESSAGE);
-            }
-        }
+//        try {
+//            for (int i = 0; i < tileSet.size(); i++) {
+//                if (Integer.parseInt(txtEingabe[i].getText()) <= ((TileSet) tileSet.get(i)).tileSet.length) {
+//                    temp++;
+//                    selectedID = Integer.parseInt(txtEingabe[i].getText());
+//                    selectedinLabel(selectedLabel);
+//                } else {
+//                    txtEingabe[temp].setText(""); // FIXME: 14.03.2019 Mit Documentlistener muss anders umgegangen werden!
+//                    JOptionPane.showMessageDialog(this, "Es können nur Tiles von  0 bis " +  ((TileSet) tileSet.get(i)).tileSet.length + " verwendet werden", "", JOptionPane.WARNING_MESSAGE);
+//                }
+//            }
+//        } catch (NumberFormatException en) {
+//            if (!txtEingabe[temp].getText().equals("")) {
+//                txtEingabe[temp].setText("");
+//                JOptionPane.showMessageDialog(this, "Ungültige Zahl.", "", JOptionPane.WARNING_MESSAGE);
+//            }
+//        }
 //        System.out.println("NF check");
     }
 
 
-    public void selectedinLabel(JLabel anzeige) {
+    public void selectedinLabel(JLabel anzeige, @Nullable Icon icon) {
         try {
-            for (int i = 0; i < tileSet.length; i++) {
-                anzeige.setIcon(new ImageIcon(tileSet[selectedTileSet].tileSet[selectedID].tileImage));
-            }
+            anzeige.setIcon(icon);
         } catch (Exception e) {
-            anzeige.setText("");
-            selectedID = 0;
+            for (int i = 0; i < tileSet.size(); i++) {
+                anzeige.setIcon(new ImageIcon(((TileSet) tileSet.get(selectedTileSet)).tileSet[selectedID].tileImage));
+            }
         }
     }
 
@@ -149,54 +135,100 @@ public class EditorTileMenu extends JDialog implements ActionListener {
     }
 
     public TileSet getTileSet(int index) {
-        return tileSet[index];
+        return ((TileSet) tileSet.get(index));
     }
 
     public void createTileSetComponents() {
-        scrollPane = new JScrollPane[tileSet.length];
-        tilePanel = new JPanel[tileSet.length];
-        txtEingabe = new JTextField[tileSet.length];
-        for (int i = 0; i < tileSet.length; i++) {
-            scrollPane[i] = new JScrollPane();
-            scrollPane[i].getVerticalScrollBar().setUnitIncrement(16);
-            scrollPane[i].setAlignmentX(1.0f);
-            scrollPane[i].setAutoscrolls(false);
-            scrollPane[i].setHorizontalScrollBarPolicy(31);
-            scrollPane[i].setMaximumSize(new Dimension(300, 350));
-            scrollPane[i].setMinimumSize(new Dimension(50, 50));
-            scrollPane[i].setOpaque(true);
-            scrollPane[i].setPreferredSize(new Dimension(50, 300));
-            scrollPane[i].setRequestFocusEnabled(true);
-            scrollPane[i].setVerticalScrollBarPolicy(22);
-            tilePanel[i] = new JPanel();
-            tilePanel[i].setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
-            tilePanel[i].setMaximumSize(new Dimension(0, 0));
-            tilePanel[i].setMinimumSize(new Dimension(50, 50));
-            tilePanel[i].setPreferredSize(new Dimension(50, 150));
-            scrollPane[i].setViewportView(tilePanel[i]);
-            txtEingabe[i] = new JTextField();
-            txtEingabe[i].setMaximumSize(new Dimension(50, 50));
-            txtEingabe[i].setMinimumSize(new Dimension(50, 50));
-            txtEingabe[i].setPreferredSize(new Dimension(50, 50));
-            txtEingabe[i].getDocument().addDocumentListener(new DocumentListener() {
-                @Override
-                public void insertUpdate(DocumentEvent e) {
-                    nfcheck();
-                }
+        // FIXME: 06.04.2019 Kann besser gelöst werden -> nur Scrollpane als Array, der Rest Local
+        JPanel tilePanel = new JPanel();
+        tilePanel.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
+        tilePanel.setMaximumSize(new Dimension(0, 0));
+        tilePanel.setMinimumSize(new Dimension(50, 50));
+        tilePanel.setPreferredSize(new Dimension(50, 150));
+        //Hinzufuegen der TileEingabe auf das JPanel
+        JTextField txtEingabe = new JTextField();
+        txtEingabe.setMaximumSize(new Dimension(50, 50));
+        txtEingabe.setMinimumSize(new Dimension(50, 50));
+        txtEingabe.setPreferredSize(new Dimension(50, 50));
+        txtEingabe.getDocument().addDocumentListener(new DocumentListener() {
+            @Override
+            public void insertUpdate(DocumentEvent e) {
+            }
 
-                @Override
-                public void removeUpdate(DocumentEvent e) {
-                    nfcheck();
-                }
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+            }
 
+            @Override
+            public void changedUpdate(DocumentEvent e) {
+                try {
+                    for (int i = 0; i < tileSet.size(); i++) {
+                        if (Integer.parseInt(txtEingabe.getText()) <= ((TileSet) tileSet.get(i)).tileSet.length) {
+                            selectedID = Integer.parseInt(txtEingabe.getText());
+                            selectedinLabel(selectedLabel, null);
+                        } else {
+                            txtEingabe.setText(""); // FIXME: 14.03.2019 Mit Documentlistener muss anders umgegangen werden!
+                            JOptionPane.showMessageDialog(owner, "Es können nur Tiles von  0 bis " + ((TileSet) tileSet.get(i)).tileSet.length + " verwendet werden", "", JOptionPane.WARNING_MESSAGE);
+                        }
+                    }
+                } catch (NumberFormatException en) {
+                    if (!txtEingabe.getText().equals("")) {
+                        txtEingabe.setText("");
+                        JOptionPane.showMessageDialog(owner, "Ungültige Zahl.", "", JOptionPane.WARNING_MESSAGE);
+                    }
+                }
+            }
+        });
+        tilePanel.add(txtEingabe);
+        //Hinzufuegen der Tiles auf das JPanel
+        selectedTileSet = tileSet.size() - 1;
+        EditorTileButton[] tileMenuButtons = new EditorTileButton[((TileSet) tileSet.get(selectedTileSet)).tileSet.length - 1];
+        for (int i = 0; i < tileMenuButtons.length; i++) {
+            tileMenuButtons[i] = new EditorTileButton(i, ((TileSet) tileSet.get(selectedTileSet)));
+            tileMenuButtons[i].loadImage(i);
+            tileMenuButtons[i].addActionListener(new ActionListener() {
                 @Override
-                public void changedUpdate(DocumentEvent e) {
-                    nfcheck();
+                public void actionPerformed(ActionEvent e) {
+                    try {
+                        EditorTileButton source = ((EditorTileButton) e.getSource());
+                        selectedID = source.getId();
+                        for (int i = 0; i < tileSet.size(); i++) {
+//                System.out.println("Compare Source Path:" + source.getTileSet().getTileSetImagePath() + "with TileSets Path in Menu:" + ((TileSet) tileSet.get(i)).getTileSetImagePath());
+                            if (source.getTileSet().getTileSetImagePath().equals(((TileSet) tileSet.get(i)).getTileSetImagePath())) {
+                                selectedTileSet = i;
+//                    System.out.println(selectedTileSet + "selectedTS");
+                            }
+                        }
+                        selectedinLabel(selectedLabel, source.getIcon());
+                    } catch (
+                            Exception ex) {
+                        System.out.println("Source isnt E-BT");
+                    }
                 }
             });
-            tilePanel[i].add(txtEingabe[i]);
-            tsTabPane.addTab("Tile Set " + tileSet.length, scrollPane[i]);
+            tilePanel.add(tileMenuButtons[i]);
         }
+        // Tile Panel Groeße nach Tile Button
+        int gap = 5;
+        int spalte = 5;
+        int height = tileMenuButtons.length * (EditorTileButton.size) / spalte;
+        tilePanel.setPreferredSize(new Dimension(spalte, height));
+        // Erstellen des Scrollpanes und zuweisen des JPanels
+
+        JScrollPane scrollPane = new JScrollPane();
+        scrollPane.getVerticalScrollBar().setUnitIncrement(16);
+        scrollPane.setAlignmentX(1.0f);
+        scrollPane.setAutoscrolls(false);
+        scrollPane.setHorizontalScrollBarPolicy(31);
+        scrollPane.setMaximumSize(new Dimension(300, 350));
+        scrollPane.setMinimumSize(new Dimension(50, 50));
+        scrollPane.setOpaque(true);
+        scrollPane.setPreferredSize(new Dimension(50, 300));
+        scrollPane.setRequestFocusEnabled(true);
+        scrollPane.setVerticalScrollBarPolicy(22);
+        scrollPane.setViewportView(tilePanel);
+        tsTabPane.addTab("Tile Set " + tileSet.size(), scrollPane);
+
     }
 
     public void setSelectedID(int selectedID) {
@@ -231,14 +263,14 @@ public class EditorTileMenu extends JDialog implements ActionListener {
         btOk.setPreferredSize(new Dimension(100, 50));
         btOk.setText("Bestaetigen");
         south.add(btOk);
-        selected = new JLabel();
-        selected.setHorizontalAlignment(0);
-        selected.setHorizontalTextPosition(2);
-        selected.setMaximumSize(new Dimension(100, 100));
-        selected.setPreferredSize(new Dimension(50, 50));
-        selected.setText("");
-        selected.setVerifyInputWhenFocusTarget(false);
-        south.add(selected);
+        selectedLabel = new JLabel();
+        selectedLabel.setHorizontalAlignment(0);
+        selectedLabel.setHorizontalTextPosition(2);
+        selectedLabel.setMaximumSize(new Dimension(100, 100));
+        selectedLabel.setPreferredSize(new Dimension(50, 50));
+        selectedLabel.setText("");
+        selectedLabel.setVerifyInputWhenFocusTarget(false);
+        south.add(selectedLabel);
         north = new JPanel();
         north.setLayout(new BorderLayout(0, 0));
         contentPane.add(north, BorderLayout.NORTH);
@@ -270,7 +302,7 @@ public class EditorTileMenu extends JDialog implements ActionListener {
         JMenuItem save = new JMenuItem("Speichern");
         save.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
-                belongingEditor.saveMap();
+                belongingEditor.saveMap(Meldungen.setMapPath("Save"), true);
             }
         });
 
@@ -280,15 +312,15 @@ public class EditorTileMenu extends JDialog implements ActionListener {
         newMapWithSelection.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
                 System.out.println();
-                TileSet tempTS = new TileSet("res/tileSet.png", 12, 12, 3);
+                TileSet tempTS = new TileSet("res/textures/tileSet.png", 12, 12, 3);
                 Meldungen meldung = new Meldungen(owner, true, "Map");
-                belongingEditor.createEditorMap(Integer.parseInt(meldung.getUserInput(0)), Integer.parseInt(meldung.getUserInput(1)), tempTS);
+                belongingEditor.createEditorMap(Integer.parseInt(meldung.getUserInput(0)), Integer.parseInt(meldung.getUserInput(1)), tempTS, selectedID);
             }
         });
         JMenuItem newBlankMap = new JMenuItem("Neue leere Map");
         newBlankMap.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
-                TileSet tempTS = new TileSet("res/tileSet.png", 12, 12, 3);
+                TileSet tempTS = new TileSet("res/textures/tileSet.png", 12, 12, 3);
                 Meldungen meldung = new Meldungen(owner, true, "Map");
                 belongingEditor.createBlankEditorMap(Integer.parseInt(meldung.getUserInput(0)), Integer.parseInt(meldung.getUserInput(1)), tempTS);
             }

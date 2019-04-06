@@ -67,7 +67,7 @@ public class PathFinder{
   private void setBlockedTilesToClosedList(){
     for (int m = 0; m < map.length; m++) {
       for (int i = 0; i < map[m].mapTiles.length; i++) {
-        for (int j = 0; j < map[m].mapTiles.length; j++) {
+          for (int j = 0; j < map[m].mapTiles[i].length; j++) {
           if (map[m].mapTiles[i][j].isBlocked()) {
             closedList.add(map[m].mapTiles[i][j]);} // end of if
         } // end of for
@@ -87,7 +87,7 @@ public class PathFinder{
 
   private void constructMovingPath(){
     pathShape = new Path2D.Double();
-    pathShape.moveTo(mover.getLocation().getX()+mover.width/2, mover.getLocation().getY()+mover.width/2);    ///
+      pathShape.moveTo(mover.getLocation().getX() + Mover.MOVER_WIDTH / 2, mover.getLocation().getY() + Mover.MOVER_HEIGHT / 2);    ///
     Tile t;
     for (int i =0;i< pathTiles.size();i++) {
       t = (Tile) pathTiles.get(i);

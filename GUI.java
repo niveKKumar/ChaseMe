@@ -1,10 +1,9 @@
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
-import java.awt.geom.Point2D;
 
 public class GUI extends JFrame implements ActionListener {
-    private GamePanel gamePanel = new GamePanel();
+    public GamePanel gamePanel = new GamePanel();
     public JPanel south = new JPanel(new FlowLayout());
     private JPanel north = new JPanel(new FlowLayout());
     public JPanel east = new JPanel(new FlowLayout());
@@ -22,10 +21,8 @@ public class GUI extends JFrame implements ActionListener {
     public Container cp;
     private KeyManager keyManager;
     private DisplayAnalytics[] analytics;
-    public Tile start;
-    public Tile target;
     public Camera camera;
-    private Level level;
+    public Level level;
     private Editor editor;
 
 
@@ -46,8 +43,6 @@ public class GUI extends JFrame implements ActionListener {
         level = new Level(this);
         camera = new Camera();
         this.addKeyListener(keyManager);
-        this.setFocusable(true);
-        this.requestFocus();
         createGUI();
         createMenu();
         setVisible(true);
@@ -81,7 +76,7 @@ public class GUI extends JFrame implements ActionListener {
 
     private void createEditor() {
         Meldungen temp = new Meldungen(this, true, "Map");
-        TileSet ts = new TileSet("res/tileSet.png", 12, 12, 3);
+        TileSet ts = new TileSet("res/textures/tileSet.png", 12, 12, 3);
         SpriteSheet playersheet = new SpriteSheet("res/playersheet.png", 4, 3);
         System.out.println(temp.getUserInput(1));
         int sizeX = Integer.parseInt(temp.getUserInput(0)),sizeY = Integer.parseInt(temp.getUserInput(1));
@@ -89,6 +84,14 @@ public class GUI extends JFrame implements ActionListener {
         level.setLevel(0);
     }
 
+    public void menuButtons(boolean menu, boolean editormenu) {
+        for (int i = 0; i < buttons.length; i++) {
+            buttons[i].setVisible(menu);
+        }
+        if (editor != null) {
+            editor.setMenuVisible(editormenu);
+        }
+    }
 
     public void actionPerformed(ActionEvent evt) {
         JButton temp = (JButton) evt.getSource();
@@ -140,25 +143,9 @@ public class GUI extends JFrame implements ActionListener {
             case "TestButton":
 
                 break;
-            ///EDITOR Buttons:
-            case "+":
-                System.out.println("Zoom rein");
-                editor.zoom(true);
-                camera.centerOnObject(editor.cameraPoint.getLocation());
-                this.requestFocus();
-                break;
-
-            case "-":
-                System.out.println("Zoom raus");
-                editor.zoom(false);
-                camera.centerOnObject(editor.cameraPoint.getLocation());
-                this.requestFocus();
-                break;
-            case "Tile Auswaehlen":
-                editor.createTileMenu();
-                this.requestFocus();
-                break;
-
+        }
+        if (level.level == 0) {
+            editor.actionPerformed(evt);
         }
     }
 
@@ -217,9 +204,7 @@ public class GUI extends JFrame implements ActionListener {
         if (level.level != 0) {
             level.updateLevel();
         }else { //Editor:
-            if ( keyInputToMove().getX() != 0||keyInputToMove().getY() != 0) {
-                editor.cameraPoint.setMove(keyInputToMove());
-            }
+            editor.update();
         }
         repaint();
     }
@@ -233,7 +218,6 @@ public class GUI extends JFrame implements ActionListener {
             setFocusable(true);
             Container container = getContentPane();
             container.setLayout(null);
-
         }
 
         public void paintComponent(Graphics g) {
@@ -265,7 +249,11 @@ public class GUI extends JFrame implements ActionListener {
         }
 
         public void actionPerformed(ActionEvent evt) {
-
+            if (level.level != 0) {
+//                level.actionPerformed(evt);
+            } else {
+                editor.actionPerformed(evt);
+            }
         }
 
         public void mouseClicked(MouseEvent e) {
@@ -274,6 +262,7 @@ public class GUI extends JFrame implements ActionListener {
             }else{
                 editor.mouseClicked(e);
             }
+            System.out.println(e.getSource());
 
         }
 
@@ -319,172 +308,6 @@ public class GUI extends JFrame implements ActionListener {
                     System.out.println("Loopfehler: " + maxLoopTime); // - (timestamp - oldTimestamp)));
                 }
             }
-        }
-    }
-
-    class Level {
-
-        private GUI gui;
-        public int level;
-        public Map[] maps;
-        public Mover mover;
-        public Runner[] enemy;
-        public PathFinder pathFinder;
-        public DisplayAnalytics[] analytics;
-        public int click = 0;
-        boolean[] dialog;
-
-        public Level(GUI gui) {
-            this.gui = gui;
-        }
-
-        public void createLevelObject(int mapAmount, int enemyAmount) {
-            menuButtons(true, false);
-            maps = new Map[mapAmount];
-            analytics = new DisplayAnalytics[mapAmount];
-            SpriteSheet playersheet = new SpriteSheet("res/playersheet.png", 4, 3);
-            mover = new Mover(gui, 100, 100, 64, 64, playersheet, maps);
-            enemy = new Runner[enemyAmount];
-        }
-
-        public void createLobby() {
-            createLevelObject(1, 0);
-//      System.out.println("Map Amount . " + maps.length);
-            TileSet ts = new TileSet("res/tileSet.png", 12, 12, 3);
-            SpriteSheet playersheet = new SpriteSheet("res/playersheet.png", 4, 3);
-            //Einlesung der Maps:
-            maps[0] = new Map(gui, ts, "res/Menu.txt", "Border", new Point(0, 0));
-            gui.setCamera(maps[0].getMapSizeX(), maps[0].getMapSizeY());
-            // Intialisierung der Spieler:
-            mover = new Mover(gui, 100, 100, 64, 64, playersheet, maps);
-            camera.centerOnObject(mover.getLocation());
-            pathFinder = new PathFinder(maps, mover,gui);
-
-            for (int i = 0; i < maps.length ; i++) {
-                analytics[i] = new DisplayAnalytics(gui,maps[i],pathFinder);
-            }
-            level = 999;
-        }
-
-        ////LEVEL0 - Tutorial////////////////////////////////////////////////////////////////////////
-        //////////////////////////////////////////////////////////////////////////////////
-        //////////////////////////////////////////////////////////////////////////////////
-        public void createlevel1() {
-            createLevelObject(2, 5);
-            TileSet ts = new TileSet("res/tileSet.png", 12, 12, 3);
-            TileSet tsItems = new TileSet("res/tileSetB.png", 16, 16, 0);
-            SpriteSheet playersheet = new SpriteSheet("res/playersheet.png", 4, 3);
-            //Einlesung der Maps:
-            maps[0] = new Map(gui, ts, "res/Chapter 0 - Tutorial.txt", "All", new Point(0, 0));
-            maps[1] = new Map(gui, tsItems, "res/0-1Items.txt", "Item", new Point(24, 0));
-            gui.setCamera(maps[0].getMapSizeX(), maps[0].getMapSizeY());
-            // Intialisierung der Spieler:
-            mover = new Mover(gui, (int) mover.getLocation().getX(), (int) mover.getLocation().getY(), 64, 64, playersheet, maps);
-            camera.centerOnObject(mover.getLocation());
-            for (int i = 0; i < enemy.length; i++) {
-                enemy[i] = new Runner(gui, (2) * 64, (5) * 64, 64, 64, playersheet, maps);
-            }
-            enemy[1] = new Runner(gui, (16) * 64, (5) * 64, 64, 64, playersheet, maps);
-            enemy[2] = new Runner(gui, (13) * 64, (6) * 64, 64, 64, playersheet, maps);
-
-            pathFinder = new PathFinder(maps, mover,gui);
-
-            dialog = new boolean[2];
-            for (int i = 0; i < dialog.length ; i++) {
-                dialog[i] = false;
-            }
-            dialog[0] = true; // erste Sprechblase
-
-            for (int i = 0; i < maps.length ; i++) {
-                analytics[i] = new DisplayAnalytics(gui,maps[i],pathFinder);
-            }
-            level = 1;
-        }
-
-        public void level1GameMechanic() {
-//      enemy[2].movetotarget(mover);
-            System.out.println(click);
-
-            enemy[0].enemystraightrun(64, mover.speed/2, 0,1);
-            // TODO: 26.03.2019 Eigene Game Dialog Klasse/ Textdatei für Level
-            if (dialog[0] && mover.isOnThisMap(5,5) ){
-                mover.saySomething("Wo bin ich?"+"\n"+ "(Klicken für weiteren Dialog)",true);
-                dialog[0] = false;
-                dialog[1] = true;
-                click = 0;
-            }
-            if(dialog[1] && click == 1){
-                mover.saySomething("W-A-S-D drücken um sich zu bewegen",true);}
-            dialog[1] = false;
-        }
-
-
-        public void renderLevel(Graphics2D g2d) {
-            maps[0].renderMap(g2d);
-            mover.draw(g2d);
-
-            if (enemy.length >0) {
-                for (int enemyamount = 0; enemyamount < enemy.length; enemyamount++) {
-                    enemy[enemyamount].draw(g2d);
-                }}
-
-
-            for (int mapsAmount = 1; mapsAmount < maps.length; mapsAmount++) {
-                maps[mapsAmount].renderMap(g2d);
-            }
-            for (int analyticsamount = 0; analyticsamount < analytics.length; analyticsamount++) {
-                analytics[analyticsamount].renderAnalytics(g2d);
-            }
-
-        }
-
-        public void updateLevel() {
-            if (keyInputToMove().getX() != 0||keyInputToMove().getY() != 0) {
-                mover.setMove(keyInputToMove());
-                pathFinder.resetPath();
-            } // end of if
-            Point2D from = pathFinder.getNextStep();
-            Point2D to = pathFinder.getNextStep();
-            if (mover.mayIMove && to != null && keyInputToMove().getX() == 0 && keyInputToMove().getY() == 0) {
-                mover.setPathMove(from,to);
-            } // end of if
-
-            //////////////////////////////////////////////////////////////////////////////////
-            //////////////////////////////////////////////////////////////////////////////////
-            //////////////////////////////////////////////////////////////////////////////////
-
-            switch (level){
-                case 1 :
-                    level1GameMechanic();
-                    taAnzeige.setText("X:" + mover.moverOnMapTile().x + "Y:" + mover.moverOnMapTile().y);
-                    break;
-            }
-            camera.centerOnObject(mover.getLocation());
-        }
-
-        public void menuButtons(boolean menu, boolean editormenu) {
-            for (int i = 0; i < gui.buttons.length; i++) {
-                buttons[i].setVisible(menu);
-            }
-            if (editor != null) {
-                gui.editor.setMenuVisible(editormenu);
-            }
-        }
-
-        public void mouseClicked(MouseEvent e) {
-            if (level != 0) {
-                for (int i = 0; i < maps.length; i++) {
-                    if (maps[i].isActiveInPosition(new Point(e.getX() + camera.xOffset, e.getY() + camera.yOffset))) {
-                        start = maps[i].mapTiles[(int) (mover.getLocation().getX() / Tile.TILEWIDTH)][(int) mover.getLocation().getY() / Tile.TILEHEIGHT];
-                        target = maps[i].mapTiles[(e.getX() + camera.getXOffset()) /  Tile.TILEWIDTH ][(e.getY() + camera.getYOffset()) / Tile.TILEHEIGHT];
-                        pathFinder.searchPath(start, target);
-                        click++;
-                    } else {continue;}}
-            }
-        }
-
-        public void setLevel(int level) {
-            this.level = level;
         }
     }
 }

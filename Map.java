@@ -21,10 +21,10 @@ public class Map extends MapBase {
 
     mapTiles = new Tile[mapSizeX][mapSizeY];
     int i = 2;
-    for (int zeile = 0; zeile < mapSizeX; zeile++) {
-      for (int spalte = 0; spalte < mapSizeY; spalte++) {
-        mapTiles[spalte][zeile] = tileSet.tileSet[Integer.parseInt(mapText[i])].clone();
-        mapTiles[spalte][zeile].setID(Integer.parseInt(mapText[i]));
+      for (int zeile = 0; zeile < mapTiles.length; zeile++) {
+          for (int spalte = 0; spalte < mapTiles[zeile].length; spalte++) {
+              mapTiles[zeile][spalte] = tileSet.tileSet[Integer.parseInt(mapText[i])].clone();
+              mapTiles[zeile][spalte].setID(Integer.parseInt(mapText[i]));
         i++;
       }
     }
