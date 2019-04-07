@@ -44,11 +44,11 @@ public class EditorMap extends MapBase {
     }
 
     public void setTile(MouseEvent e) {
-        System.out.println("Set Tile");
         int x = Math.round(e.getX() + gui.getCamera().getXOffset() + chapterXOffset) / Tile.TILEWIDTH;
         int y = Math.round(e.getY() + gui.getCamera().getYOffset() + chapterYOffset) / Tile.TILEHEIGHT;
         mapTiles[x][y] = tileSet.tileSet[graphicID];
         mapTiles[x][y].setID(graphicID);
+        gui.taAnzeige.setText("");
     }
 
     public void setPointed(MouseEvent e){

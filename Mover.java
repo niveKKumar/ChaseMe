@@ -1,13 +1,13 @@
 import javax.swing.*;
 import java.awt.*;
+import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
-import java.awt.geom.AffineTransform ;
 
 
 public class Mover{
     protected Image img;
     protected int xPos,yPos;
-    protected int width,height;
+    protected static int MOVER_WIDTH, MOVER_HEIGHT;
     protected SpriteSheet sprites;
     protected int moveSeq = 1;
     protected int moveSeqSleep;
@@ -33,8 +33,8 @@ public class Mover{
         yPos = pYpos;
         map = pMap;
         img = sprites.getSpriteElement(0,1);
-        width = pWidth;
-        height = pHeight;
+        MOVER_WIDTH = pWidth;
+        MOVER_HEIGHT = pHeight;
         gui.south.add(speechBubble = new JTextArea("Mover:"));
         speechBubble.setVisible(false);
         gui.getCamera().centerOnObject(this.getLocation());
@@ -81,8 +81,8 @@ public class Mover{
                 moveSeqSleep = 0;
             } // end of if
             setSprite();
-            this.xPos = (int) to.getX() - this.width / 2;
-            this.yPos = (int) to.getY() - this.height / 2;
+            this.xPos = (int) to.getX() - MOVER_WIDTH / 2;
+            this.yPos = (int) to.getY() - MOVER_HEIGHT / 2;
         }
     }
     public void draw(Graphics2D g2d){
@@ -106,19 +106,35 @@ public class Mover{
     protected boolean collisionCheck(){
         boolean blocked = false;
         int hitBoxCenter = 3;
-        checkPointUp.setLocation(xPos+width/2, yPos + hitBoxCenter );
-        checkPointDown.setLocation(xPos+width/2, yPos+height - hitBoxCenter);
-        checkPointLeft.setLocation(xPos , yPos + height/2 + hitBoxCenter);
-        checkPointRight.setLocation(xPos+width - hitBoxCenter , yPos + height/2 );
+        checkPointUp.setLocation(xPos + MOVER_WIDTH / 2, yPos + hitBoxCenter);
+        checkPointDown.setLocation(xPos + MOVER_WIDTH / 2, yPos + MOVER_HEIGHT - hitBoxCenter);
+        checkPointLeft.setLocation(xPos, yPos + MOVER_HEIGHT / 2 + hitBoxCenter);
+        checkPointRight.setLocation(xPos + MOVER_WIDTH - hitBoxCenter, yPos + MOVER_HEIGHT / 2);
         for (int i = 0;i < map.length ;i++ ) {
             Tile[] temp1 = new Tile[map.length];
-            if (map[i].isActive()){temp1[i] = map[i].mapTiles [(int) checkPointUp.getY()/width] [ (int) checkPointUp.getX()/height];}else{continue;}
+            if (map[i].isActive()) {
+                temp1[i] = map[i].mapTiles[(int) checkPointUp.getY() / MOVER_WIDTH][(int) checkPointUp.getX() / MOVER_HEIGHT];
+            } else {
+                continue;
+            }
             Tile[] temp2 = new Tile[map.length];
-            if (map[i].isActive()){temp2[i] = map[i].mapTiles [(int) checkPointDown.getY()/width] [ (int) checkPointDown.getX()/height];}else{continue;}
+            if (map[i].isActive()) {
+                temp2[i] = map[i].mapTiles[(int) checkPointDown.getY() / MOVER_WIDTH][(int) checkPointDown.getX() / MOVER_HEIGHT];
+            } else {
+                continue;
+            }
             Tile[] temp3 = new Tile[map.length];
-            if (map[i].isActive()){temp3[i] = map[i].mapTiles [(int) checkPointLeft.getY()/width] [ (int) checkPointLeft.getX()/height];}else{continue;}
+            if (map[i].isActive()) {
+                temp3[i] = map[i].mapTiles[(int) checkPointLeft.getY() / MOVER_WIDTH][(int) checkPointLeft.getX() / MOVER_HEIGHT];
+            } else {
+                continue;
+            }
             Tile[] temp4 = new Tile[map.length];
-            if (map[i].isActive()){temp4[i] = map[i].mapTiles [(int) checkPointRight.getY()/width] [ (int) checkPointRight.getX()/height];}else{continue;}
+            if (map[i].isActive()) {
+                temp4[i] = map[i].mapTiles[(int) checkPointRight.getY() / MOVER_WIDTH][(int) checkPointRight.getX() / MOVER_HEIGHT];
+            } else {
+                continue;
+            }
                 if (temp1[i].isBlocked() || temp2[i].isBlocked() || temp3[i].isBlocked() || temp4[i].isBlocked()){
                     blocked = true;}
 
@@ -129,14 +145,14 @@ public class Mover{
         Point temp = new Point();
         for (int i = 0; i < map.length ; i++) {
                 for (int y = 0; y < map[i].getMapSizeY() ; y++) {
-                if (this.getLocation().y + this.height / 2 >= Tile.TILEHEIGHT * y && this.getLocation().y + this.height / 2 <= Tile.TILEHEIGHT * (y + 1)) {
+                    if (this.getLocation().y + MOVER_HEIGHT / 2 >= Tile.TILEHEIGHT * y && this.getLocation().y + MOVER_HEIGHT / 2 <= Tile.TILEHEIGHT * (y + 1)) {
                     temp.y = y;
                 }
             }
             for (int x = 1; x < map[i].getMapSizeX() ; x++) {
 //                int right = this.getLocation().x + width;
 //                System.out.println(right);
-                if ( this.getLocation().x + this.width / 2 >= Tile.TILEWIDTH * x && this.getLocation().x + this.width/2 <= Tile.TILEWIDTH * (x+1) ) {
+                if (this.getLocation().x + MOVER_WIDTH / 2 >= Tile.TILEWIDTH * x && this.getLocation().x + MOVER_WIDTH / 2 <= Tile.TILEWIDTH * (x + 1)) {
                     temp.x = x + 2 ;// weil bei 0
                 }
             }

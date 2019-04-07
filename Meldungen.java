@@ -19,7 +19,10 @@ public class Meldungen extends JDialog implements ActionListener {
     private JTextArea[] eingabe;
     private JButton[] button;
     private String[] userInput;
+    private TileSet ts;
+    private File f = null;
     private boolean firstStart = true;
+    private boolean tileSetAbfrage = false;
 
     public Meldungen(JFrame owner, boolean modal, String bestimmteAbfrage) {
         super(owner, modal);
@@ -74,42 +77,37 @@ public class Meldungen extends JDialog implements ActionListener {
     }
 
     public static File setMapPath(String openOrSaveOrTileSet) {             //Methode des Filechosers; offnet einen Speicher-Dialog
-        fileChooser.setCurrentDirectory(new File("./res"));  //Verweis auf das aktuelle Programmverzeichnis
         if (openOrSaveOrTileSet.equals("Open")) {
+            fileChooser.setCurrentDirectory(new File("Content/maps"));
             String extension = ".txt";
             setFileFilter(extension);
             if (fileChooser.showOpenDialog(owner) == JFileChooser.APPROVE_OPTION) {  //Wenn der Ok-Button gedrueckt wird...
                 return fileChooser.getSelectedFile();
-            } else {                                                               //Wenn der Ok.Button nicht gedreckt wird.
-                JOptionPane.showMessageDialog(owner, "Keine Datei ausgewählt.", "", JOptionPane.WARNING_MESSAGE);
-                return null;
             }
         }
         if (openOrSaveOrTileSet.equals("Save")) {
+            fileChooser.setCurrentDirectory(new File("Content/maps"));
             String extension = ".txt";
             setFileFilter(extension);
             if (fileChooser.showSaveDialog(owner) == JFileChooser.APPROVE_OPTION) {  //Wenn der Ok-Button gedrueckt wird...
                 return fileChooser.getSelectedFile();
-            } else {                                                               //Wenn der Ok.Button nicht gedreckt wird.
-                JOptionPane.showMessageDialog(owner, "Keine Datei ausgewählt.", "", JOptionPane.WARNING_MESSAGE);
-                return null;
             }
         }
         if (openOrSaveOrTileSet.equals("TileSet")) {
+            fileChooser.setCurrentDirectory(new File("Content/graphics/tileSets"));
             String extension = ".png";
             setFileFilter(extension);
             if (fileChooser.showOpenDialog(owner) == JFileChooser.APPROVE_OPTION) {  //Wenn der Ok-Button gedrueckt wird...
                 return fileChooser.getSelectedFile();
-            } else {                                                               //Wenn der Ok.Button nicht gedreckt wird.
-                JOptionPane.showMessageDialog(owner, "Keine Datei ausgewählt.", "", JOptionPane.WARNING_MESSAGE);
-                return null;
             }
         }
+        JOptionPane.showMessageDialog(owner, "Keine Datei ausgewählt.", "", JOptionPane.WARNING_MESSAGE);
         return null;
 
     }
 
     private static void setFileFilter(String extension) {
+        fileChooser.resetChoosableFileFilters();
         fileChooser.setFileFilter(new FileFilter() {
             @Override
             public boolean accept(File f) {
@@ -127,6 +125,9 @@ public class Meldungen extends JDialog implements ActionListener {
     }
 
     private void onOK() {
+        if (tileSetAbfrage) {
+            createTileSet();
+        }
         setVisible(false);
     }
 
@@ -142,6 +143,7 @@ public class Meldungen extends JDialog implements ActionListener {
 
     public void tileSetAbfrage() {
         createComponents(3, "Bitte nähere Angaben zu den Tiles (Tiles pro Länge und Breite + Abstand zwischen Tiles); ");
+        f = Meldungen.setMapPath("TileSet");
         eingabe[0].setText("Breite");
         eingabe[1].setText("Höhe");
         eingabe[2].setText("Border");
@@ -170,6 +172,19 @@ public class Meldungen extends JDialog implements ActionListener {
             center.add(button[i]);
         }
         setVisible(true);
+        tileSetAbfrage = true;
+    }
+
+    public void createTileSet() {
+        ts = new TileSet(f.getPath()
+                , Integer.parseInt(getUserInput(0))
+                , Integer.parseInt(getUserInput(1))
+                , Integer.parseInt(getUserInput(2)));
+    }
+
+    public TileSet getTileset() {
+        tileSetAbfrage = false;
+        return ts;
     }
 
     public void chapterAbfrage() {

@@ -6,7 +6,7 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.LinkedList;
 
-public class Editor implements ActionListener {
+public class Editor implements ActionListener, MouseMotionListener {
     private static GUI gui;
     public LinkedList maps = new LinkedList<EditorMap>();
     public EditorTileMenu tileMenu;
@@ -15,7 +15,6 @@ public class Editor implements ActionListener {
     private int use = 0;
     private KeyManager keyManager;
     private int zoomSteps = 0;
-    private double zoom = 1 ;
     private LinkedList recentList = new LinkedList();
     public int selectedMap = 0;
     private int maxRecent = 10;
@@ -27,7 +26,7 @@ public class Editor implements ActionListener {
     private JPanel selectMapPanel = new JPanel();
     private JPanel mapSelectActionsPanel = new JPanel(new GridLayout(0, 1));
     private JComboBox mapSelectedBox;
-    private JButton btChapterOffset, btAutosave;
+    private JButton btAutosave;
     private LinkedList mapCheck = new LinkedList<JCheckBox>();
     private GroupLayout layout;
 
@@ -37,7 +36,8 @@ public class Editor implements ActionListener {
         gui.addKeyListener(keyManager);
         createMenu();
         createTileMenu();
-        TileSet tempTS = new TileSet("res/textures/tileSet.png", 12, 12, 3);
+        TileSet tempTS = new TileSet("Content/Graphics/tileSets/12x12x3 - tileSet.png", 12, 12, 3);
+
         createEditorMap(pMapSizeX, pMapSizeY, tempTS, null);
     }
 
@@ -88,7 +88,7 @@ public class Editor implements ActionListener {
 
         mapSelectActionsPanel.add(mapSelectedBox);
 
-        btChapterOffset = new JButton("Chapter Offset setzen:");
+        JButton btChapterOffset = new JButton("Chapter Offset setzen:");
         btChapterOffset.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -179,6 +179,8 @@ public class Editor implements ActionListener {
             use++;
         } else {
             tileMenu.setVisible(true);
+            ((EditorMap) maps.get(selectedMap)).setGraphicID(tileMenu.getSelectedID());
+            ((EditorMap) maps.get(selectedMap)).setTileSet(tileMenu.getTileSet(tileMenu.getSelectedTileSetIndex()));
         } // Damit kein erneutes Starten immer entsteht
     }
 
@@ -244,7 +246,7 @@ public class Editor implements ActionListener {
 
     public void autoSaveMap() {
         String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(Calendar.getInstance().getTime());
-        File output = new File("res/autosave/" + timeStamp + "_AUTOSAVE.txt");
+        File output = new File("Content/Maps/autosave/" + timeStamp + "_AUTOSAVE.txt");
 //        System.out.println("Erstellen des Autosaves:"+output.createNewFile() );
         saveMap(output, false);
 
@@ -265,12 +267,8 @@ public class Editor implements ActionListener {
             int mapSizeX = Integer.parseInt(temp[0]);
             int mapSizeY = Integer.parseInt(temp[1]);
             Meldungen m = new Meldungen(gui,true,"null");
-            File f = Meldungen.setMapPath("TileSet");
             m.tileSetAbfrage();
-            TileSet ts = new TileSet(f.getPath()
-                    , Integer.parseInt(m.getUserInput(0))
-                    , Integer.parseInt(m.getUserInput(1))
-                    , Integer.parseInt(m.getUserInput(2)));
+            TileSet ts = m.getTileset();
             EditorMap em = new EditorMap(gui, mapSizeX, mapSizeY, ts);
             em.createBaseMap(); // FIXME: 02.04.2019 Kann besser gelöst werden statt überschreiben
             int i = 2;
@@ -305,7 +303,7 @@ public class Editor implements ActionListener {
             name++;
             mapCheck.add(new JCheckBox("Map " + name));
             JButton temp = new JButton();
-            temp = new JButton(new ImageIcon(((new ImageIcon("res/deleteIcon.png")).getImage()).getScaledInstance(h, h, Image.SCALE_SMOOTH)));
+            temp = new JButton(new ImageIcon(((new ImageIcon("Content/Graphics/UI/deleteIcon.png")).getImage()).getScaledInstance(h, h, Image.SCALE_SMOOTH)));
             temp.setMaximumSize(new Dimension(h, h));
             temp.setBorder(null);
             temp.addActionListener(new RemoveBTActionListener(i) {
@@ -347,15 +345,15 @@ public class Editor implements ActionListener {
     public void zoom(boolean zoomInIsTrueZoomOutisFalse){
         // TODO: 23.03.2019 Zoom an Mapgroesse angepasst EDIT: NICHT WIRKLICH NÖTIG...
         EditorMap m = (EditorMap) maps.get(selectedMap);
-        zoom = 0.25;
+        double zoom = 0.25;
         int maxZoom = 10 ,minZoom = 10 ;
         if (zoomInIsTrueZoomOutisFalse){
             //Reinzoom:
             if (zoomSteps < maxZoom ){
                 zoomSteps = zoomSteps + 1;
-                zoom = 1+zoom;
+                zoom = 1 + zoom;
                 Tile.setTILEWIDTH( (int) Math.round(Tile.TILEWIDTH * zoom));
-                Tile.setTILEHEIGHT((int) Math.round(Tile.TILEHEIGHT *  zoom));
+                Tile.setTILEHEIGHT((int) Math.round(Tile.TILEHEIGHT * zoom));
             }else {
                 zoomSteps = 5;
             }
@@ -363,9 +361,9 @@ public class Editor implements ActionListener {
             //Rauszoom:
             if (zoomSteps > -minZoom ){
                 zoomSteps = zoomSteps - 1;
-                zoom = 1-zoom;
-                Tile.setTILEWIDTH((int) Math.round(Tile.TILEWIDTH *   zoom));
-                Tile.setTILEHEIGHT((int) Math.round(Tile.TILEHEIGHT *  zoom));
+                zoom = 1 - zoom;
+                Tile.setTILEWIDTH((int) Math.round(Tile.TILEWIDTH * zoom));
+                Tile.setTILEHEIGHT((int) Math.round(Tile.TILEHEIGHT * zoom));
             }else {
                 zoomSteps = -5;
             }
@@ -430,9 +428,15 @@ public class Editor implements ActionListener {
         }
     }
 
+    @Override
     public void mouseDragged(MouseEvent e) {
         EditorMap m = (EditorMap) maps.get(selectedMap);
         m.setTile(e);
+    }
+
+    @Override
+    public void mouseMoved(MouseEvent e) {
+
     }
 
 

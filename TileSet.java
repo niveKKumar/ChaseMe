@@ -1,15 +1,14 @@
-import java.awt.image.*; 
-import java.io.*;
-import javax.imageio.*;
+import javax.imageio.ImageIO;
+import java.awt.*;
 import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
 
 
 public class TileSet{
   private String tileSetImagePath;
   private int numberOfTilesX, numberOfTilesY;
-  private BufferedImage tileSetImage;
   public Tile[] tileSet;
-  private int width=64,height=64;
   private int border;
   
   
@@ -23,8 +22,15 @@ public class TileSet{
   }
 
   public void createTileSetImages(){
+    BufferedImage tileSetImage;
+    int width = Tile.TILEWIDTH, height = Tile.TILEHEIGHT;
     try {
+      // TODO: 06.04.2019 TileSet erkennt breite automatisch DONE!
       tileSetImage = ImageIO.read(new File(tileSetImagePath));
+      width = tileSetImage.getWidth() / numberOfTilesX - border;
+      height = tileSetImage.getHeight() / numberOfTilesY - border;
+//      System.out.println("TS: height_"+height+" width_"+width);
+
     } catch (IOException e) {
       e.printStackTrace();
       return;
@@ -33,7 +39,8 @@ public class TileSet{
     int i = 0;
       for(int y = 0; y < numberOfTilesY; y++) {
         for(int x = 0; x < numberOfTilesX; x++) {
-        BufferedImage bi = tileSetImage.getSubimage(x * (width +border), y * (height+border), width, height);
+          BufferedImage bi = tileSetImage.getSubimage(x * (width + border), y * (height + border), width, height);
+          bi.getScaledInstance(Tile.TILEWIDTH, Tile.TILEHEIGHT, Image.SCALE_SMOOTH);
         tileSet[i++] = new Tile(bi);
       }
     }

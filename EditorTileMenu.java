@@ -59,7 +59,7 @@ public class EditorTileMenu extends JDialog {
     public void createTileSet() {
         //Standard TileSet:
         if (firstStart) {
-            tileSet.add(new TileSet("res/textures/tileSet.png", 12, 12, 3)); // Standard Tile Set)
+            tileSet.add(new TileSet("Content/Graphics/tileSets/12x12x3 - tileSet.png", 12, 12, 3)); // Standard Tile Set)
             firstStart = false;
         } else {
             Meldungen meldung = new Meldungen(owner, true, "null");
@@ -68,6 +68,8 @@ public class EditorTileMenu extends JDialog {
                 String filename = path.getName();
                 String[] filenameSplit = null;
                 filename = filename.replace(".png", "");
+                int tillCharacter = filename.indexOf(" -");
+                filename = filename.substring(0, tillCharacter);
                 filenameSplit = filename.split("x");
 
                 for (int i = 0; i < filenameSplit.length; i++) {
@@ -83,35 +85,10 @@ public class EditorTileMenu extends JDialog {
                 System.out.println(e);
                 System.out.println("Konnte nicht automtisch das TIleSet laden!");
                 meldung.tileSetAbfrage();
-                tileSet.add(new TileSet(path.getPath()
-                        , Integer.parseInt(meldung.getUserInput(0))
-                        , Integer.parseInt(meldung.getUserInput(1))
-                        , Integer.parseInt(meldung.getUserInput(2))));
+                tileSet.add(meldung.getTileset());
             }
         }
         createTileSetComponents();
-    }
-
-    public void nfcheck() {
-        int temp = 0;
-//        try {
-//            for (int i = 0; i < tileSet.size(); i++) {
-//                if (Integer.parseInt(txtEingabe[i].getText()) <= ((TileSet) tileSet.get(i)).tileSet.length) {
-//                    temp++;
-//                    selectedID = Integer.parseInt(txtEingabe[i].getText());
-//                    selectedinLabel(selectedLabel);
-//                } else {
-//                    txtEingabe[temp].setText(""); // FIXME: 14.03.2019 Mit Documentlistener muss anders umgegangen werden!
-//                    JOptionPane.showMessageDialog(this, "Es können nur Tiles von  0 bis " +  ((TileSet) tileSet.get(i)).tileSet.length + " verwendet werden", "", JOptionPane.WARNING_MESSAGE);
-//                }
-//            }
-//        } catch (NumberFormatException en) {
-//            if (!txtEingabe[temp].getText().equals("")) {
-//                txtEingabe[temp].setText("");
-//                JOptionPane.showMessageDialog(this, "Ungültige Zahl.", "", JOptionPane.WARNING_MESSAGE);
-//            }
-//        }
-//        System.out.println("NF check");
     }
 
 
@@ -142,12 +119,10 @@ public class EditorTileMenu extends JDialog {
         // FIXME: 06.04.2019 Kann besser gelöst werden -> nur Scrollpane als Array, der Rest Local
         JPanel tilePanel = new JPanel();
         tilePanel.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
-        tilePanel.setMaximumSize(new Dimension(0, 0));
         tilePanel.setMinimumSize(new Dimension(50, 50));
         tilePanel.setPreferredSize(new Dimension(50, 150));
         //Hinzufuegen der TileEingabe auf das JPanel
         JTextField txtEingabe = new JTextField();
-        txtEingabe.setMaximumSize(new Dimension(50, 50));
         txtEingabe.setMinimumSize(new Dimension(50, 50));
         txtEingabe.setPreferredSize(new Dimension(50, 50));
         txtEingabe.getDocument().addDocumentListener(new DocumentListener() {
@@ -217,15 +192,8 @@ public class EditorTileMenu extends JDialog {
 
         JScrollPane scrollPane = new JScrollPane();
         scrollPane.getVerticalScrollBar().setUnitIncrement(16);
-        scrollPane.setAlignmentX(1.0f);
-        scrollPane.setAutoscrolls(false);
-        scrollPane.setHorizontalScrollBarPolicy(31);
-        scrollPane.setMaximumSize(new Dimension(300, 350));
-        scrollPane.setMinimumSize(new Dimension(50, 50));
         scrollPane.setOpaque(true);
         scrollPane.setPreferredSize(new Dimension(50, 300));
-        scrollPane.setRequestFocusEnabled(true);
-        scrollPane.setVerticalScrollBarPolicy(22);
         scrollPane.setViewportView(tilePanel);
         tsTabPane.addTab("Tile Set " + tileSet.size(), scrollPane);
 
@@ -312,7 +280,7 @@ public class EditorTileMenu extends JDialog {
         newMapWithSelection.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
                 System.out.println();
-                TileSet tempTS = new TileSet("res/textures/tileSet.png", 12, 12, 3);
+                TileSet tempTS = new TileSet("Content/Graphics/tileSets/12x12x3 - tileSet.png", 12, 12, 3);
                 Meldungen meldung = new Meldungen(owner, true, "Map");
                 belongingEditor.createEditorMap(Integer.parseInt(meldung.getUserInput(0)), Integer.parseInt(meldung.getUserInput(1)), tempTS, selectedID);
             }
@@ -320,7 +288,7 @@ public class EditorTileMenu extends JDialog {
         JMenuItem newBlankMap = new JMenuItem("Neue leere Map");
         newBlankMap.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
-                TileSet tempTS = new TileSet("res/textures/tileSet.png", 12, 12, 3);
+                TileSet tempTS = new TileSet("Content/Graphics/tileSets/12x12x3 - tileSet.png", 12, 12, 3);
                 Meldungen meldung = new Meldungen(owner, true, "Map");
                 belongingEditor.createBlankEditorMap(Integer.parseInt(meldung.getUserInput(0)), Integer.parseInt(meldung.getUserInput(1)), tempTS);
             }

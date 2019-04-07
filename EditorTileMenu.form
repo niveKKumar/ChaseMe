@@ -39,7 +39,7 @@
               <text value="Bestaetigen"/>
             </properties>
           </component>
-          <component id="1452" class="javax.swing.JLabel" binding="selected">
+          <component id="1452" class="javax.swing.JLabel" binding="selectedLabel">
             <constraints/>
             <properties>
               <horizontalAlignment value="0"/>
