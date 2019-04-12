@@ -1,7 +1,7 @@
 import javax.swing.*;
 import java.awt.*;
 
-class EditorTileButton extends JButton  {
+class EditorTileButton extends JLabel {
     private int id;
     private TileSet tileSet = new TileSet("Content/Graphics/tileSets/12x12x3 - tileSet.png", 12, 12, 3);
 
@@ -30,6 +30,7 @@ class EditorTileButton extends JButton  {
             System.out.println("Fehler beim Laden von Bild");
         }
     }
+
 
     public TileSet getTileSet() {
         return tileSet;

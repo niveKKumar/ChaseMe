@@ -99,8 +99,8 @@ public class MapBase {
         for (int zeile = 0; zeile < mapSizeX; zeile++) {
             for (int spalte = 0; spalte < mapSizeY; spalte++) {
                 for (int i = 0; i < blockedIDs.size(); i++) {
-                    if (mapTiles[spalte][zeile].getID() == blockedIDs.get(i)) {
-                        mapTiles[spalte][zeile].setBlocked(true);
+                    if (mapTiles[zeile][spalte].getID() == blockedIDs.get(i)) {
+                        mapTiles[zeile][spalte].setBlocked(true);
                     }
                 }
             }

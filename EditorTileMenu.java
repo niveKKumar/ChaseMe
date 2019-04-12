@@ -6,7 +6,8 @@ import javax.swing.event.DocumentListener;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.File;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.util.ArrayList;
 
 public class EditorTileMenu extends JDialog {
@@ -24,7 +25,6 @@ public class EditorTileMenu extends JDialog {
     private int selectedID;
     private int selectedTileSet;
 
-    private EditorTileButton[] tileMenuButtons;
     private ArrayList tileSet = new ArrayList<TileSet>();
     private Editor belongingEditor;
 
@@ -40,6 +40,10 @@ public class EditorTileMenu extends JDialog {
         $$$setupUI$$$();
         setContentPane(contentPane);
         setSize(500, 300);
+        Dimension d = Toolkit.getDefaultToolkit().getScreenSize();
+        int x = (d.width - getSize().width) / 2;
+        int y = (d.height - getSize().height) / 2;
+        setLocation(x, y);
 
         btOk.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
@@ -60,35 +64,13 @@ public class EditorTileMenu extends JDialog {
         //Standard TileSet:
         if (firstStart) {
             tileSet.add(new TileSet("Content/Graphics/tileSets/12x12x3 - tileSet.png", 12, 12, 3)); // Standard Tile Set)
+            createTileSetComponents();
             firstStart = false;
         } else {
-            Meldungen meldung = new Meldungen(owner, true, "null");
-            File path = Meldungen.setMapPath("TileSet");
-            try {
-                String filename = path.getName();
-                String[] filenameSplit = null;
-                filename = filename.replace(".png", "");
-                int tillCharacter = filename.indexOf(" -");
-                filename = filename.substring(0, tillCharacter);
-                filenameSplit = filename.split("x");
-
-                for (int i = 0; i < filenameSplit.length; i++) {
-                    System.out.println(filenameSplit[i]);
-                }
-
-                tileSet.add(new TileSet(path.getPath()
-                        , Integer.parseInt(filenameSplit[0])
-                        , Integer.parseInt(filenameSplit[1])
-                        , Integer.parseInt(filenameSplit[2])));
-
-            } catch (Exception e) {
-                System.out.println(e);
-                System.out.println("Konnte nicht automtisch das TIleSet laden!");
-                meldung.tileSetAbfrage();
-                tileSet.add(meldung.getTileset());
-            }
+            Meldungen meldung = new Meldungen(owner, true, "TileSet");
+            tileSet.add(meldung.getTileSet());
+            createTileSetComponents();
         }
-        createTileSetComponents();
     }
 
 
@@ -116,7 +98,10 @@ public class EditorTileMenu extends JDialog {
     }
 
     public void createTileSetComponents() {
-        // FIXME: 06.04.2019 Kann besser gelöst werden -> nur Scrollpane als Array, der Rest Local
+        // FIXME: 06.04.2019 Kann besser gelöst werden -> nur Scrollpane als Array, der Rest Local Done
+        final long now = System.currentTimeMillis();
+
+
         JPanel tilePanel = new JPanel();
         tilePanel.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
         tilePanel.setMinimumSize(new Dimension(50, 50));
@@ -161,17 +146,15 @@ public class EditorTileMenu extends JDialog {
         for (int i = 0; i < tileMenuButtons.length; i++) {
             tileMenuButtons[i] = new EditorTileButton(i, ((TileSet) tileSet.get(selectedTileSet)));
             tileMenuButtons[i].loadImage(i);
-            tileMenuButtons[i].addActionListener(new ActionListener() {
+            tileMenuButtons[i].addMouseListener(new MouseListener() {
                 @Override
-                public void actionPerformed(ActionEvent e) {
+                public void mouseClicked(MouseEvent e) {
                     try {
                         EditorTileButton source = ((EditorTileButton) e.getSource());
                         selectedID = source.getId();
                         for (int i = 0; i < tileSet.size(); i++) {
-//                System.out.println("Compare Source Path:" + source.getTileSet().getTileSetImagePath() + "with TileSets Path in Menu:" + ((TileSet) tileSet.get(i)).getTileSetImagePath());
                             if (source.getTileSet().getTileSetImagePath().equals(((TileSet) tileSet.get(i)).getTileSetImagePath())) {
                                 selectedTileSet = i;
-//                    System.out.println(selectedTileSet + "selectedTS");
                             }
                         }
                         selectedinLabel(selectedLabel, source.getIcon());
@@ -179,6 +162,26 @@ public class EditorTileMenu extends JDialog {
                             Exception ex) {
                         System.out.println("Source isnt E-BT");
                     }
+                }
+
+                @Override
+                public void mousePressed(MouseEvent e) {
+
+                }
+
+                @Override
+                public void mouseReleased(MouseEvent e) {
+
+                }
+
+                @Override
+                public void mouseEntered(MouseEvent e) {
+
+                }
+
+                @Override
+                public void mouseExited(MouseEvent e) {
+
                 }
             });
             tilePanel.add(tileMenuButtons[i]);
@@ -197,6 +200,7 @@ public class EditorTileMenu extends JDialog {
         scrollPane.setViewportView(tilePanel);
         tsTabPane.addTab("Tile Set " + tileSet.size(), scrollPane);
 
+        System.out.println(System.currentTimeMillis() - now);
     }
 
     public void setSelectedID(int selectedID) {
@@ -270,7 +274,8 @@ public class EditorTileMenu extends JDialog {
         JMenuItem save = new JMenuItem("Speichern");
         save.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
-                belongingEditor.saveMap(Meldungen.setMapPath("Save"), true);
+                Meldungen m = new Meldungen(owner, true, "Map");
+                belongingEditor.saveMap(m.setMapPath("Save"), true);
             }
         });
 
@@ -279,10 +284,8 @@ public class EditorTileMenu extends JDialog {
         JMenuItem newMapWithSelection = new JMenuItem("Neue Map mit dem ausgewählten Tile erstellen");
         newMapWithSelection.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
-                System.out.println();
-                TileSet tempTS = new TileSet("Content/Graphics/tileSets/12x12x3 - tileSet.png", 12, 12, 3);
                 Meldungen meldung = new Meldungen(owner, true, "Map");
-                belongingEditor.createEditorMap(Integer.parseInt(meldung.getUserInput(0)), Integer.parseInt(meldung.getUserInput(1)), tempTS, selectedID);
+                belongingEditor.createEditorMap(Integer.parseInt(meldung.getUserInput(0)), Integer.parseInt(meldung.getUserInput(1)), ((TileSet) tileSet.get(selectedTileSet)), selectedID);
             }
         });
         JMenuItem newBlankMap = new JMenuItem("Neue leere Map");
@@ -291,6 +294,14 @@ public class EditorTileMenu extends JDialog {
                 TileSet tempTS = new TileSet("Content/Graphics/tileSets/12x12x3 - tileSet.png", 12, 12, 3);
                 Meldungen meldung = new Meldungen(owner, true, "Map");
                 belongingEditor.createBlankEditorMap(Integer.parseInt(meldung.getUserInput(0)), Integer.parseInt(meldung.getUserInput(1)), tempTS);
+            }
+        });
+        JMenuItem newItemMap = new JMenuItem("Neue Item Map");
+        newItemMap.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent evt) {
+                TileSet tempTS = new TileSet("Content/Graphics/tileSets/16x16x0 - tileSetItems.png", 16, 16, 0);
+                Meldungen meldung = new Meldungen(owner, true, "Map");
+                belongingEditor.createEditorMap(Integer.parseInt(meldung.getUserInput(0)), Integer.parseInt(meldung.getUserInput(1)), tempTS, 0);
             }
         });
 
@@ -303,6 +314,7 @@ public class EditorTileMenu extends JDialog {
         menubar.add(newMap);
         newMap.add(newMapWithSelection);
         newMap.add(newBlankMap);
+        newMap.add(newItemMap);
         menubar.add(open);
         menubar.add(save);
         menubar.add(load);

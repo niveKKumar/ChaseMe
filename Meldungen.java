@@ -7,7 +7,7 @@ import java.awt.event.*;
 import java.io.File;
 
 public class Meldungen extends JDialog implements ActionListener {
-    public static JFileChooser fileChooser = new JFileChooser();
+    public JFileChooser fileChooser = new JFileChooser();
     private static JFrame owner;
     private JPanel contentPane;
     private JButton buttonOK;
@@ -20,20 +20,21 @@ public class Meldungen extends JDialog implements ActionListener {
     private JButton[] button;
     private String[] userInput;
     private TileSet ts;
-    private File f = null;
+    private String currentPath = null; // TODO: 08.04.2019 Kann besser gelöst werden
     private boolean firstStart = true;
-    private boolean tileSetAbfrage = false;
+    private boolean tileSetAbfrageManually = false;
 
     public Meldungen(JFrame owner, boolean modal, String bestimmteAbfrage) {
         super(owner, modal);
         Meldungen.owner = owner;
         $$$setupUI$$$();
-        int x = (this.getWidth() - getSize().width) / 2;
-        int y = (this.getWidth() - getSize().height) / 2;
-        setLocation(x, y);
-        setSize(500, 300);
         setContentPane(contentPane);
         getRootPane().setDefaultButton(buttonOK);
+        setSize(500, 300);
+        Dimension d = Toolkit.getDefaultToolkit().getScreenSize();
+        int x = (d.width - getSize().width) / 2;
+        int y = (d.height - getSize().height) / 2;
+        setLocation(x, y);
 
         buttonOK.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
@@ -69,14 +70,14 @@ public class Meldungen extends JDialog implements ActionListener {
                 setVisible(false);
                 break;
             case "TileSet":
-                tileSetAbfrage();
+                setMapPath("TileSet");
                 break;
             case "Path":
                 break;
         }
     }
 
-    public static File setMapPath(String openOrSaveOrTileSet) {             //Methode des Filechosers; offnet einen Speicher-Dialog
+    public File setMapPath(String openOrSaveOrTileSet) {             //Methode des Filechosers; offnet einen Speicher-Dialog
         if (openOrSaveOrTileSet.equals("Open")) {
             fileChooser.setCurrentDirectory(new File("Content/maps"));
             String extension = ".txt";
@@ -98,7 +99,9 @@ public class Meldungen extends JDialog implements ActionListener {
             String extension = ".png";
             setFileFilter(extension);
             if (fileChooser.showOpenDialog(owner) == JFileChooser.APPROVE_OPTION) {  //Wenn der Ok-Button gedrueckt wird...
-                return fileChooser.getSelectedFile();
+                File f = fileChooser.getSelectedFile();
+                tileSetAbfrage(f);
+                return f;
             }
         }
         JOptionPane.showMessageDialog(owner, "Keine Datei ausgewählt.", "", JOptionPane.WARNING_MESSAGE);
@@ -106,7 +109,7 @@ public class Meldungen extends JDialog implements ActionListener {
 
     }
 
-    private static void setFileFilter(String extension) {
+    private void setFileFilter(String extension) {
         fileChooser.resetChoosableFileFilters();
         fileChooser.setFileFilter(new FileFilter() {
             @Override
@@ -125,8 +128,10 @@ public class Meldungen extends JDialog implements ActionListener {
     }
 
     private void onOK() {
-        if (tileSetAbfrage) {
+        if (tileSetAbfrageManually) {
             createTileSet();
+            tileSetAbfrageManually = false;
+            System.out.println("Manuelles TS wurde erfolgreich erstellt");
         }
         setVisible(false);
     }
@@ -141,49 +146,74 @@ public class Meldungen extends JDialog implements ActionListener {
         setVisible(true);
     }
 
-    public void tileSetAbfrage() {
-        createComponents(3, "Bitte nähere Angaben zu den Tiles (Tiles pro Länge und Breite + Abstand zwischen Tiles); ");
-        f = Meldungen.setMapPath("TileSet");
-        eingabe[0].setText("Breite");
-        eingabe[1].setText("Höhe");
-        eingabe[2].setText("Border");
-        button = new JButton[2];
-        button[0] = new JButton("Tile Set - Base Tiles");
-        button[0].addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                eingabe[0].setText("12");
-                eingabe[1].setText("12");
-                eingabe[2].setText("3");
-            }
-        });
-        button[1] = new JButton("Tile Set - Item Tiles");
-        button[1].addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                eingabe[0].setText("16");
-                eingabe[1].setText("16");
-                eingabe[2].setText("0");
-            }
-        });
+    public void tileSetAbfrage(File f) {
+        try {
+            //Automatisches TileSet erstellen:
+            String filename = f.getName();
+            String[] filenameSplit = null;
+            filename = filename.replace(".png", "");
+            int tillCharacter = filename.indexOf(" -");
+            filename = filename.substring(0, tillCharacter);
+            filenameSplit = filename.split("x");
 
-        for (int i = 0; i < button.length; i++) {
-            button[i].setFocusable(false);
-            center.add(button[i]);
+            for (int i = 0; i < filenameSplit.length; i++) {
+                System.out.println(filenameSplit[i]);
+            }
+
+            ts = new TileSet(f.getPath()
+                    , Integer.parseInt(filenameSplit[0])
+                    , Integer.parseInt(filenameSplit[1])
+                    , Integer.parseInt(filenameSplit[2]));
+
+        } catch (Exception e) {
+            // Manuelles laden:
+            System.out.println("Automatisch ging nicht");
+            createComponents(3, "Bitte nähere Angaben zu den Tiles (Tiles pro Länge und Breite + Abstand zwischen Tiles); ");
+            eingabe[0].setText("Breite");
+            eingabe[1].setText("Höhe");
+            eingabe[2].setText("Border");
+
+
+            button = new JButton[2];
+            button[0] = new JButton("Tile Set - Base Tiles");
+            button[0].addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    eingabe[0].setText("12");
+                    eingabe[1].setText("12");
+                    eingabe[2].setText("3");
+                }
+            });
+            button[1] = new JButton("Tile Set - Item Tiles");
+            button[1].addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    eingabe[0].setText("16");
+                    eingabe[1].setText("16");
+                    eingabe[2].setText("0");
+                }
+            });
+
+            for (int i = 0; i < button.length; i++) {
+                button[i].setFocusable(false);
+                center.add(button[i]);
+            }
+            setVisible(true);
+            tileSetAbfrageManually = true;
+            currentPath = f.getPath();
         }
-        setVisible(true);
-        tileSetAbfrage = true;
     }
 
-    public void createTileSet() {
-        ts = new TileSet(f.getPath()
+    public TileSet createTileSet() {
+        ts = new TileSet(currentPath
                 , Integer.parseInt(getUserInput(0))
                 , Integer.parseInt(getUserInput(1))
                 , Integer.parseInt(getUserInput(2)));
+        System.out.println("Manuelles TS wurde erfolgreich erstellt");
+        return ts;
     }
 
-    public TileSet getTileset() {
-        tileSetAbfrage = false;
+    public TileSet getTileSet() {
         return ts;
     }
 

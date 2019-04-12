@@ -18,7 +18,6 @@ public class Editor implements ActionListener, MouseMotionListener {
     private LinkedList recentList = new LinkedList();
     public int selectedMap = 0;
     private int maxRecent = 10;
-    public boolean autosave = false;
     public JLabel idAnzeige;
     private Timer autosaver;
     private JPanel recent = new JPanel();
@@ -43,6 +42,7 @@ public class Editor implements ActionListener, MouseMotionListener {
 
     public void createMenu() {
         idAnzeige = new JLabel();
+        idAnzeige.setFocusable(false);
         idAnzeige.setText("Kein Tile ausgewählt");
         idAnzeige.setBorder(BorderFactory.createLineBorder(Color.black));
 
@@ -65,6 +65,7 @@ public class Editor implements ActionListener, MouseMotionListener {
             gui.south.add(editorbuttons[i]);
         }
         mapSelectedBox = new JComboBox();
+        mapSelectedBox.setFocusable(false);
         mapSelectedBox.addItemListener(new ItemListener() {
 
             @Override
@@ -83,12 +84,14 @@ public class Editor implements ActionListener, MouseMotionListener {
                         System.out.println("Setze Camera Point auf Selected");
                     }
                 }
+                gui.requestFocus();
             }
         });
 
         mapSelectActionsPanel.add(mapSelectedBox);
 
         JButton btChapterOffset = new JButton("Chapter Offset setzen:");
+        btChapterOffset.setFocusable(false);
         btChapterOffset.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -96,34 +99,36 @@ public class Editor implements ActionListener, MouseMotionListener {
                 m.chapterAbfrage();
                 ((EditorMap) maps.get(selectedMap)).setchapterXOffset(Integer.parseInt(m.getUserInput(0)));
                 ((EditorMap) maps.get(selectedMap)).setchapterYOffset(Integer.parseInt(m.getUserInput(1)));
+                gui.requestFocus();
             }
         });
         mapSelectActionsPanel.add(btChapterOffset);
 
-        btAutosave = new JButton("!Autosave temporarily disabled because of Construction! (enabled)");
-//        btAutosave.setForeground(Color.green);
-        btAutosave.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                if (autosave) {
-                    autosave = false;
-                    btAutosave.setText("Autosave disabled");
-                    btAutosave.setForeground(Color.red);
-                } else {
-                    autosave = true;
-                    btAutosave.setText("Autosave enabled");
-                    btAutosave.setForeground(Color.green);
-                }
-            }
-        });
-        mapSelectActionsPanel.add(btAutosave);
-        //Alle 60 Sekunden
-        autosaver = new Timer(60000, new ActionListener() {
+        autosaver = new Timer(45000, new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 autoSaveMap();
             }
         });
+        btAutosave = new JButton("Autosave is enabled");
+        btAutosave.setForeground(Color.green);
+        autosaver.start();
+        btAutosave.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (!autosaver.isRunning()) {
+                    autosaver.start();
+                    btAutosave.setText("Autosave enabled");
+                    btAutosave.setForeground(Color.green);
+                } else {
+                    autosaver.stop();
+                    btAutosave.setText("Autosave disabled");
+                    btAutosave.setForeground(Color.red);
+                }
+                gui.requestFocus();
+            }
+        });
+        mapSelectActionsPanel.add(btAutosave);
 
         gui.west.add(recent);
         gui.east.add(selectMapPanel);
@@ -147,7 +152,7 @@ public class Editor implements ActionListener, MouseMotionListener {
 
         createCheckbox();
         gui.camera = new Camera(mapSizeX,mapSizeY);
-        cameraPoint = new Pointer(mapSizeX*Tile.TILEWIDTH/2,mapSizeY*Tile.TILEHEIGHT/2,mapSizeX,mapSizeY);
+        cameraPoint = new Pointer(gui.camera, (EditorMap) maps.get(selectedMap));
     }
 
     public void createBlankEditorMap(int mapSizeX, int mapSizeY, TileSet pTileSet) {
@@ -158,7 +163,7 @@ public class Editor implements ActionListener, MouseMotionListener {
 
         createCheckbox();
         gui.camera = new Camera(mapSizeX, mapSizeY);
-        cameraPoint = new Pointer(mapSizeX * Tile.TILEWIDTH / 2, mapSizeY * Tile.TILEHEIGHT / 2, mapSizeX, mapSizeY);
+        cameraPoint = new Pointer(gui.camera, (EditorMap) maps.get(selectedMap));
     }
 
     public void renderEditor(Graphics2D g2d) {
@@ -196,29 +201,46 @@ public class Editor implements ActionListener, MouseMotionListener {
         if (gui.keyInputToMove().getX() != 0 || gui.keyInputToMove().getY() != 0) {
             cameraPoint.setMove(gui.keyInputToMove());
         }
-        if (autosave) {
-            autosaver.start();
-        } else {
-            autosaver.stop();
-        }
     }
     public void displayRecent(JPanel panel){
         panel.removeAll();
         for (int i = 0; i < recentList.size(); i++) {
             EditorTileButton temp = (EditorTileButton)recentList.get(i);
-            temp.addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                    System.out.println(temp.getId()+"meine ID beim klicken  ");
+            temp.addMouseListener(new MouseListener() {
+                @Override
+                public void mouseClicked(MouseEvent e) {
+//                    System.out.println(temp.getId()+"meine ID beim klicken  ");
                     EditorMap m = (EditorMap) maps.get(selectedMap);
                     tileMenu.setSelectedID(temp.getId());
                     m.setGraphicID(temp.getId());
                     m.setTileSet(temp.getTileSet());
                     tileMenu.selectedinLabel(idAnzeige, null);
                 }
+
+                @Override
+                public void mousePressed(MouseEvent e) {
+
+                }
+
+                @Override
+                public void mouseReleased(MouseEvent e) {
+
+                }
+
+                @Override
+                public void mouseEntered(MouseEvent e) {
+
+                }
+
+                @Override
+                public void mouseExited(MouseEvent e) {
+
+                }
             });
             panel.add(temp);
         }
         gui.repaint();
+        panel.revalidate();
     }
 
     public void saveMap(File path, boolean notification) {
@@ -247,14 +269,13 @@ public class Editor implements ActionListener, MouseMotionListener {
     public void autoSaveMap() {
         String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(Calendar.getInstance().getTime());
         File output = new File("Content/Maps/autosave/" + timeStamp + "_AUTOSAVE.txt");
-//        System.out.println("Erstellen des Autosaves:"+output.createNewFile() );
         saveMap(output, false);
 
     }
 
     public void loadMap() {
-        Meldungen pathRequest = new Meldungen(gui,true,"null");
-        File path = Meldungen.setMapPath("Open");                //Der Filechooeser liefert die Pfadangabe zu dem selektierten Speicherort.
+        Meldungen m = new Meldungen(gui, true, "null");
+        File path = m.setMapPath("Open");                //Der Filechooeser liefert die Pfadangabe zu dem selektierten Speicherort.
         String mapString = null;
         try (BufferedReader in = new BufferedReader(new FileReader(path))) {     //Bufferedreader liest die Datei an dem von Filechooser zurückgelieferten Speicherort aus.
             String line = in.readLine();
@@ -266,9 +287,9 @@ public class Editor implements ActionListener, MouseMotionListener {
             String[] temp = mapString.split("\\s+");
             int mapSizeX = Integer.parseInt(temp[0]);
             int mapSizeY = Integer.parseInt(temp[1]);
-            Meldungen m = new Meldungen(gui,true,"null");
-            m.tileSetAbfrage();
-            TileSet ts = m.getTileset();
+
+            m.setMapPath("TileSet");
+            TileSet ts = m.getTileSet();
             EditorMap em = new EditorMap(gui, mapSizeX, mapSizeY, ts);
             em.createBaseMap(); // FIXME: 02.04.2019 Kann besser gelöst werden statt überschreiben
             int i = 2;
@@ -279,11 +300,12 @@ public class Editor implements ActionListener, MouseMotionListener {
                     i++;
                 }
             }
+
             maps.add(em);
             selectedMap = maps.size() - 1;
             createCheckbox();
             gui.camera = new Camera(mapSizeX, mapSizeY);
-            cameraPoint = new Pointer(mapSizeX * Tile.TILEWIDTH / 2, mapSizeY * Tile.TILEHEIGHT / 2, mapSizeX, mapSizeY);
+            cameraPoint = new Pointer(gui.camera, (EditorMap) maps.get(selectedMap));
 
             JOptionPane.showMessageDialog(gui, "Map erfolgreich geladen.");
         } catch (Exception e) {
@@ -310,6 +332,7 @@ public class Editor implements ActionListener, MouseMotionListener {
                 @Override
                 public void actionPerformed(ActionEvent e) {
                     super.actionPerformed(e);
+                    gui.requestFocus();
                 }
             });
             mapSelectedBox.addItem("Map " + name);
@@ -375,17 +398,9 @@ public class Editor implements ActionListener, MouseMotionListener {
     public void removeMap(int index) {
         System.out.println("Index:" + index);
         maps.remove(index);
-        if (!maps.isEmpty()) {
-            mapCheck.remove(index);
-            System.out.println("Item Count:" + mapSelectedBox.getItemCount());
-            mapSelectedBox.remove((index - 1));
-
-            if (selectedMap == index || selectedMap != maps.size()) {
-                selectedMap = maps.indexOf(maps.getLast());
-            }
-        } else {
+        mapCheck.remove(index);
+        if (maps.isEmpty()) {
             mapCheck.clear();
-            maps.clear();
             mapSelectedBox.removeAllItems();
         }
         createCheckbox();
@@ -457,22 +472,20 @@ public class Editor implements ActionListener, MouseMotionListener {
         private int mapSizeX,mapSizeY;
         private int speed = 10;
 
-        public Pointer(int  xPos,int yPos,EditorMap map){
-            this.xPos = xPos;
-            this.yPos = yPos;
+        public Pointer(Camera camera, EditorMap map) {
             mapSizeX = map.getMapSizeX();
-            mapSizeY =map.getMapSizeY();
-
-            gui.getCamera().centerOnObject(this.getLocation());
+            mapSizeY = map.getMapSizeY();
+            this.xPos = mapSizeX / 2 * Tile.TILEWIDTH;
+            this.yPos = mapSizeY / 2 * Tile.TILEHEIGHT;
+            camera.centerOnObject(this.getLocation());
         }
 
-        public Pointer(int  xPos,int yPos,int pMapSizeX,int pMapSizeY){
-            this.xPos = xPos;
-            this.yPos = yPos;
+        public Pointer(Camera camera, int pMapSizeX, int pMapSizeY) {
             mapSizeX = pMapSizeX;
             mapSizeY = pMapSizeY;
-
-            gui.getCamera().centerOnObject(this.getLocation());
+            this.xPos = mapSizeX / 2 * Tile.TILEWIDTH;
+            this.yPos = mapSizeY / 2 * Tile.TILEHEIGHT;
+            camera.centerOnObject(this.getLocation());
         }
 
 
@@ -507,7 +520,6 @@ public class Editor implements ActionListener, MouseMotionListener {
             public void setxPos(int xPos) {
                 this.xPos = xPos;
             }
-
             public void setyPos(int yPos) {
                 this.yPos = yPos;
             }

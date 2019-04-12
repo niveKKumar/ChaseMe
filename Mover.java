@@ -12,10 +12,11 @@ public class Mover{
     protected int moveSeq = 1;
     protected int moveSeqSleep;
     protected int speed= 3;
+    protected int steps;
     protected Map[] map;
     protected double angleCheck;
     protected double angle ;
-    protected boolean speaking;
+    protected boolean speaking = false;
     public JTextArea speechBubble;
 //    protected boolean blocked;
 
@@ -24,7 +25,6 @@ public class Mover{
     protected Point checkPointLeft = new Point();
     protected Point checkPointRight = new Point();
     protected GUI gui;
-    protected boolean mayIMove = true;
 
     public Mover(GUI pGUI,int pXpos,int pYpos,int pWidth,int pHeight,SpriteSheet pSpriteSheet, Map[] pMap){
         gui = pGUI;
@@ -41,12 +41,13 @@ public class Mover{
     }
 
     public void setMove(Point pMove){
-        if (mayIMove == true) {
+        if (!speaking) {
             int oldXPos = xPos;
             int oldYPos = yPos;
 
             xPos += pMove.getX() * speed;
             yPos += pMove.getY() * speed;
+            steps++;
 
             moveSeqSleep++;
             if (moveSeqSleep == 5) {
@@ -62,13 +63,12 @@ public class Mover{
             if (collisionCheck()) {
                 xPos = oldXPos;
                 yPos = oldYPos;
+//                steps--;
             }
         }
-
-
     }
     public void setPathMove(Point2D from ,Point2D to ) {
-        if (mayIMove == true) {
+        if (!speaking) {
             gui.getCamera().centerOnObject(this.getLocation());
             getAngle(from, to);
             moveSeqSleep++;
@@ -111,27 +111,28 @@ public class Mover{
         checkPointLeft.setLocation(xPos, yPos + MOVER_HEIGHT / 2 + hitBoxCenter);
         checkPointRight.setLocation(xPos + MOVER_WIDTH - hitBoxCenter, yPos + MOVER_HEIGHT / 2);
         for (int i = 0;i < map.length ;i++ ) {
+            System.out.println("Checking currently Map:" + i);
             Tile[] temp1 = new Tile[map.length];
             if (map[i].isActive()) {
-                temp1[i] = map[i].mapTiles[(int) checkPointUp.getY() / MOVER_WIDTH][(int) checkPointUp.getX() / MOVER_HEIGHT];
+                temp1[i] = map[i].mapTiles[(int) checkPointUp.getX() / MOVER_WIDTH][(int) checkPointUp.getY() / MOVER_HEIGHT];
             } else {
                 continue;
             }
             Tile[] temp2 = new Tile[map.length];
             if (map[i].isActive()) {
-                temp2[i] = map[i].mapTiles[(int) checkPointDown.getY() / MOVER_WIDTH][(int) checkPointDown.getX() / MOVER_HEIGHT];
+                temp2[i] = map[i].mapTiles[(int) checkPointDown.getX() / MOVER_WIDTH][(int) checkPointDown.getY() / MOVER_HEIGHT];
             } else {
                 continue;
             }
             Tile[] temp3 = new Tile[map.length];
             if (map[i].isActive()) {
-                temp3[i] = map[i].mapTiles[(int) checkPointLeft.getY() / MOVER_WIDTH][(int) checkPointLeft.getX() / MOVER_HEIGHT];
+                temp3[i] = map[i].mapTiles[(int) checkPointLeft.getX() / MOVER_WIDTH][(int) checkPointLeft.getY() / MOVER_HEIGHT];
             } else {
                 continue;
             }
             Tile[] temp4 = new Tile[map.length];
             if (map[i].isActive()) {
-                temp4[i] = map[i].mapTiles[(int) checkPointRight.getY() / MOVER_WIDTH][(int) checkPointRight.getX() / MOVER_HEIGHT];
+                temp4[i] = map[i].mapTiles[(int) checkPointRight.getX() / MOVER_WIDTH][(int) checkPointRight.getY() / MOVER_HEIGHT];
             } else {
                 continue;
             }
@@ -167,19 +168,41 @@ public class Mover{
 
         return temp;
     }
-    public boolean isOnThisMap(int xPos,int yPos){
+
+    public boolean isOnThisTile(int xPos, int yPos) {
         boolean x = false;
         boolean y = false;
         if(moverOnMapTile().getLocation().getX() == xPos){
-            System.out.println("X ist mit Angabe identisch");
             x = true;
             }
 
         if(moverOnMapTile().getLocation().getY() == yPos){
-            System.out.println("Y ist mit Angabe identisch");
             y = true;
         }
         return x && y;
+    }
+
+    public boolean isInThisArea(Point firstCorner, Point secondCorner) {
+        if (firstCorner.getX() > secondCorner.getX()) {
+            int swap = (int) firstCorner.getX();
+            firstCorner.setLocation(secondCorner.getX(), firstCorner.getY());
+            secondCorner.setLocation(swap, secondCorner.getY());
+        }
+        if (firstCorner.getY() > secondCorner.getY()) {
+            int swap = (int) firstCorner.getY();
+            firstCorner.setLocation(firstCorner.getX(), secondCorner.getY());
+            secondCorner.setLocation(secondCorner.getX(), swap);
+        }
+
+        for (int i = (int) firstCorner.getY(); i < (int) secondCorner.getY(); i++) {
+            for (int j = (int) firstCorner.getX(); j < (int) secondCorner.getX(); j++) {
+                if (isOnThisTile(j, i)) {
+                    System.out.println("is in area");
+                    return true;
+                }
+            }
+        }
+        return false;
     }
     public void setSpeed(int pSpeed){
         speed = pSpeed;
@@ -236,29 +259,38 @@ public class Mover{
             return;
         }
     }
-    public void saySomething(String text, boolean clear){
+
+    public void saySomething(String text, boolean clear, int speakingSpeed) {
         if (clear){
             speechBubble.setText("");
         }
         speaking = true;
-        mayIMove = false;
         speechBubble.setVisible(true);
         for(int i = 0; i < text.length(); i++){
             speechBubble.append(String.valueOf(text.charAt(i)));
             try{
-                Thread.sleep(100);//Delay des Textes
+                Thread.sleep(speakingSpeed);//Delay des Textes
             }catch(InterruptedException ex){
                 Thread.currentThread().interrupt();
             }
         }
+        speaking = false;
 //        speechBubble.setVisible(false);
 
     }
 
-    public void setMayIMove(boolean mayIMove) {
-        this.mayIMove = mayIMove;
+    public int getSteps() {
+        return steps / 64;
     }
 
+    public boolean isSpeaking() {
+        return speaking;
+    }
+
+    public void setSpeaking(boolean speaking) {
+        setMove(new Point(0, 0));
+        this.speaking = speaking;
+    }
 //    // TODO: 24.03.2019 Komplett neu bedenken!!!
 //    public static class SpeechBubble extends JTextArea {
 //        public SpeechBubble(String text){

@@ -16,8 +16,8 @@ public class GUI extends JFrame implements ActionListener {
     private Thread t = new Thread(loop);
     public static final int FPS = 60; //(Bilder pro Sekunde)
     public static final long maxLoopTime = 1000 / FPS;
-    public static final int FRAME_WIDTH = 900;
-    public static final int FRAME_HEIGHT = 850;
+    public static final int FRAME_HEIGHT = 800;
+    public Tile start;
     public Container cp;
     private KeyManager keyManager;
     private DisplayAnalytics[] analytics;
@@ -31,10 +31,11 @@ public class GUI extends JFrame implements ActionListener {
         this.setBackground(Color.white);
         setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
         setSize(FRAME_WIDTH, FRAME_HEIGHT);
+        setPreferredSize(new Dimension(FRAME_WIDTH, FRAME_HEIGHT));
         Dimension d = Toolkit.getDefaultToolkit().getScreenSize();
         int x = (d.width - getSize().width) / 2;
         int y = (d.height - getSize().height) / 2;
-        //    int y = -100     ;
+        y = -50;
         setLocation(x, y);
         setTitle("Das tolle Spiel");
         setResizable(false);
@@ -56,6 +57,7 @@ public class GUI extends JFrame implements ActionListener {
         east.setPreferredSize(new Dimension(150,750));
         cp.add(west, BorderLayout.WEST);
         cp.add(north, BorderLayout.NORTH);
+        taAnzeige.setFocusable(false);
         taAnzeige.setBorder(BorderFactory.createLineBorder(Color.black));
         taAnzeige.setMinimumSize(new Dimension(east.getWidth(), 50));
         east.add(taAnzeige);
@@ -66,7 +68,7 @@ public class GUI extends JFrame implements ActionListener {
             buttons[i].addActionListener(this);
             south.add(buttons[i]);
         }
-
+        this.requestFocus();
     }
 
     private void createMenu() {
@@ -168,10 +170,6 @@ public class GUI extends JFrame implements ActionListener {
         camera = new Camera(pXSize, pYSize);
     }
 
-    public GamePanel getSpielpanel() {
-        return gamePanel;
-    }
-
     public Point keyInputToMove() {
         int xMove = 0;
         int yMove = 0;
@@ -200,19 +198,20 @@ public class GUI extends JFrame implements ActionListener {
 
     public void update() {
         keyManager.update();
-        //        System.out.println("Level Status: " + level.level);
         if (level.level != 0) {
             level.updateLevel();
         }else { //Editor:
             editor.update();
         }
+//        System.out.println(FocusManager.getCurrentManager().getFocusOwner());
         repaint();
     }
 
 
-    class GamePanel extends JPanel implements MouseListener, MouseMotionListener, ActionListener {
+    class GamePanel extends JPanel implements MouseListener, MouseMotionListener {
         public GamePanel() {
             super();
+            this.addKeyListener(keyManager);
             this.addMouseListener(this);
             this.addMouseMotionListener(this);
             setFocusable(true);
@@ -223,28 +222,12 @@ public class GUI extends JFrame implements ActionListener {
         public void paintComponent(Graphics g) {
             super.paintComponent(g);
             Graphics2D g2d = (Graphics2D) g;
-            switch (level.level) {
 
-                case 999: // MENU
-                    level.renderLevel(g2d);
-                    break;
-
-                case 0:  // EDITOR
-                    editor.setMenuVisible(true);
-//          System.out.println("editor");
-                    editor.renderEditor(g2d);
-                    break;
-
-                case 1:  // TUTORIAL
-                    level.renderLevel(g2d);
-                    break;
-
-                case 2:
-                    break;
-
-                case 3:
-
-                    break;
+            if (level.whichLevel() == 0) {
+                editor.setMenuVisible(true);
+                editor.renderEditor(g2d);
+            } else {
+                level.renderLevel(g2d);
             }
         }
 

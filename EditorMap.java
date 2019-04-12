@@ -43,6 +43,11 @@ public class EditorMap extends MapBase {
         }
     }
 
+    @Override
+    public void renderMap(Graphics2D g2d) {
+        super.renderMap(g2d);
+    }
+
     public void setTile(MouseEvent e) {
         int x = Math.round(e.getX() + gui.getCamera().getXOffset() + chapterXOffset) / Tile.TILEWIDTH;
         int y = Math.round(e.getY() + gui.getCamera().getYOffset() + chapterYOffset) / Tile.TILEHEIGHT;

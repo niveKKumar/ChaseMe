@@ -16,6 +16,7 @@ public class Tile extends JPanel implements Cloneable, Comparable{
   
   public Tile(Image pTileImage)  {
     super();
+    setOpaque(true);
     pointed = false;
     tileImage = pTileImage;
   }
@@ -53,13 +54,13 @@ public class Tile extends JPanel implements Cloneable, Comparable{
 
   public void setPointed() {
     if (pointed) {
-      pointed = false;
       showImage(false);
       setBorder(BorderFactory.createLineBorder(Color.black, 5));
+      pointed = false;
     } else {
-      pointed = true;
       showImage(true);
       setBorder(null);
+      pointed = true;
     }
 
   }

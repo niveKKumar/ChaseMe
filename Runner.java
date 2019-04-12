@@ -1,6 +1,5 @@
 import java.awt.*;
 import java.awt.geom.Point2D;
-import java.awt.geom.AffineTransform ;
 
 public class Runner extends Mover {
     private PathFinder pathfinder;
@@ -9,8 +8,8 @@ public class Runner extends Mover {
     private int speed;
     int collisionduration = 0;
 
-    public Runner(GUI pGUI, int tileXPos, int tileYPos, int pWidth, int pHeight, SpriteSheet pSpriteSheet, Map[] pMap) {
-        super(pGUI,tileXPos, tileYPos, pWidth, pHeight, pSpriteSheet, pMap);
+    public Runner(GUI pGUI, int xPos, int yPos, int pWidth, int pHeight, SpriteSheet pSpriteSheet, Map[] pMap) {
+        super(pGUI, xPos, yPos, pWidth, pHeight, pSpriteSheet, pMap);
         pathfinder = new PathFinder(map,this,gui);
     }
 
@@ -20,7 +19,7 @@ public class Runner extends Mover {
         //Delay:
         speed = pSpeed;
         this.setSpeed(speed);
-        if (!this.collisionCheck()) {
+        if (!collisionCheck()) {
             delay++;
             if (delay < speed) {
                 delay++;

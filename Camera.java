@@ -5,7 +5,7 @@
   int xSize, ySize;
   int xOffset = 0 ;
   int yOffset = 0;
-  int tX,tY;
+     int targetX, targetY;
 //  Pointer pointer;
   
   public Camera(){
@@ -22,18 +22,18 @@
     if (xOffset < 0) {
       xOffset = 0;
     }else {
-        tX = xSize * Tile.TILEWIDTH - GUI.FRAME_WIDTH + 80;
-      if (xOffset > tX) {
-        xOffset = tX;
+        targetX = xSize * Tile.TILEWIDTH - GUI.FRAME_WIDTH + 80;
+        if (xOffset > targetX) {
+            xOffset = targetX;
       } // end of if
      } // end of if-else
 
    if (yOffset < 0) {
       yOffset = 0;
     }else {
-      tY = ySize * Tile.TILEHEIGHT - GUI.FRAME_HEIGHT - 80;
-      if (yOffset > tY) {
-        yOffset = tY;
+       targetY = ySize * Tile.TILEHEIGHT - GUI.FRAME_HEIGHT - 80;
+       if (yOffset > targetY) {
+           yOffset = targetY;
      } // end of if                      
      } // end of if-else
     }
