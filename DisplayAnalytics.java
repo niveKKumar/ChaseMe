@@ -30,10 +30,10 @@ public class DisplayAnalytics{
     g2d.setStroke(stroke1);
     if (moverHitbox && isMover){
       g2d.setStroke(stroke2);
-      g2d.drawLine(mover.checkPointUp.x,mover.checkPointUp.y,mover.checkPointRight.x,mover.checkPointRight.y);
-      g2d.drawLine(mover.checkPointRight.x,mover.checkPointRight.y,mover.checkPointDown.x,mover.checkPointDown.y);
-      g2d.drawLine(mover.checkPointDown.x,mover.checkPointDown.y,mover.checkPointLeft.x,mover.checkPointLeft.y);
-      g2d.drawLine(mover.checkPointLeft.x,mover.checkPointLeft.y,mover.checkPointUp.x,mover.checkPointUp.y);
+      g2d.drawLine(mover.checkPoint[0].x, mover.checkPoint[0].y, mover.checkPoint[3].x, mover.checkPoint[3].y);
+      g2d.drawLine(mover.checkPoint[3].x, mover.checkPoint[3].y, mover.checkPoint[1].x, mover.checkPoint[1].y);
+      g2d.drawLine(mover.checkPoint[1].x, mover.checkPoint[1].y, mover.checkPoint[2].x, mover.checkPoint[2].y);
+      g2d.drawLine(mover.checkPoint[2].x, mover.checkPoint[2].y, mover.checkPoint[0].x, mover.checkPoint[0].y);
     }
     for (int spalte=0; spalte < map.mapTiles.length; spalte++ ) {
       for (int zeile=0; zeile < map.mapTiles.length; zeile++ ) {

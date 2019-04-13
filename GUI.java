@@ -3,7 +3,7 @@ import java.awt.*;
 import java.awt.event.*;
 
 public class GUI extends JFrame implements ActionListener {
-    public GamePanel gamePanel = new GamePanel();
+    public static final int FRAME_WIDTH = 800;
     public JPanel south = new JPanel(new FlowLayout());
     private JPanel north = new JPanel(new FlowLayout());
     public JPanel east = new JPanel(new FlowLayout());
@@ -167,7 +167,7 @@ public class GUI extends JFrame implements ActionListener {
     }
 
     public void setCamera(int pXSize, int pYSize) {
-        camera = new Camera(pXSize, pYSize);
+        camera = new Camera(level.mover, pXSize, pYSize);
     }
 
     public Point keyInputToMove() {

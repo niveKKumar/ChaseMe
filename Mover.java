@@ -20,10 +20,8 @@ public class Mover{
     public JTextArea speechBubble;
 //    protected boolean blocked;
 
-    protected Point checkPointUp = new Point();
-    protected Point checkPointDown = new Point();
-    protected Point checkPointLeft = new Point();
-    protected Point checkPointRight = new Point();
+    protected Point[] checkPoint = new Point[4];
+
     protected GUI gui;
 
     public Mover(GUI pGUI,int pXpos,int pYpos,int pWidth,int pHeight,SpriteSheet pSpriteSheet, Map[] pMap){
@@ -37,7 +35,9 @@ public class Mover{
         MOVER_HEIGHT = pHeight;
         gui.south.add(speechBubble = new JTextArea("Mover:"));
         speechBubble.setVisible(false);
-        gui.getCamera().centerOnObject(this.getLocation());
+        for (int i = 0; i < checkPoint.length; i++) {
+            checkPoint[i] = new Point();
+        }
     }
 
     public void setMove(Point pMove){
@@ -63,13 +63,14 @@ public class Mover{
             if (collisionCheck()) {
                 xPos = oldXPos;
                 yPos = oldYPos;
-//                steps--;
+                steps--;
+                System.out.println("BLock");
             }
         }
     }
     public void setPathMove(Point2D from ,Point2D to ) {
         if (!speaking) {
-            gui.getCamera().centerOnObject(this.getLocation());
+            gui.getCamera().centerOnObject(this);
             getAngle(from, to);
             moveSeqSleep++;
             if (moveSeqSleep == 5) {
@@ -104,42 +105,32 @@ public class Mover{
         if (pYMove == 1) img = sprites.getSpriteElement(0,moveSeq);   //unten
     }
     protected boolean collisionCheck(){
+        moverOnMapTile();
+
         boolean blocked = false;
         int hitBoxCenter = 3;
-        checkPointUp.setLocation(xPos + MOVER_WIDTH / 2, yPos + hitBoxCenter);
-        checkPointDown.setLocation(xPos + MOVER_WIDTH / 2, yPos + MOVER_HEIGHT - hitBoxCenter);
-        checkPointLeft.setLocation(xPos, yPos + MOVER_HEIGHT / 2 + hitBoxCenter);
-        checkPointRight.setLocation(xPos + MOVER_WIDTH - hitBoxCenter, yPos + MOVER_HEIGHT / 2);
+        /*Up*/
+        checkPoint[0].setLocation(xPos + MOVER_WIDTH / 2, yPos + hitBoxCenter);
+        /*Down*/
+        checkPoint[1].setLocation(xPos + MOVER_WIDTH / 2, yPos + MOVER_HEIGHT - hitBoxCenter);
+        /*Left*/
+        checkPoint[2].setLocation(xPos, yPos + MOVER_HEIGHT / 2 + hitBoxCenter);
+        /*Right*/
+        checkPoint[3].setLocation(xPos + MOVER_WIDTH - hitBoxCenter, yPos + MOVER_HEIGHT / 2);
         for (int i = 0;i < map.length ;i++ ) {
-            System.out.println("Checking currently Map:" + i);
-            Tile[] temp1 = new Tile[map.length];
-            if (map[i].isActive()) {
-                temp1[i] = map[i].mapTiles[(int) checkPointUp.getX() / MOVER_WIDTH][(int) checkPointUp.getY() / MOVER_HEIGHT];
-            } else {
-                continue;
+            Tile[][] temp = new Tile[map.length][checkPoint.length];
+            for (int j = 0; j < checkPoint.length; j++) {
+                if (map[i].isActive() && checkPoint[j].getX() - map[i].chapterXOffset >= 0 && checkPoint[j].getY() - map[i].chapterYOffset >= 0) {
+                    temp[i][j] = map[i].mapTiles[(int) (checkPoint[j].getX() - map[i].chapterXOffset) / Tile.TILEWIDTH][((int) checkPoint[j].getY() - map[i].chapterYOffset) / Tile.TILEWIDTH];
+                } else {
+                    System.out.println(i + " ist nicht aktiv");
+                    map[i].setActive(false);
+                }
+                if (map[i].isActive() && temp[i][j].isBlocked()) {
+                    blocked = true;
+                }
             }
-            Tile[] temp2 = new Tile[map.length];
-            if (map[i].isActive()) {
-                temp2[i] = map[i].mapTiles[(int) checkPointDown.getX() / MOVER_WIDTH][(int) checkPointDown.getY() / MOVER_HEIGHT];
-            } else {
-                continue;
-            }
-            Tile[] temp3 = new Tile[map.length];
-            if (map[i].isActive()) {
-                temp3[i] = map[i].mapTiles[(int) checkPointLeft.getX() / MOVER_WIDTH][(int) checkPointLeft.getY() / MOVER_HEIGHT];
-            } else {
-                continue;
-            }
-            Tile[] temp4 = new Tile[map.length];
-            if (map[i].isActive()) {
-                temp4[i] = map[i].mapTiles[(int) checkPointRight.getX() / MOVER_WIDTH][(int) checkPointRight.getY() / MOVER_HEIGHT];
-            } else {
-                continue;
-            }
-                if (temp1[i].isBlocked() || temp2[i].isBlocked() || temp3[i].isBlocked() || temp4[i].isBlocked()){
-                    blocked = true;}
-
-            }
+        }
         return blocked;
     }
     public Point moverOnMapTile(){
@@ -150,11 +141,11 @@ public class Mover{
                     temp.y = y;
                 }
             }
-            for (int x = 1; x < map[i].getMapSizeX() ; x++) {
+            for (int x = 0; x < map[i].getMapSizeX(); x++) {
 //                int right = this.getLocation().x + width;
 //                System.out.println(right);
                 if (this.getLocation().x + MOVER_WIDTH / 2 >= Tile.TILEWIDTH * x && this.getLocation().x + MOVER_WIDTH / 2 <= Tile.TILEWIDTH * (x + 1)) {
-                    temp.x = x + 2 ;// weil bei 0
+                    temp.x = x + 1;// weil bei 0
                 }
             }
 //            System.out.println("Map:"+i+"Y:"+temp.y+"X:"+temp.x);
@@ -277,6 +268,18 @@ public class Mover{
         speaking = false;
 //        speechBubble.setVisible(false);
 
+    }
+
+    public void setxPos(int xPos) {
+        this.xPos = xPos;
+    }
+
+    public void setyPos(int yPos) {
+        this.yPos = yPos;
+    }
+
+    public int getSpeed() {
+        return speed;
     }
 
     public int getSteps() {

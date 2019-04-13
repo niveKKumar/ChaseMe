@@ -151,7 +151,7 @@ public class Editor implements ActionListener, MouseMotionListener {
         selectedMap = maps.size() - 1;
 
         createCheckbox();
-        gui.camera = new Camera(mapSizeX,mapSizeY);
+//        gui.camera = new Camera(gui,mapSizeX,mapSizeY);
         cameraPoint = new Pointer(gui.camera, (EditorMap) maps.get(selectedMap));
     }
 
@@ -162,7 +162,7 @@ public class Editor implements ActionListener, MouseMotionListener {
         maps.add(editorMap);
 
         createCheckbox();
-        gui.camera = new Camera(mapSizeX, mapSizeY);
+//        gui.camera = new Camera(gui,mapSizeX, mapSizeY);
         cameraPoint = new Pointer(gui.camera, (EditorMap) maps.get(selectedMap));
     }
 
@@ -304,7 +304,7 @@ public class Editor implements ActionListener, MouseMotionListener {
             maps.add(em);
             selectedMap = maps.size() - 1;
             createCheckbox();
-            gui.camera = new Camera(mapSizeX, mapSizeY);
+//            gui.camera = new Camera(gui,mapSizeX, mapSizeY);
             cameraPoint = new Pointer(gui.camera, (EditorMap) maps.get(selectedMap));
 
             JOptionPane.showMessageDialog(gui, "Map erfolgreich geladen.");
@@ -412,14 +412,14 @@ public class Editor implements ActionListener, MouseMotionListener {
             case "+":
                 System.out.println("Zoom rein");
                 zoom(true);
-                gui.camera.centerOnObject(cameraPoint.getLocation());
+//                gui.camera.centerOnObject(cameraPoint.getLocation());
                 gui.requestFocus();
                 break;
 
             case "-":
                 System.out.println("Zoom raus");
                 zoom(false);
-                gui.camera.centerOnObject(cameraPoint.getLocation());
+//                gui.camera.centerOnObject(cameraPoint.getLocation());
                 gui.requestFocus();
                 break;
             case "Tile Auswaehlen":
@@ -477,7 +477,7 @@ public class Editor implements ActionListener, MouseMotionListener {
             mapSizeY = map.getMapSizeY();
             this.xPos = mapSizeX / 2 * Tile.TILEWIDTH;
             this.yPos = mapSizeY / 2 * Tile.TILEHEIGHT;
-            camera.centerOnObject(this.getLocation());
+//            camera.centerOnObject(this.getLocation());
         }
 
         public Pointer(Camera camera, int pMapSizeX, int pMapSizeY) {
@@ -485,12 +485,12 @@ public class Editor implements ActionListener, MouseMotionListener {
             mapSizeY = pMapSizeY;
             this.xPos = mapSizeX / 2 * Tile.TILEWIDTH;
             this.yPos = mapSizeY / 2 * Tile.TILEHEIGHT;
-            camera.centerOnObject(this.getLocation());
+//            camera.centerOnObject(this);
         }
 
 
         public void setMove(Point pMove) {
-            gui.getCamera().centerOnObject(this.getLocation());
+//            gui.getCamera().centerOnObject(this);
             speed = Math.round(speed);
 
             int oldXPos = xPos;
