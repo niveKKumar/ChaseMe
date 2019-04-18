@@ -26,6 +26,10 @@ public class Tile extends JPanel implements Cloneable, Comparable{
     if (showImage) {
       g2d.drawImage(tileImage, this.getX(), this.getY(), TILEWIDTH, TILEHEIGHT, null);
     }
+      if (pointed) {
+          showImage(false);
+          setBorder(BorderFactory.createLineBorder(Color.black, 5));
+      }
   }
   
   public void showImage(boolean b){
@@ -54,11 +58,10 @@ public class Tile extends JPanel implements Cloneable, Comparable{
 
   public void setPointed() {
     if (pointed) {
-      showImage(false);
       setBorder(BorderFactory.createLineBorder(Color.black, 5));
+        System.out.println("Ich ! Das  Tile auf den Koordinaten P(" + getX() + "|" + getY() + ") ist markiert worden");
       pointed = false;
     } else {
-      showImage(true);
       setBorder(null);
       pointed = true;
     }

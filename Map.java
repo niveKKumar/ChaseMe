@@ -49,4 +49,9 @@ public class Map extends MapBase {
     return temp;
   }
 
+    public MapBase MapToMapBase() {
+        MapBase convert = new MapBase(gui, tileSet, mapStatus, new Point(chapterXOffset, chapterYOffset));
+        convert.mapTiles = mapTiles;
+        return convert;
+    }
 }

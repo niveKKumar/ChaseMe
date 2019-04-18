@@ -1,51 +1,50 @@
-import java.util.Date;
+public class Camera {
 
- public class Camera{
-
-  int xSize, ySize;
-     long time = (new Date()).getTime();
-  int xOffset = 0 ;
-  int yOffset = 0;
-     Mover mover;
+    private int xSize, ySize;
+    private int xOffset, yOffset;
+    private int clickXOffset = 0, clickYOffset = 0;
 
      public Camera() {
      }
 
-     public Camera(Mover pMover, int pXSize, int pYSize) {
-         mover = pMover;
+    public Camera(int pXSize, int pYSize) {
          xSize = pXSize;
          ySize = pYSize;
      }
 
-     public void centerOnObject(Mover pMover) {
+    public void centerOnObject(Pointer pointer) {
+        clickXOffset = (int) pointer.getLocation().getX() - (GUI.FRAME_WIDTH / 2);
+        clickYOffset = (int) pointer.getLocation().getY() - (GUI.FRAME_HEIGHT / 2);
+        //Edge Snapping
+//         if (clickXOffset < 0) {
+//             clickXOffset = 0;
+//         } else {
+//             int maxLoc = xSize * Tile.TILEWIDTH - GUI.FRAME_WIDTH + 80  ;
+//             if (clickXOffset > maxLoc) {
+//                 clickXOffset = maxLoc;
+//             } // end of if
+//         } // end of if-else
+//
+//         if (clickYOffset < 0) {
+//             clickYOffset = 0;
+//         } else {
+//             int maxLoc = ySize * Tile.TILEHEIGHT - GUI.FRAME_HEIGHT - 80  ;
+//             if (clickYOffset > maxLoc) {
+//                 clickYOffset = maxLoc;
+//             } // end of if
+//         } // end of if-else
 
-         if (pMover.getLocation().getX() < 0) {
-             pMover.setxPos(0);
-         } else {
-             int maxLoc = xSize * Tile.TILEWIDTH - GUI.FRAME_WIDTH;
-             System.out.println(maxLoc);
-             if (pMover.getLocation().getX() > maxLoc) {
-                 pMover.setxPos(maxLoc);
-             } // end of if
-         } // end of if-else
 
-         if (pMover.getLocation().getY() < 0) {
-             pMover.setyPos(0);
-         } else {
-             int maxLoc = ySize * Tile.TILEHEIGHT - GUI.FRAME_HEIGHT;
-             if (pMover.getLocation().getY() > maxLoc) {
-                 pMover.setyPos(maxLoc);
-             } // end of if
-         } // end of if-else
-
-         int targetX = pMover.getLocation().x - GUI.FRAME_WIDTH / 2 + Mover.MOVER_WIDTH / 2;
-         int targetY = pMover.getLocation().y - GUI.FRAME_WIDTH / 2 + Mover.MOVER_HEIGHT / 2;
 
 
          //https://gamedev.stackexchange.com/questions/138756/smooth-camera-movement-java
+
          //Lerp:
-         xOffset += (targetX - xOffset) * 0.2;
-         yOffset += (targetY - yOffset) * 0.2;
+        int targetX = clickXOffset + Character.MOVER_WIDTH / 2;
+        int targetY = clickYOffset + Character.MOVER_HEIGHT / 2;
+
+        xOffset += (targetX - xOffset) * 0.1;
+        yOffset += (targetY - yOffset) * 0.1;
 
          xOffset = Math.min(xSize * Tile.TILEWIDTH - GUI.FRAME_WIDTH, Math.max(0, xOffset));
          yOffset = Math.min(ySize * Tile.TILEWIDTH - GUI.FRAME_WIDTH, Math.max(0, yOffset));
@@ -69,6 +68,20 @@ import java.util.Date;
          return Math.round(yOffset);
   }
 
+    public int getxSize() {
+        return xSize;
+    }
 
+    public int getySize() {
+        return ySize;
+    }
+
+    public int getClickXOffset() {
+        return xOffset;
+    }
+
+    public int getClickYOffset() {
+        return yOffset;
+    }
 }
  

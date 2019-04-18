@@ -110,6 +110,7 @@ public class EditorTileMenu extends JDialog {
         JTextField txtEingabe = new JTextField();
         txtEingabe.setMinimumSize(new Dimension(50, 50));
         txtEingabe.setPreferredSize(new Dimension(50, 50));
+        txtEingabe.setMaximumSize(new Dimension(50, 50));
         txtEingabe.getDocument().addDocumentListener(new DocumentListener() {
             @Override
             public void insertUpdate(DocumentEvent e) {

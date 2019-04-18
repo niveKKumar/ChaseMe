@@ -10,11 +10,11 @@ public class DisplayAnalytics{
   public boolean moverHitbox = false;
   private Mover mover;
   private boolean isMover;
-  private Map map;
+    private MapBase map;
   private GUI gui;
-  private PathFinder pathFinder;  
-  
-  public DisplayAnalytics(GUI pGui, Map pMap, PathFinder pPathFinder){
+    private PathFinder pathFinder;
+
+    public DisplayAnalytics(GUI pGui, MapBase pMap, PathFinder pPathFinder) {
     gui = pGui;
     map = pMap;
     pathFinder = pPathFinder;

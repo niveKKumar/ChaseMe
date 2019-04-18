@@ -6,7 +6,7 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.LinkedList;
 
-public class Editor implements ActionListener, MouseMotionListener {
+public class Editor {
     private static GUI gui;
     public LinkedList maps = new LinkedList<EditorMap>();
     public EditorTileMenu tileMenu;
@@ -15,6 +15,7 @@ public class Editor implements ActionListener, MouseMotionListener {
     private int use = 0;
     private KeyManager keyManager;
     private int zoomSteps = 0;
+    private int maxZoom = 10, minZoom = 10;
     private LinkedList recentList = new LinkedList();
     public int selectedMap = 0;
     private int maxRecent = 10;
@@ -26,6 +27,7 @@ public class Editor implements ActionListener, MouseMotionListener {
     private JPanel mapSelectActionsPanel = new JPanel(new GridLayout(0, 1));
     private JComboBox mapSelectedBox;
     private JButton btAutosave;
+    private JButton btSimulate;
     private LinkedList mapCheck = new LinkedList<JCheckBox>();
     private GroupLayout layout;
 
@@ -40,7 +42,11 @@ public class Editor implements ActionListener, MouseMotionListener {
         createEditorMap(pMapSizeX, pMapSizeY, tempTS, null);
     }
 
+    /**
+     * Erstellung von Objekten:
+     */
     public void createMenu() {
+        // FIXME: 14.04.2019 Anständige Initialisirung (Nicht oben)
         idAnzeige = new JLabel();
         idAnzeige.setFocusable(false);
         idAnzeige.setText("Kein Tile ausgewählt");
@@ -79,9 +85,7 @@ public class Editor implements ActionListener, MouseMotionListener {
                     ((JCheckBox) mapCheck.get(selectedMap)).setSelected(true);
 
                     if (cameraPoint != null) {
-                        cameraPoint.setxPos(((EditorMap) maps.get(selectedMap)).getMapSizeX() / 2);
-                        cameraPoint.setyPos(((EditorMap) maps.get(selectedMap)).getMapSizeY() / 2);
-                        System.out.println("Setze Camera Point auf Selected");
+                        cameraPoint.setLocation(((EditorMap) maps.get(selectedMap)).getMapSizeX() / 2, ((EditorMap) maps.get(selectedMap)).getMapSizeY() / 2);
                     }
                 }
                 gui.requestFocus();
@@ -108,6 +112,7 @@ public class Editor implements ActionListener, MouseMotionListener {
             @Override
             public void actionPerformed(ActionEvent e) {
                 autoSaveMap();
+                gui.requestFocus();
             }
         });
         btAutosave = new JButton("Autosave is enabled");
@@ -128,8 +133,22 @@ public class Editor implements ActionListener, MouseMotionListener {
                 gui.requestFocus();
             }
         });
+        btSimulate = new JButton("Simulate your Level");
+        btSimulate.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                Level tempGame = new Level(gui);
+                MapBase[] temp = new Map[maps.size()];
+                for (int i = 0; i < maps.size(); i++) {
+                    temp[i] = ((EditorMap) maps.get(i));
+                }
+                tempGame.createlevel0(temp, null);
+                tempGame.setLevel(0);
+                gui.requestFocus();
+            }
+        });
         mapSelectActionsPanel.add(btAutosave);
-
+        mapSelectActionsPanel.add(btSimulate);
         gui.west.add(recent);
         gui.east.add(selectMapPanel);
         gui.east.add(mapSelectActionsPanel);
@@ -148,22 +167,23 @@ public class Editor implements ActionListener, MouseMotionListener {
         EditorMap editorMap = new EditorMap(gui,mapSizeX,mapSizeY,pTileSet);
         editorMap.createEditorMap(tileID);
         maps.add(editorMap);
+        gui.setCamera(mapSizeX, mapSizeY);
+        cameraPoint = new Pointer(gui.camera);
         selectedMap = maps.size() - 1;
 
         createCheckbox();
-//        gui.camera = new Camera(gui,mapSizeX,mapSizeY);
-        cameraPoint = new Pointer(gui.camera, (EditorMap) maps.get(selectedMap));
     }
 
     public void createBlankEditorMap(int mapSizeX, int mapSizeY, TileSet pTileSet) {
         selectedMap = maps.size();
         EditorMap editorMap = new EditorMap(gui, mapSizeX, mapSizeY, pTileSet);
-        editorMap.createBlankEditorMap();
+        editorMap.createBlankMap();
         maps.add(editorMap);
+        gui.setCamera(mapSizeX, mapSizeY);
+        cameraPoint = new Pointer(gui.camera);
+        selectedMap = maps.size() - 1;
 
         createCheckbox();
-//        gui.camera = new Camera(gui,mapSizeX, mapSizeY);
-        cameraPoint = new Pointer(gui.camera, (EditorMap) maps.get(selectedMap));
     }
 
     public void renderEditor(Graphics2D g2d) {
@@ -172,9 +192,9 @@ public class Editor implements ActionListener, MouseMotionListener {
             ( (EditorMap) maps.get(enabledIndex)).renderMap(g2d);
             //            System.out.println("Aktivierte Map mit dem Index:"+ enabledIndex +"\n");
         }
-//        ((EditorMap) maps.get(selectedMap)).renderMap(g2d); // Selected Map immer oberhalb
-//        System.out.println("_____________________________");
-
+        if (maps.size() != 0) {
+            ((EditorMap) maps.get(selectedMap)).renderMap(g2d); // Selected Map immer oberhalb
+        }
     }
 
 
@@ -187,6 +207,7 @@ public class Editor implements ActionListener, MouseMotionListener {
             ((EditorMap) maps.get(selectedMap)).setGraphicID(tileMenu.getSelectedID());
             ((EditorMap) maps.get(selectedMap)).setTileSet(tileMenu.getTileSet(tileMenu.getSelectedTileSetIndex()));
         } // Damit kein erneutes Starten immer entsteht
+        gui.requestFocus();
     }
 
     public void addRecently(int id, TileSet ts) {
@@ -198,8 +219,49 @@ public class Editor implements ActionListener, MouseMotionListener {
     }
 
     public void update() {
-        if (gui.keyInputToMove().getX() != 0 || gui.keyInputToMove().getY() != 0) {
-            cameraPoint.setMove(gui.keyInputToMove());
+        gui.taAnzeige.setText("\n" + "X:" + cameraPoint.getLocation().getX() + "Y:" + cameraPoint.getLocation().getY()
+                + "\n" + "X- Offset:" + gui.camera.getXOffset() + "\n" + "Y- Offset:" + gui.camera.getYOffset());
+        if (!bordercheck(cameraPoint) && Level.keyInputToMove(gui.keyManager).getX() != 0 || !bordercheck(cameraPoint) && Level.keyInputToMove(gui.keyManager).getY() != 0) {
+            cameraPoint.setMove(Level.keyInputToMove(gui.keyManager));
+            gui.camera.centerOnObject(cameraPoint);
+
+        }
+    }
+
+    public boolean bordercheck(Pointer pointer) {
+        /**
+         * Check ob Pointer am Rand ist (-> Etwas "Handlungsspielraum um über die Grenze zu gehen damit alle Tiles erreichbar sind -> virtualspace)
+         * - true = Position des Pointers ist kleiner (block) + Rückstoß
+         * - false =  Position des Pointers ist groeßer (no block)
+         *
+         */
+        boolean leftBorder;
+        boolean rightBorder;
+        boolean upBorder;
+        boolean downBorder;
+        int virtualSpace = 64 * pointer.speed;
+        int bounce = virtualSpace / 8;
+        leftBorder = pointer.getLocation().getX() + virtualSpace < GUI.FRAME_WIDTH / 2;
+        rightBorder = pointer.getLocation().getX() - virtualSpace > ((EditorMap) maps.get(selectedMap)).getMapSizeX() * Tile.TILEWIDTH - GUI.FRAME_WIDTH / 2;
+        upBorder = pointer.getLocation().getY() + virtualSpace < 0 + GUI.FRAME_HEIGHT / 2;
+        downBorder = pointer.getLocation().getY() - virtualSpace > ((EditorMap) maps.get(selectedMap)).getMapSizeY() * Tile.TILEHEIGHT - GUI.FRAME_WIDTH / 2;
+        if (leftBorder || rightBorder || upBorder || downBorder) {
+            if (leftBorder == false) {
+                pointer.setXPos((int) pointer.getLocation().getX() - bounce);
+            }
+            if (rightBorder == false) {
+                pointer.setXPos((int) pointer.getLocation().getX() + bounce);
+            }
+            if (upBorder == false) {
+                pointer.setYPos((int) pointer.getLocation().getY() - bounce);
+            }
+            if (downBorder == false) {
+                pointer.setYPos((int) pointer.getLocation().getY() + bounce);
+            }
+            gui.camera.centerOnObject(pointer);
+            return true;
+        } else {
+            return false;
         }
     }
     public void displayRecent(JPanel panel){
@@ -302,10 +364,10 @@ public class Editor implements ActionListener, MouseMotionListener {
             }
 
             maps.add(em);
-            selectedMap = maps.size() - 1;
             createCheckbox();
-//            gui.camera = new Camera(gui,mapSizeX, mapSizeY);
-            cameraPoint = new Pointer(gui.camera, (EditorMap) maps.get(selectedMap));
+            gui.setCamera(mapSizeX, mapSizeY);
+            cameraPoint = new Pointer(gui.camera);
+            selectedMap = maps.size() - 1;
 
             JOptionPane.showMessageDialog(gui, "Map erfolgreich geladen.");
         } catch (Exception e) {
@@ -354,45 +416,41 @@ public class Editor implements ActionListener, MouseMotionListener {
     public LinkedList<Integer> checkMapBoxes(){
         LinkedList indexOfActivatedMaps = new LinkedList<Integer>();
         for (int i = 0; i < mapCheck.size(); i++) {
-//            indexOfActivatedMaps.add(selectedMap);
-//            System.out.println("Map Box :"+i+" ist "+mapCheck[i].isSelected());
             if (((JCheckBox) mapCheck.get(i)).isSelected() && !indexOfActivatedMaps.contains(i)) {
                 indexOfActivatedMaps.add(i);
             }
 
         }
-//        System.out.println("Selected Index: "+ mapSelectedBox.getSelectedIndex());
         return indexOfActivatedMaps;
     }
 
     public void zoom(boolean zoomInIsTrueZoomOutisFalse){
         // TODO: 23.03.2019 Zoom an Mapgroesse angepasst EDIT: NICHT WIRKLICH NÖTIG...
         EditorMap m = (EditorMap) maps.get(selectedMap);
+        gui.camera.centerOnObject(cameraPoint);
         double zoom = 0.25;
-        int maxZoom = 10 ,minZoom = 10 ;
-        if (zoomInIsTrueZoomOutisFalse){
+        if (zoomInIsTrueZoomOutisFalse) {
             //Reinzoom:
-            if (zoomSteps < maxZoom ){
+            if (zoomSteps < maxZoom) {
                 zoomSteps = zoomSteps + 1;
                 zoom = 1 + zoom;
-                Tile.setTILEWIDTH( (int) Math.round(Tile.TILEWIDTH * zoom));
+                Tile.setTILEWIDTH((int) Math.round(Tile.TILEWIDTH * zoom));
                 Tile.setTILEHEIGHT((int) Math.round(Tile.TILEHEIGHT * zoom));
-            }else {
+            } else {
                 zoomSteps = 5;
             }
-        }else{
+        } else {
             //Rauszoom:
-            if (zoomSteps > -minZoom ){
+            if (zoomSteps > -minZoom) {
                 zoomSteps = zoomSteps - 1;
                 zoom = 1 - zoom;
                 Tile.setTILEWIDTH((int) Math.round(Tile.TILEWIDTH * zoom));
                 Tile.setTILEHEIGHT((int) Math.round(Tile.TILEHEIGHT * zoom));
-            }else {
+            } else {
                 zoomSteps = -5;
             }
         }
-        cameraPoint.setxPos(m.getMapSizeX()*Tile.TILEWIDTH/2);
-        cameraPoint.setyPos(m.getMapSizeY()*Tile.TILEHEIGHT/2);
+
     }
 
     public void removeMap(int index) {
@@ -412,14 +470,14 @@ public class Editor implements ActionListener, MouseMotionListener {
             case "+":
                 System.out.println("Zoom rein");
                 zoom(true);
-//                gui.camera.centerOnObject(cameraPoint.getLocation());
+                gui.camera.centerOnObject(cameraPoint);
                 gui.requestFocus();
                 break;
 
             case "-":
                 System.out.println("Zoom raus");
                 zoom(false);
-//                gui.camera.centerOnObject(cameraPoint.getLocation());
+                gui.camera.centerOnObject(cameraPoint);
                 gui.requestFocus();
                 break;
             case "Tile Auswaehlen":
@@ -443,16 +501,11 @@ public class Editor implements ActionListener, MouseMotionListener {
         }
     }
 
-    @Override
     public void mouseDragged(MouseEvent e) {
         EditorMap m = (EditorMap) maps.get(selectedMap);
         m.setTile(e);
     }
 
-    @Override
-    public void mouseMoved(MouseEvent e) {
-
-    }
 
 
     private class RemoveBTActionListener implements ActionListener {
@@ -466,63 +519,4 @@ public class Editor implements ActionListener, MouseMotionListener {
             removeMap(mapNumber);
         }
     }
-    class Pointer{
-
-        private int xPos,yPos;
-        private int mapSizeX,mapSizeY;
-        private int speed = 10;
-
-        public Pointer(Camera camera, EditorMap map) {
-            mapSizeX = map.getMapSizeX();
-            mapSizeY = map.getMapSizeY();
-            this.xPos = mapSizeX / 2 * Tile.TILEWIDTH;
-            this.yPos = mapSizeY / 2 * Tile.TILEHEIGHT;
-//            camera.centerOnObject(this.getLocation());
-        }
-
-        public Pointer(Camera camera, int pMapSizeX, int pMapSizeY) {
-            mapSizeX = pMapSizeX;
-            mapSizeY = pMapSizeY;
-            this.xPos = mapSizeX / 2 * Tile.TILEWIDTH;
-            this.yPos = mapSizeY / 2 * Tile.TILEHEIGHT;
-//            camera.centerOnObject(this);
-        }
-
-
-        public void setMove(Point pMove) {
-//            gui.getCamera().centerOnObject(this);
-            speed = Math.round(speed);
-
-            int oldXPos = xPos;
-            int oldYPos = yPos;
-
-            xPos += pMove.getX() * speed;
-            yPos += pMove.getY() * speed;
-
-            boolean leftBorder;
-            boolean rightBorder;
-            boolean upBorder;
-            boolean downBorder;
-            leftBorder = xPos < 0 + GUI.FRAME_WIDTH / 2;
-            rightBorder = xPos > mapSizeX * Tile.TILEWIDTH - GUI.FRAME_WIDTH / 2;
-            upBorder = yPos < 0 + GUI.FRAME_HEIGHT / 2;
-            downBorder = yPos > mapSizeY * Tile.TILEHEIGHT - GUI.FRAME_WIDTH / 2;
-            //BEWEGENDER POINTER:
-            if (leftBorder || rightBorder || upBorder || downBorder) {
-                xPos = oldXPos;
-                yPos = oldYPos;
-            }
-        }
-
-            public Point getLocation(){
-                return new Point(xPos,yPos);
-            }
-            public void setxPos(int xPos) {
-                this.xPos = xPos;
-            }
-            public void setyPos(int yPos) {
-                this.yPos = yPos;
-            }
-
-        }
-    }
+}

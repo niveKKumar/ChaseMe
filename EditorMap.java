@@ -29,7 +29,7 @@ public class EditorMap extends MapBase {
         }
     }
 
-    public void createBlankEditorMap() {
+    public void createBlankMap() {
         createBaseMap();
         int i = 2;
         mapTiles = new Tile[mapSizeX][mapSizeY];
@@ -49,16 +49,15 @@ public class EditorMap extends MapBase {
     }
 
     public void setTile(MouseEvent e) {
-        int x = Math.round(e.getX() + gui.getCamera().getXOffset() + chapterXOffset) / Tile.TILEWIDTH;
-        int y = Math.round(e.getY() + gui.getCamera().getYOffset() + chapterYOffset) / Tile.TILEHEIGHT;
+        int x = (e.getX() + gui.getCamera().getClickXOffset() + chapterXOffset) / Tile.TILEWIDTH;
+        int y = (e.getY() + gui.getCamera().getClickYOffset() + chapterYOffset) / Tile.TILEHEIGHT;
         mapTiles[x][y] = tileSet.tileSet[graphicID];
         mapTiles[x][y].setID(graphicID);
-        gui.taAnzeige.setText("");
     }
 
     public void setPointed(MouseEvent e){
-        int x = Math.round(e.getX() + gui.getCamera().getXOffset() + chapterXOffset) / Tile.TILEWIDTH;
-        int y = Math.round(e.getY() + gui.getCamera().getYOffset() + chapterYOffset) / Tile.TILEHEIGHT;
+        int x = Math.round(e.getX() + gui.getCamera().getClickXOffset() + chapterXOffset) / Tile.TILEWIDTH;
+        int y = Math.round(e.getY() + gui.getCamera().getClickYOffset() + chapterYOffset) / Tile.TILEHEIGHT;
         mapTiles[x][y].setPointed();
 // FIXME: 05.04.2019 Buggy !! Aber anzeige klappt halbwegs (wenn man markierung removed dann bleibt es im Textfeld
 
@@ -70,13 +69,13 @@ public class EditorMap extends MapBase {
         System.out.println("Klick ist beim Aufruf" + click);
         click++;
         if (click == 1) {
-            firstX = (Math.round(e.getX() + gui.getCamera().getXOffset() + chapterXOffset) / Tile.TILEWIDTH);
-            firstY = (Math.round(e.getY() + gui.getCamera().getYOffset() + chapterYOffset) / Tile.TILEHEIGHT);
+            firstX = (Math.round(e.getX() + gui.getCamera().getClickXOffset() + chapterXOffset) / Tile.TILEWIDTH);
+            firstY = (Math.round(e.getY() + gui.getCamera().getClickYOffset() + chapterYOffset) / Tile.TILEHEIGHT);
             gui.taAnzeige.setText("Fläche zeichnen :"+"\n"+" erster Klick");
         }
         if (click == 2) {
-            secondX = Math.round(e.getX() + gui.getCamera().getXOffset() + chapterXOffset) / Tile.TILEWIDTH;
-            secondY = Math.round(e.getY() + gui.getCamera().getYOffset() + chapterYOffset) / Tile.TILEHEIGHT;
+            secondX = Math.round(e.getX() + gui.getCamera().getClickXOffset() + chapterXOffset) / Tile.TILEWIDTH;
+            secondY = Math.round(e.getY() + gui.getCamera().getClickYOffset() + chapterYOffset) / Tile.TILEHEIGHT;
             gui.taAnzeige.setText("");
 
             if (firstX > secondX) {

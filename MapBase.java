@@ -108,7 +108,7 @@ public class MapBase {
     }
 
     public boolean isActiveInPosition(Point position) {
-        active = position.getX() <= (getMapSizeX() * Tile.TILEWIDTH) && position.getY() <= (getMapSizeY() * Tile.TILEHEIGHT);
+        active = position.getX() <= (getMapSizeX()) && position.getY() <= (getMapSizeY());
         return active;
     }
 
@@ -194,10 +194,15 @@ public class MapBase {
         chapterYOffset = pChapterOffset * Tile.TILEHEIGHT;
     }
 
+    public void checkActive(Point pLocation) {
+        //                System.out.println("false");
+        active = !(pLocation.getLocation().getX() < chapterXOffset * Tile.TILEWIDTH) && !(pLocation.getY() < chapterYOffset * Tile.TILEHEIGHT) &&
+                !(pLocation.getLocation().getX() > mapSizeX * Tile.TILEWIDTH) && !(pLocation.getY() > mapSizeY * Tile.TILEHEIGHT);
+    }
+
     public boolean isActive() {
         return active;
     }
-
     public void setActive(boolean active) {
         this.active = active;
     }

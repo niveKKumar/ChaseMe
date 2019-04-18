@@ -6,7 +6,7 @@ import java.util.LinkedList;
 
 public class PathFinder{
   private Path2D pathShape;
-  private Map[] map;
+    private MapBase[] map;
   private Mover mover;
   private LinkedList closedList = new LinkedList();
   private PriorityList openList = new PriorityList();
@@ -15,7 +15,7 @@ public class PathFinder{
   GUI gui;
 
 
-  public PathFinder(Map[] pMap, Mover pMover, GUI pGui){
+    public PathFinder(MapBase[] pMap, Mover pMover, GUI pGui) {
     map = pMap;
     mover = pMover;
     gui = pGui;
@@ -87,7 +87,7 @@ public class PathFinder{
 
   private void constructMovingPath(){
     pathShape = new Path2D.Double();
-      pathShape.moveTo(mover.getLocation().getX() + Mover.MOVER_WIDTH / 2, mover.getLocation().getY() + Mover.MOVER_HEIGHT / 2);    ///
+      pathShape.moveTo(mover.getLocation().getX() + Character.MOVER_WIDTH / 2, mover.getLocation().getY() + Character.MOVER_HEIGHT / 2);    ///
     Tile t;
     for (int i =0;i< pathTiles.size();i++) {
       t = (Tile) pathTiles.get(i);

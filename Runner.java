@@ -8,8 +8,12 @@ public class Runner extends Mover {
     private int speed;
     int collisionduration = 0;
 
-    public Runner(GUI pGUI, int xPos, int yPos, int pWidth, int pHeight, SpriteSheet pSpriteSheet, Map[] pMap) {
-        super(pGUI, xPos, yPos, pWidth, pHeight, pSpriteSheet, pMap);
+    public Runner(GUI pGUI, int xPos, int yPos, SpriteSheet pSpriteSheet, MapBase[] pMap) {
+        super(pGUI, xPos, yPos, pMap);
+        sprites = pSpriteSheet;
+        MOVER_WIDTH = sprites.getWidth();
+        MOVER_HEIGHT = sprites.getHeight();
+        img = sprites.getSpriteElement(0, 1);
         pathfinder = new PathFinder(map,this,gui);
     }
 
@@ -18,7 +22,6 @@ public class Runner extends Mover {
         Point richtung = new Point (x,y);
         //Delay:
         speed = pSpeed;
-        this.setSpeed(speed);
         if (!collisionCheck()) {
             delay++;
             if (delay < speed) {
@@ -62,55 +65,4 @@ public class Runner extends Mover {
         } // end of if-else
     }
 
-
-//    @Override
-//    public void setMove(Point pMove) {
-//        int oldXPos = xPos;
-//        int oldYPos = yPos;
-//
-//        xPos += pMove.getX() * speed;
-//        yPos += pMove.getY() * speed;
-//        moveSeqSleep++;
-//        if (moveSeqSleep == 5) {
-//            if (moveSeq < 2) {
-//                moveSeq++;
-//            } else {
-////        System.out.println("else moveSeqSleep");
-//                moveSeq = 0;
-//            } // end of if-else
-//            moveSeqSleep = 0;
-//        } // end of if
-//        setCurrentImage((int) pMove.getX(), (int) pMove.getY(), moveSeq);
-////    System.out.println(moveSeqSleep);
-////    System.out.println(moveSeq);
-//        if (collisionCheck()) {
-//            xPos = oldXPos;
-//            yPos = oldYPos;
-//        }
-//    }
-
-//    @Override
-//    public void setPathMove(Point2D from, Point2D to) {
-//        getAngle(from, to);
-//        moveSeqSleep++;
-//        if (moveSeqSleep == 5) {
-//            if (moveSeq < 2) {
-//                moveSeq++;
-//            } else {
-//                moveSeq = 0;
-//            } // end of if-else
-//            moveSeqSleep = 0;
-//        } // end of if
-//        setSprite();
-//        this.xPos = (int) to.getX() - this.width / 2;
-//        this.yPos = (int) to.getY() - this.height / 2;
-//    }
-
-//    @Override
-//    public void draw(Graphics2D g2d) {
-//            AffineTransform at = new AffineTransform();
-//            at.translate(this.xPos, this.yPos);
-//            at.rotate(angle, img.getWidth(null)/2, img.getHeight(null)/2);
-//            g2d.drawImage(img,at,null);
-//    }
 }
