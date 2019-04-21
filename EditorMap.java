@@ -58,7 +58,8 @@ public class EditorMap extends MapBase {
             meld.unSimilarTS(this, ts);
             if (tileSet.getTileSetImagePath().equals(meld.selectedTS)) {
                 ts = tileSet;
-                reloadMap();
+            } else {
+                reloadMap(ts);
             }
         }
         tileSet = ts;
@@ -116,14 +117,13 @@ public class EditorMap extends MapBase {
 
     }
 
-    public void reloadMap() {
-        for (int zeile = firstX; zeile < secondX + 1; zeile++) {
-            for (int spalte = firstY; spalte < secondY + 1; spalte++) {
-                mapTiles[zeile][spalte] = tileSet.tileSet[graphicID];
+    public void reloadMap(TileSet set) {
+        for (int zeile = 0; zeile < mapTiles.length; zeile++) {
+            for (int spalte = 0; spalte < mapTiles[zeile].length; spalte++) {
+                mapTiles[zeile][spalte] = set.tileSet[mapTiles[zeile][spalte].id].clone();
             }
         }
     }
-
 
     public void setTileSet(TileSet tileSet) {
         this.tileSet = tileSet;
