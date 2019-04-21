@@ -16,7 +16,7 @@ public class Mover extends Pointer {
 
     public Mover(GUI pGUI, int pXpos, int pYpos, MapBase[] pMap) { //Image Initialisierung nachher...
         super(pXpos, pYpos);
-        System.out.println("Mover :" + pXpos + " || " + pYpos);
+//        System.out.println("Mover :" + pXpos + " || " + pYpos);
         gui = pGUI;
         map = pMap;
         for (int i = 0; i < checkPoint.length; i++) {

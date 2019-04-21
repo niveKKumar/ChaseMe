@@ -9,16 +9,7 @@ class Pointer {
     private Camera camera;
     private int mapSizeX, mapSizeY;
 
-    /**
-     * In der Mitte der Kamera
-     */
-    public Pointer(Camera camera) {
-        mapSizeX = camera.getxSize();
-        mapSizeY = camera.getySize();
-
-        xPos = mapSizeX / 2 * Tile.TILEWIDTH;
-        yPos = mapSizeY / 2 * Tile.TILEHEIGHT;
-        System.out.println("Pointercamera" + yPos + xPos);
+    public Pointer() {
     }
 
     /**
@@ -79,6 +70,21 @@ class Pointer {
     public void setLocation(int xPos, int yPos) {
         this.xPos = xPos;
         this.yPos = yPos;
+    }
+
+    public Camera getCamera() {
+        return camera;
+    }
+
+    public void setCamera(Camera camera) {
+        mapSizeX = camera.getxSize();
+        mapSizeY = camera.getySize();
+        setLocation(mapSizeX * Tile.TILEWIDTH / 2, mapSizeY * Tile.TILEHEIGHT / 2);
+        this.camera = camera;
+    }
+
+    public void setSpeed(int speed) {
+        this.speed = speed;
     }
 
     public void setXPos(int xPos) {

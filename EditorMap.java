@@ -6,12 +6,15 @@ import java.awt.event.MouseEvent;
 public class EditorMap extends MapBase {
 
     private int click = 0, firstX, firstY, secondX, secondY;
+    private boolean toIgnore;
 
     public EditorMap(GUI pGUI, int pMapSizeX, int pMapSizeY, TileSet pTileSet) {
         super(pGUI, pTileSet, null, null);
         setMapSizeX(pMapSizeX);
         setMapSizeY(pMapSizeY);
+        toIgnore = false;
     }
+
 
     public void createEditorMap(@Nullable Integer iD) {
         createBaseMap();
@@ -48,11 +51,25 @@ public class EditorMap extends MapBase {
         super.renderMap(g2d);
     }
 
-    public void setTile(MouseEvent e) {
+    private void setMapTile(int xIndex, int yIndex, TileSet ts) {
+        System.out.println("Notfi Map " + toIgnore);
+        if (!tileSet.getTileSetImagePath().equals(ts.getTileSetImagePath()) && !toIgnore) {
+            Meldungen meld = new Meldungen(gui, true, "null");
+            meld.unSimilarTS(this, ts);
+            if (tileSet.getTileSetImagePath().equals(meld.selectedTS)) {
+                ts = tileSet;
+                reloadMap();
+            }
+        }
+        tileSet = ts;
+        mapTiles[xIndex][yIndex] = tileSet.tileSet[graphicID];
+        mapTiles[xIndex][yIndex].setID(graphicID);
+    }
+
+    public void setTile(MouseEvent e, TileSet ts) {
         int x = (e.getX() + gui.getCamera().getClickXOffset() + chapterXOffset) / Tile.TILEWIDTH;
         int y = (e.getY() + gui.getCamera().getClickYOffset() + chapterYOffset) / Tile.TILEHEIGHT;
-        mapTiles[x][y] = tileSet.tileSet[graphicID];
-        mapTiles[x][y].setID(graphicID);
+        setMapTile(x, y, ts);
     }
 
     public void setPointed(MouseEvent e){
@@ -65,7 +82,7 @@ public class EditorMap extends MapBase {
 
     }
 
-    public void setTileRect(MouseEvent e) {
+    public void setTileRect(MouseEvent e, TileSet ts) {
         System.out.println("Klick ist beim Aufruf" + click);
         click++;
         if (click == 1) {
@@ -89,9 +106,9 @@ public class EditorMap extends MapBase {
                 firstY = secondY;
                 secondY = swap;
             }
-            for (int zeile = firstX; zeile < secondX + 1; zeile++) {
-                for (int spalte = firstY; spalte < secondY + 1; spalte++) {
-                    mapTiles[zeile][spalte] = tileSet.tileSet[graphicID];
+            for (int x = firstX; x < secondX + 1; x++) {
+                for (int y = firstY; y < secondY + 1; y++) {
+                    setMapTile(x, y, ts);
                 }
             }
             click = 0;
@@ -99,10 +116,27 @@ public class EditorMap extends MapBase {
 
     }
 
+    public void reloadMap() {
+        for (int zeile = firstX; zeile < secondX + 1; zeile++) {
+            for (int spalte = firstY; spalte < secondY + 1; spalte++) {
+                mapTiles[zeile][spalte] = tileSet.tileSet[graphicID];
+            }
+        }
+    }
+
 
     public void setTileSet(TileSet tileSet) {
         this.tileSet = tileSet;
     }
+
+    public boolean isToIgnore() {
+        return toIgnore;
+    }
+
+    public void setToIgnore(boolean toIgnore) {
+        this.toIgnore = toIgnore;
+    }
+
 
     public void setGraphicID(int graphicID) {
         this.graphicID = graphicID;

@@ -6,8 +6,6 @@ import javax.swing.event.DocumentListener;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
 import java.util.ArrayList;
 
 public class EditorTileMenu extends JDialog {
@@ -67,8 +65,8 @@ public class EditorTileMenu extends JDialog {
             createTileSetComponents();
             firstStart = false;
         } else {
-            Meldungen meldung = new Meldungen(owner, true, "TileSet");
-            tileSet.add(meldung.getTileSet());
+            Meldungen meldung = new Meldungen(owner, true, "null");
+            tileSet.add(new TileSet(Meldungen.setMapPath("TileSet").getPath()));
             createTileSetComponents();
         }
     }
@@ -93,24 +91,21 @@ public class EditorTileMenu extends JDialog {
         return selectedTileSet;
     }
 
+    public void setTileSet(TileSet pTileSet) {
+        tileSet.add(pTileSet);
+        selectedTileSet = tileSet.size() - 1;
+    }
+     
     public TileSet getTileSet(int index) {
         return ((TileSet) tileSet.get(index));
     }
 
     public void createTileSetComponents() {
         // FIXME: 06.04.2019 Kann besser gelöst werden -> nur Scrollpane als Array, der Rest Local Done
-        final long now = System.currentTimeMillis();
-
-
         JPanel tilePanel = new JPanel();
-        tilePanel.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
-        tilePanel.setMinimumSize(new Dimension(50, 50));
-        tilePanel.setPreferredSize(new Dimension(50, 150));
         //Hinzufuegen der TileEingabe auf das JPanel
         JTextField txtEingabe = new JTextField();
-        txtEingabe.setMinimumSize(new Dimension(50, 50));
-        txtEingabe.setPreferredSize(new Dimension(50, 50));
-        txtEingabe.setMaximumSize(new Dimension(50, 50));
+        txtEingabe.setSize(EditorTileButton.size, EditorTileButton.size);
         txtEingabe.getDocument().addDocumentListener(new DocumentListener() {
             @Override
             public void insertUpdate(DocumentEvent e) {
@@ -143,65 +138,35 @@ public class EditorTileMenu extends JDialog {
         tilePanel.add(txtEingabe);
         //Hinzufuegen der Tiles auf das JPanel
         selectedTileSet = tileSet.size() - 1;
+        long t1 = System.currentTimeMillis();
         EditorTileButton[] tileMenuButtons = new EditorTileButton[((TileSet) tileSet.get(selectedTileSet)).tileSet.length - 1];
         for (int i = 0; i < tileMenuButtons.length; i++) {
             tileMenuButtons[i] = new EditorTileButton(i, ((TileSet) tileSet.get(selectedTileSet)));
-            tileMenuButtons[i].loadImage(i);
-            tileMenuButtons[i].addMouseListener(new MouseListener() {
+            // FIXME: 19.04.2019 Action Listener
+            tileMenuButtons[i].addActionListener(new ActionListener() {
                 @Override
-                public void mouseClicked(MouseEvent e) {
-                    try {
-                        EditorTileButton source = ((EditorTileButton) e.getSource());
-                        selectedID = source.getId();
-                        for (int i = 0; i < tileSet.size(); i++) {
-                            if (source.getTileSet().getTileSetImagePath().equals(((TileSet) tileSet.get(i)).getTileSetImagePath())) {
-                                selectedTileSet = i;
-                            }
+                public void actionPerformed(ActionEvent e) {
+                    EditorTileButton source = ((EditorTileButton) e.getSource());
+                    selectedID = source.getId();
+                    for (int i = 0; i < tileSet.size(); i++) {
+                        if (source.getTileSet().getTileSetImagePath().equals(((TileSet) tileSet.get(i)).getTileSetImagePath())) {
+                            selectedTileSet = i;
                         }
-                        selectedinLabel(selectedLabel, source.getIcon());
-                    } catch (
-                            Exception ex) {
-                        System.out.println("Source isnt E-BT");
                     }
-                }
-
-                @Override
-                public void mousePressed(MouseEvent e) {
-
-                }
-
-                @Override
-                public void mouseReleased(MouseEvent e) {
-
-                }
-
-                @Override
-                public void mouseEntered(MouseEvent e) {
-
-                }
-
-                @Override
-                public void mouseExited(MouseEvent e) {
-
+                    selectedinLabel(selectedLabel, source.getIcon());
                 }
             });
             tilePanel.add(tileMenuButtons[i]);
         }
         // Tile Panel Groeße nach Tile Button
-        int gap = 5;
-        int spalte = 5;
-        int height = tileMenuButtons.length * (EditorTileButton.size) / spalte;
-        tilePanel.setPreferredSize(new Dimension(spalte, height));
+        tilePanel.setLayout(new GridLayout(0, 3, 3, 3));
         // Erstellen des Scrollpanes und zuweisen des JPanels
 
         JScrollPane scrollPane = new JScrollPane();
         scrollPane.getVerticalScrollBar().setUnitIncrement(16);
         scrollPane.setOpaque(true);
-        scrollPane.setPreferredSize(new Dimension(50, 300));
         scrollPane.setViewportView(tilePanel);
         tsTabPane.addTab("Tile Set " + tileSet.size(), scrollPane);
-
-        System.out.println(System.currentTimeMillis() - now);
     }
 
     public void setSelectedID(int selectedID) {
@@ -263,7 +228,6 @@ public class EditorTileMenu extends JDialog {
         contentPane = new JPanel();
         menubar = new JMenuBar();   //Menüleiste erzeugen
         setJMenuBar(menubar);  //Menüleiste dem Fenster hinzufügen
-//        contentPane.add(menubar, BorderLayout.NORTH);
 
         JMenuItem open = new JMenuItem("Öffnen");
         open.addActionListener(new ActionListener() {
@@ -276,7 +240,7 @@ public class EditorTileMenu extends JDialog {
         save.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
                 Meldungen m = new Meldungen(owner, true, "Map");
-                belongingEditor.saveMap(m.setMapPath("Save"), true);
+                belongingEditor.saveMap(Meldungen.setMapPath("Save"), true);
             }
         });
 

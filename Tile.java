@@ -13,14 +13,14 @@ public class Tile extends JPanel implements Cloneable, Comparable{
   public float costFromStart;
   protected float estimatedCostToGoal;
   boolean pointed;
-  
+
   public Tile(Image pTileImage)  {
     super();
     setOpaque(true);
     pointed = false;
     tileImage = pTileImage;
   }
-    
+
   public void renderTile(Graphics2D g2d, int pXPos, int pYPos){
     this.setLocation(pXPos, pYPos);
     if (showImage) {
@@ -31,22 +31,22 @@ public class Tile extends JPanel implements Cloneable, Comparable{
           setBorder(BorderFactory.createLineBorder(Color.black, 5));
       }
   }
-  
+
   public void showImage(boolean b){
     showImage = b;
   }
 
-  
+
   public void setBlocked(boolean b){
     blocked = b;
     }
-   
+
   public boolean isBlocked(){return blocked;
   }
      
   public Tile clone(){
     try{
-      return (Tile) super.clone();  
+        return (Tile) super.clone();
     } catch(CloneNotSupportedException e) {
       return null;
     }
@@ -69,7 +69,7 @@ public class Tile extends JPanel implements Cloneable, Comparable{
   }
 
   public LinkedList getNeighbours(){
-    return neighbours;  
+      return neighbours;
   }
 
   public void setNeighbours(LinkedList pNeighbours){
@@ -83,8 +83,9 @@ public class Tile extends JPanel implements Cloneable, Comparable{
     int dy = pGoal.getY() - this.getY();
     this.estimatedCostToGoal = (float) Math.sqrt((dx*dx)+(dy*dy));   //sqrt leifert einen Double. Mit Typecasting leicht zu wandeln.
   }
-  public void setPathParent(Tile pTile){
-   pathParent = pTile;  
+
+    public float getCost() {
+        return costFromStart + estimatedCostToGoal;
   }
   public void setID(int pID) {
     id = pID;
@@ -93,9 +94,9 @@ public class Tile extends JPanel implements Cloneable, Comparable{
     tileImage = pTileImage;
   }
 
-  public float getCost(){
-    return costFromStart + estimatedCostToGoal;
-  } 
+    public Tile getPathParent() {
+        return pathParent;
+    }
   public float getCostFromStart(){
      return costFromStart;
    }
@@ -107,18 +108,24 @@ public class Tile extends JPanel implements Cloneable, Comparable{
     cost = (float) Math.sqrt((dx*dx)+(dy*dy));
     return cost;
   }
-  public Tile getPathParent(){
-   return pathParent;  
-  }
+
+    public void setPathParent(Tile pTile) {
+        pathParent = pTile;
+    }
+
   public int getID() {
-   return id; 
+      return id;
   }
   public int compareTo(Object other){
     float thisValue = this.getCost();
     float otherValue = ((Tile) other).getCost();
     float v = thisValue - otherValue;
-    return (v>0)?1:(v<0)?-1:0; 
+      return (v > 0) ? 1 : (v < 0) ? -1 : 0;
   }
+
+    public Image getTileImage() {
+        return tileImage;
+    }
 
   public static void setTILEWIDTH(int TILEWIDTH) {
     Tile.TILEWIDTH = TILEWIDTH;

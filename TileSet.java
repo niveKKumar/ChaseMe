@@ -1,4 +1,5 @@
 import javax.imageio.ImageIO;
+import javax.swing.*;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -14,9 +15,38 @@ public class TileSet{
   private int border;
 
     public TileSet(String pTileSetImagePath) {
+        /**
+         * Automatisches Splitten des TileSets
+         */
         tileSetImagePath = pTileSetImagePath;
+        try {
+            if (tileSetImagePath.contains("\\")) {
+                tileSetImagePath = tileSetImagePath.replaceAll("\\\\", "/");
+            }
+            String[] temp;
+            temp = tileSetImagePath.split("/");
+            String filename = temp[temp.length - 1];
+            String[] filenameSplit = null;
+            filename = filename.replace(".png", "");
+            int tillCharacter = filename.indexOf(" -");
+            filename = filename.substring(0, tillCharacter);
+            filenameSplit = filename.split("x");
+
+            numberOfTilesX = Integer.parseInt(filenameSplit[0]);
+            numberOfTilesY = Integer.parseInt(filenameSplit[1]);
+            border = Integer.parseInt(filenameSplit[2]);
+        } catch (Exception e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(null, "TileSet hat einen ungültigen TileSet Pfad", "Tile Set Fehler", JOptionPane.WARNING_MESSAGE);
+            Meldungen m = new Meldungen(null, true, "null");
+            m.tileSetAbfrage(pTileSetImagePath);
+            numberOfTilesX = Integer.parseInt(m.getUserInput(0));
+            numberOfTilesY = Integer.parseInt(m.getUserInput(1));
+            border = Integer.parseInt(m.getUserInput(2));
+        }
         tileSet = new Tile[numberOfTilesX * numberOfTilesY];
-//    getAutomaticName();
+        createTileSetImages();
+
     }
   public TileSet(String pTileSetImagePath, int pNumberOfTilesX, int pNumberOfTilesY, int pBorder){
     tileSetImagePath = pTileSetImagePath;
@@ -27,26 +57,7 @@ public class TileSet{
     createTileSetImages();
   }
 
-    //  public void getAutomaticName(){
-//      try {
-//          File temp = new File(tileSetImagePath);
-//          String filename = temp.getName();
-//          String[] filenameSplit = null;
-//          filename = filename.replace(".png", "");
-//          int tillCharacter = filename.indexOf(" -");
-//          filename = filename.substring(0, tillCharacter);
-//          filenameSplit = filename.split("x");
-//
-//          for (int i = 0; i < filenameSplit.length; i++) {
-//              System.out.println(filenameSplit[i]);
-//          }
-//
-//
-//      } catch (Exception e) {
-//
-//      }
-//  }
-  public void createTileSetImages(){
+    public void createTileSetImages(){
     try {
         tileSetImage = ImageIO.read(new File(tileSetImagePath));
         width = tileSetImage.getWidth() / numberOfTilesX - border;
@@ -64,7 +75,11 @@ public class TileSet{
     }
   }
 
-  public String getTileSetImagePath() {
+    public BufferedImage getTileSetImage() {
+        return tileSetImage;
+    }
+
+    public String getTileSetImagePath() {
     return tileSetImagePath;
   }
 }

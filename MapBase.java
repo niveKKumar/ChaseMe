@@ -37,7 +37,6 @@ public class MapBase {
     public void createBaseMap() {
         Tile.setTILEHEIGHT(64);
         Tile.setTILEWIDTH(64);
-
         mapTiles = new Tile[mapSizeX][mapSizeY];
         int i = 2;
         for (int zeile = 0; zeile < mapSizeX; zeile++) {

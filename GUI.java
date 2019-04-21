@@ -6,6 +6,8 @@ import java.awt.event.*;
 public class GUI extends JFrame implements ActionListener {
     public static final int FRAME_WIDTH = 800;
     public static final int FRAME_HEIGHT = 800;
+    public static final int GAMEPANEL_WIDTH = 600;
+    public static final int GAMEPANEL_HEIGHT = 600;
     public JPanel south = new JPanel(new FlowLayout());
     private JPanel north = new JPanel(new FlowLayout());
     public JPanel east = new JPanel(new FlowLayout());
@@ -23,7 +25,7 @@ public class GUI extends JFrame implements ActionListener {
     public Container cp;
     private DisplayAnalytics[] analytics;
     private JLabel focuslb = new JLabel();
-    private GamePanel gamePanel = new GamePanel();
+    private GamePanel gamePanel = new GamePanel(GAMEPANEL_WIDTH, GAMEPANEL_HEIGHT);
     public Camera camera;
     public Level level;
     private Editor editor;
@@ -54,12 +56,21 @@ public class GUI extends JFrame implements ActionListener {
         createGUI();
         createMenu();
         setVisible(true);
+
+//        System.out.println("Backslash Test:");
+//        System.out.println("___________________");
+//        String test = new String("Hallo \\ hier zwischen soll ein Blackslash stehen");
+//        System.out.println("Anfangsstring: "+test);
+//        String changed = test.replaceAll("\\\\","/");
+//        System.out.println("Der String wurde ersetzt");
+//        System.out.println(changed);
+    
     }
+
 
     public void actionPerformed(ActionEvent evt) {
         JButton temp = (JButton) evt.getSource();
         if (level.level == 0) {
-            System.out.println("Editor ActionPerf");
             editor.actionPerformed(evt);
         }
         switch (temp.getText()) {
@@ -145,10 +156,7 @@ public class GUI extends JFrame implements ActionListener {
     }
 
     private void createEditor() {
-        Meldungen temp = new Meldungen(this, true, "Map");
-        System.out.println(temp.getUserInput(1));
-        int sizeX = Integer.parseInt(temp.getUserInput(0)), sizeY = Integer.parseInt(temp.getUserInput(1));
-        editor = new Editor(this, sizeX, sizeY, keyManager);
+        editor = new Editor(this, keyManager);
         level.setLevel(0);
         level.clear();
     }
@@ -194,8 +202,10 @@ public class GUI extends JFrame implements ActionListener {
 
     class GamePanel extends JPanel implements MouseListener, MouseMotionListener {
 
-        public GamePanel() {
-            super();
+        public GamePanel(int width, int height) {
+            super(new BorderLayout());
+            setSize(width, height);
+            setBackground(Color.green);
             this.addMouseListener(this);
             this.addMouseMotionListener(this);
             Container container = getContentPane();

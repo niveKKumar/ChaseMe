@@ -1,28 +1,22 @@
 import javax.swing.*;
 import java.awt.*;
 
-class EditorTileButton extends JLabel {
+class EditorTileButton extends JButton {
     private int id;
-    private TileSet tileSet = new TileSet("Content/Graphics/tileSets/12x12x3 - tileSet.png", 12, 12, 3);
-
+    private TileSet tileSet;
     public static int size = 50;
 
-    public EditorTileButton(int id,TileSet ts){
+    public EditorTileButton(int id, TileSet ts) {
         super();
         tileSet = ts;
         this.id = id;
-        loadImage(id);
-    }
-    public EditorTileButton(int id){
-        super();
-        this.id = id;
-        loadImage(id);
+        loadImage();
     }
 
-    public void loadImage(int imageno) {
+    public void loadImage() {
         this.setBorder(null);
         try {
-            Image img = tileSet.tileSet[imageno].tileImage;
+            Image img = tileSet.tileSet[id].tileImage;
             img = img.getScaledInstance(size, size, Image.SCALE_SMOOTH);
             ImageIcon icon = new ImageIcon(img);
             this.setIcon(icon);
@@ -30,7 +24,6 @@ class EditorTileButton extends JLabel {
             System.out.println("Fehler beim Laden von Bild");
         }
     }
-
 
     public TileSet getTileSet() {
         return tileSet;

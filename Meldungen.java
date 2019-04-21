@@ -4,10 +4,11 @@ import javax.swing.event.DocumentListener;
 import javax.swing.filechooser.FileFilter;
 import java.awt.*;
 import java.awt.event.*;
+import java.awt.image.BufferedImage;
 import java.io.File;
 
 public class Meldungen extends JDialog implements ActionListener {
-    public JFileChooser fileChooser = new JFileChooser();
+    public static JFileChooser fileChooser = new JFileChooser();
     private static JFrame owner;
     private JPanel contentPane;
     private JButton buttonOK;
@@ -19,10 +20,9 @@ public class Meldungen extends JDialog implements ActionListener {
     private JTextArea[] eingabe;
     private JButton[] button;
     private String[] userInput;
-    private TileSet ts;
-    private String currentPath = null; // TODO: 08.04.2019 Kann besser gelöst werden
     private boolean firstStart = true;
-    private boolean tileSetAbfrageManually = false;
+    public TileSet selectedTS;
+    private JCheckBox notificationCheckBox;
 
     public Meldungen(JFrame owner, boolean modal, String bestimmteAbfrage) {
         super(owner, modal);
@@ -77,7 +77,7 @@ public class Meldungen extends JDialog implements ActionListener {
         }
     }
 
-    public File setMapPath(String openOrSaveOrTileSet) {             //Methode des Filechosers; offnet einen Speicher-Dialog
+    public static File setMapPath(String openOrSaveOrTileSet) {             //Methode des Filechosers; offnet einen Speicher-Dialog
         if (openOrSaveOrTileSet.equals("Open")) {
             fileChooser.setCurrentDirectory(new File("Content/maps"));
             String extension = ".txt";
@@ -100,7 +100,6 @@ public class Meldungen extends JDialog implements ActionListener {
             setFileFilter(extension);
             if (fileChooser.showOpenDialog(owner) == JFileChooser.APPROVE_OPTION) {  //Wenn der Ok-Button gedrueckt wird...
                 File f = fileChooser.getSelectedFile();
-                tileSetAbfrage(f);
                 return f;
             }
         }
@@ -109,7 +108,7 @@ public class Meldungen extends JDialog implements ActionListener {
 
     }
 
-    private void setFileFilter(String extension) {
+    private static void setFileFilter(String extension) {
         fileChooser.resetChoosableFileFilters();
         fileChooser.setFileFilter(new FileFilter() {
             @Override
@@ -128,53 +127,33 @@ public class Meldungen extends JDialog implements ActionListener {
     }
 
     private void onOK() {
-        if (tileSetAbfrageManually) {
-            createTileSet();
-            tileSetAbfrageManually = false;
-            System.out.println("Manuelles TS wurde erfolgreich erstellt");
-        }
         setVisible(false);
     }
 
     //Templates von Meldungen!
     public void mapGroesseAbfrage() {
         createComponents(2, "Bitte Mapgroesse angeben:");
-        eingabe[0].setText("Map - Breite");
-        eingabe[1].setText("Map - Höhe");
+        //On Release:
+//        eingabe[0].setText("Map - Breite");
+//        eingabe[1].setText("Map - Höhe");
+
         eingabe[0].setText("50");
         eingabe[1].setText("50");
         setVisible(true);
     }
 
-    public void tileSetAbfrage(File f) {
-        try {
-            //Automatisches TileSet erstellen:
-            String filename = f.getName();
-            String[] filenameSplit = null;
-            filename = filename.replace(".png", "");
-            int tillCharacter = filename.indexOf(" -");
-            filename = filename.substring(0, tillCharacter);
-            filenameSplit = filename.split("x");
+    // Manuelles TileSet (wird von TileSet beim fehlschlagen aufgerufen):
+    public void tileSetAbfrage(String pPath) {
+        // Manuelles laden:
+        System.out.println("Automatisch ging nicht");
+        createComponents(3, "Bitte nähere Angaben zu den Tiles (Tiles pro Länge und Breite + Abstand zwischen Tiles); ");
+        eingabe[0].setText("Breite");
+        eingabe[1].setText("Höhe");
+        eingabe[2].setText("Border");
 
-            for (int i = 0; i < filenameSplit.length; i++) {
-                System.out.println(filenameSplit[i]);
-            }
+        /** Nicht mehr nötig*/
 
-            ts = new TileSet(f.getPath()
-                    , Integer.parseInt(filenameSplit[0])
-                    , Integer.parseInt(filenameSplit[1])
-                    , Integer.parseInt(filenameSplit[2]));
-
-        } catch (Exception e) {
-            // Manuelles laden:
-            System.out.println("Automatisch ging nicht");
-            createComponents(3, "Bitte nähere Angaben zu den Tiles (Tiles pro Länge und Breite + Abstand zwischen Tiles); ");
-            eingabe[0].setText("Breite");
-            eingabe[1].setText("Höhe");
-            eingabe[2].setText("Border");
-
-
-            button = new JButton[2];
+            /*button = new JButton[2];
             button[0] = new JButton("Tile Set - Base Tiles");
             button[0].addActionListener(new ActionListener() {
                 @Override
@@ -197,31 +176,17 @@ public class Meldungen extends JDialog implements ActionListener {
             for (int i = 0; i < button.length; i++) {
                 button[i].setFocusable(false);
                 center.add(button[i]);
-            }
-            setVisible(true);
-            tileSetAbfrageManually = true;
-            currentPath = f.getPath();
-        }
+            }*/
+        setVisible(true);
     }
 
-    public TileSet createTileSet() {
-        ts = new TileSet(currentPath
-                , Integer.parseInt(getUserInput(0))
-                , Integer.parseInt(getUserInput(1))
-                , Integer.parseInt(getUserInput(2)));
-        System.out.println("Manuelles TS wurde erfolgreich erstellt");
-        return ts;
-    }
-
-    public TileSet getTileSet() {
-        return ts;
-    }
 
     public void chapterAbfrage() {
         createComponents(2, "Um wie viele Tiles soll die Map verschoben werden ?");
         eingabe[0].setText("In X - Tiles");
         eingabe[1].setText("In Y - Tiles");
         button = new JButton[1];
+
         button[0] = new JButton("Standard Groesse (20 nach rechts)");
         button[0].addActionListener(new ActionListener() {
             @Override
@@ -233,12 +198,53 @@ public class Meldungen extends JDialog implements ActionListener {
         for (int i = 0; i < button.length; i++) {
             center.add(button[i]);
         }
+
         setVisible(true);
     }
 
-    public void createComponents(int anzahl, String abfrageText) {
-        eingabe = new JTextArea[anzahl];
-        userInput = new String[anzahl];
+    public void unSimilarTS(EditorMap current, TileSet tsSelected) {
+        createComponents(0, "TileSets sind ungleich. Es kann pro Map nur ein TileSet verwendet werden !");
+
+        notificationCheckBox = new JCheckBox("Warnung ausblenden", false);
+        notificationCheckBox.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                current.setToIgnore(notificationCheckBox.isSelected());
+            }
+        });
+        south.add(notificationCheckBox);
+        button = new JButton[2];
+        button[0] = new JButton("Map Tile Set");
+        button[0].addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                selectedTS = current.tileSet;
+                onOK();
+            }
+        });
+        button[1] = new JButton("Gewähltes Tile Set");
+        button[1].addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                selectedTS = tsSelected;
+                onOK();
+            }
+        });
+        button[0].setIcon(new ImageIcon(current.tileSet.getTileSetImage().getScaledInstance(100, 100, BufferedImage.SCALE_SMOOTH)));
+        button[0].setBorder(null);
+        button[1].setIcon(new ImageIcon(tsSelected.getTileSetImage().getScaledInstance(100, 100, BufferedImage.SCALE_SMOOTH)));
+        button[0].setBorder(null);
+        buttonOK.setVisible(false);
+        for (int i = 0; i < button.length; i++) {
+            button[i].setFocusable(false);
+            center.add(button[i]);
+        }
+        setVisible(true);
+    }
+
+    public void createComponents(int eingabeAnzahl, String abfrageText) {
+        eingabe = new JTextArea[eingabeAnzahl];
+        userInput = new String[eingabeAnzahl];
         for (int i = 0; i < eingabe.length; i++) {
             eingabe[i] = new JTextArea("Test");
             eingabe[i].setSize(100, 100);
@@ -333,23 +339,23 @@ public class Meldungen extends JDialog implements ActionListener {
         center = new JPanel();
         center.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
         contentPane.add(center, BorderLayout.CENTER);
-        south = new JPanel();
-        south.setLayout(new com.intellij.uiDesigner.core.GridLayoutManager(3, 1, new Insets(0, 0, 0, 0), -1, -1));
-        contentPane.add(south, BorderLayout.SOUTH);
-        buttonCancel = new JButton();
-        buttonCancel.setText("Cancel");
-        south.add(buttonCancel, new com.intellij.uiDesigner.core.GridConstraints(0, 0, 1, 1, com.intellij.uiDesigner.core.GridConstraints.ANCHOR_CENTER, com.intellij.uiDesigner.core.GridConstraints.FILL_HORIZONTAL, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_CAN_SHRINK | com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_CAN_GROW, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
-        buttonOK = new JButton();
-        buttonOK.setText("OK");
-        south.add(buttonOK, new com.intellij.uiDesigner.core.GridConstraints(2, 0, 1, 1, com.intellij.uiDesigner.core.GridConstraints.ANCHOR_CENTER, com.intellij.uiDesigner.core.GridConstraints.FILL_HORIZONTAL, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_CAN_SHRINK | com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_CAN_GROW, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
-        final com.intellij.uiDesigner.core.Spacer spacer1 = new com.intellij.uiDesigner.core.Spacer();
-        south.add(spacer1, new com.intellij.uiDesigner.core.GridConstraints(1, 0, 1, 1, com.intellij.uiDesigner.core.GridConstraints.ANCHOR_CENTER, com.intellij.uiDesigner.core.GridConstraints.FILL_HORIZONTAL, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_WANT_GROW, 1, null, null, null, 0, false));
         north = new JPanel();
         north.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
         contentPane.add(north, BorderLayout.NORTH);
         abfrage = new JLabel();
         abfrage.setText("Das ist eine Demoabfrage die modifiziert werden soll !");
         north.add(abfrage);
+        south = new JPanel();
+        south.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
+        south.setBackground(new Color(-3486771));
+        contentPane.add(south, BorderLayout.SOUTH);
+        south.setBorder(BorderFactory.createTitledBorder(BorderFactory.createLineBorder(new Color(-10790053)), null));
+        buttonOK = new JButton();
+        buttonOK.setText("OK");
+        south.add(buttonOK);
+        buttonCancel = new JButton();
+        buttonCancel.setText("Cancel");
+        south.add(buttonCancel);
     }
 
     /**

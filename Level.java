@@ -88,10 +88,8 @@ public class Level {
 
     public void createLobby() {
         createLevelObjects(1, 0/*,null*/);
-
         //Einlesung der Maps:
-        TileSet ts = new TileSet("Content/Graphics/tileSets/12x12x3 - tileSet.png", 12, 12, 3);
-        maps[0] = new Map(gui, ts, "Content/Maps/Menu.txt", "Border", new Point(0, 0));
+        maps[0] = new Map(gui, "Content/Maps/Menu.txt", "Border", new Point(0, 0));
         gui.camera = new Camera(0, 0);
 
         for (int i = 0; i < maps.length; i++) {
@@ -102,7 +100,7 @@ public class Level {
         setLevel(999);
     }
 
-    ////LEVEL 0 - Testumgebung (Editor) //////////////////////////////////////////////
+    ////LEVEL 0 - Testumgebung (Editor) ////////////////////////////save//////////////////
     //////////////////////////////////////////////////////////////////////////////////
     //////////////////////////////////////////////////////////////////////////////////
     public void createlevel0(MapBase[] pMaps, @Nullable Point moverCords) {
@@ -132,12 +130,10 @@ public class Level {
     //////////////////////////////////////////////////////////////////////////////////
     public void createlevel1() {
         createLevelObjects(3, 5/*,new Point(10,20)*/);
-        TileSet ts = new TileSet("Content/Graphics/tileSets/12x12x3 - tileSet.png", 12, 12, 3);
-        TileSet tsItems = new TileSet("Content/Graphics/tileSets/16x16x0 - tileSetItems.png", 16, 16, 0);
         //Laden der Maps:
-        maps[0] = new Map(gui, ts, "Content/Maps/0 Base.txt", "All", new Point(0, 0));
-        maps[1] = new Map(gui, tsItems, "Content/Maps/0A Items.txt", "Item", new Point(5, 0));
-        maps[2] = new Map(gui, tsItems, "Content/Maps/0B Items.txt", "Item", new Point(10, 0));
+        maps[0] = new Map(gui, "Content/Maps/0 Base.txt", "All", new Point(0, 0));
+        maps[1] = new Map(gui, "Content/Maps/0A Items.txt", "Item", new Point(5, 0));
+        maps[2] = new Map(gui, "Content/Maps/0B Items.txt", "Item", new Point(10, 0));
         gui.setCamera(maps[0].getMapSizeX(), maps[0].getMapSizeY());
         for (int i = 0; i < maps.length; i++) {
             analytics[i] = new DisplayAnalytics(gui, maps[i], pathFinder);
