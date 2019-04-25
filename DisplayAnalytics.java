@@ -11,11 +11,11 @@ public class DisplayAnalytics{
   private Mover mover;
   private boolean isMover;
     private MapBase map;
-  private GUI gui;
+    private GamePanel gamePanel;
     private PathFinder pathFinder;
 
-    public DisplayAnalytics(GUI pGui, MapBase pMap, PathFinder pPathFinder) {
-    gui = pGui;
+    public DisplayAnalytics(GamePanel gp, MapBase pMap, PathFinder pPathFinder) {
+        gamePanel = gp;
     map = pMap;
     pathFinder = pPathFinder;
   }
@@ -45,14 +45,14 @@ public class DisplayAnalytics{
         } else {
           map.mapTiles [spalte] [zeile].showImage(true);
           }
-        if (showStartTarget && map.mapTiles [spalte] [zeile] == gui.start) {
+          if (showStartTarget && map.mapTiles[spalte][zeile] == gamePanel.start) {
           g2d.setStroke(stroke2);
           g2d.setColor(Color.green);
           g2d.drawRect(map.mapTiles [spalte] [zeile].getX(), map.mapTiles [spalte] [zeile].getY(), 64, 64);
           g2d.setStroke(stroke1);
           g2d.setColor(Color.black);
        }
-        if (showStartTarget && map.mapTiles [spalte] [zeile] == gui.target) {
+          if (showStartTarget && map.mapTiles[spalte][zeile] == gamePanel.target) {
           g2d.setStroke(stroke2);
           g2d.setColor(Color.RED);
           g2d.drawRect(map.mapTiles [spalte] [zeile].getX(), map.mapTiles [spalte] [zeile].getY(), 64, 64);

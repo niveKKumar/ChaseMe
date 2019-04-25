@@ -8,6 +8,7 @@ class Pointer {
      */
     private Camera camera;
     private int mapSizeX, mapSizeY;
+    private GamePanel gamePanel;
 
     public Pointer() {
     }
@@ -15,13 +16,14 @@ class Pointer {
     /**
      * Bestimmte Position
      */
-    public Pointer(int pXpos, int pYpos) {
+    public Pointer(GamePanel gp, int pXpos, int pYpos) {
+        gamePanel = gp;
         xPos = pXpos;
         yPos = pYpos;
     }
 
-    public Pointer(Point cords) {
-        new Pointer((int) cords.getX(), (int) cords.getY());
+    public Pointer(GamePanel gp, Point cords) {
+        new Pointer(gp, (int) cords.getX(), (int) cords.getY());
     }
 
 
@@ -46,10 +48,10 @@ class Pointer {
         boolean rightBorder;
         boolean upBorder;
         boolean downBorder;
-        leftBorder = xPos < 0 + GUI.FRAME_WIDTH / 2;
-        rightBorder = xPos > mapSizeX * Tile.TILEWIDTH - GUI.FRAME_WIDTH / 2;
-        upBorder = yPos < 0 + GUI.FRAME_HEIGHT / 2;
-        downBorder = yPos > mapSizeY * Tile.TILEHEIGHT - GUI.FRAME_WIDTH / 2;
+        leftBorder = xPos < 0 + gamePanel.getWidth() / 2;
+        rightBorder = xPos > mapSizeX * Tile.TILEWIDTH - gamePanel.getWidth() / 2;
+        upBorder = yPos < 0 + gamePanel.getHeight() / 2;
+        downBorder = yPos > mapSizeY * Tile.TILEHEIGHT - gamePanel.getHeight() / 2;
         //BEWEGENDER POINTER:
         if (leftBorder || rightBorder || upBorder || downBorder) {
             xPos = oldXPos;

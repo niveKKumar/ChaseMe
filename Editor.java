@@ -9,17 +9,16 @@ import java.util.Calendar;
 import java.util.LinkedList;
 
 public class Editor {
-    private static GUI gui;
+    private static GamePanel gamePanel;
     public LinkedList maps = new LinkedList<EditorMap>();
     public EditorTileMenu tileMenu;
     public Pointer cameraPoint;
-    private JButton[] editorbuttons = new JButton[3];
     public int selectedMap;
     private KeyManager keyManager;
     private int zoomSteps = 0;
     private int maxZoom = 10, minZoom = 10;
     private LinkedList recentList = new LinkedList();
-    private boolean firstStart = true;
+    //    private boolean firstStart = true;
     private int maxRecent = 10;
     public JLabel idAnzeige;
     private Timer autosaver;
@@ -33,10 +32,10 @@ public class Editor {
     private LinkedList mapCheck = new LinkedList<JCheckBox>();
     private GroupLayout layout;
 
-    public Editor(GUI pGUI, KeyManager pKeyManager) {
-        gui = pGUI;
+    public Editor(GamePanel gp, KeyManager pKeyManager) {
+        gamePanel = gp;
         keyManager = pKeyManager;
-        gui.addKeyListener(keyManager);
+        gp.getGUI().addKeyListener(keyManager);
         createMenu();
         createTileMenu();
 
@@ -45,8 +44,31 @@ public class Editor {
     /**
      * Erstellung von Objekten:
      */
+//
+    public JPanel createEditorMenu() {
+        GridBagConstraints gbc = new GridBagConstraints();
+        JPanel editorPane = new JPanel(new GridBagLayout());
+        editorPane.setFocusable(false);
+        editorPane.setBackground(null);
+        editorPane.setBorder(BorderFactory.createLineBorder(Color.green, 5));
+
+        gbc.insets = new Insets(5, 0, 5, 0);
+        gbc.fill = GridBagConstraints.BOTH;
+        int j = 2;
+        String[] btNamesEditor = {"+", "-", "Tile Auswaehlen",};
+        MenuButton[] editorbuttons = new MenuButton[btNamesEditor.length];
+        for (int i = 0; i < editorbuttons.length; i++) {
+            editorbuttons[i] = new MenuButton(btNamesEditor[i]);
+            editorbuttons[i].setFocusable(false);
+            editorbuttons[i].addActionListener(gamePanel.getGUI());
+            MenuUI.addObject(gbc, editorbuttons[i], editorPane, 2, j++, 2, 2, true);
+        }
+        return editorPane;
+    }
+
+
     public void createMenu() {
-        // FIXME: 14.04.2019 Anständige Initialisirung (Nicht oben)
+        // FIXME: 14.04.2019 Anständige Initialisierung (Nicht oben)
         idAnzeige = new JLabel();
         idAnzeige.setFocusable(false);
         idAnzeige.setText("Kein Tile ausgewählt");
@@ -63,13 +85,6 @@ public class Editor {
         recent.setPreferredSize(new Dimension(64,maxRecent*64+ (maxRecent+1)*5));
 
 
-        for (int i = 0; i < editorbuttons.length; i++) {
-            String[] btNamesEditor = {"+", "-", "Tile Auswaehlen",};
-            editorbuttons[i] = new JButton(btNamesEditor[i]);
-            editorbuttons[i].setFocusable(false);
-            editorbuttons[i].addActionListener(gui);
-            gui.south.add(editorbuttons[i]);
-        }
         mapSelectedBox = new JComboBox();
         mapSelectedBox.setFocusable(false);
         mapSelectedBox.addItemListener(new ItemListener() {
@@ -88,7 +103,7 @@ public class Editor {
                         cameraPoint.setLocation(((EditorMap) maps.get(selectedMap)).getMapSizeX() / 2, ((EditorMap) maps.get(selectedMap)).getMapSizeY() / 2);
                     }
                 }
-                gui.requestFocus();
+                gamePanel.requestFocus();
             }
         });
 
@@ -99,11 +114,11 @@ public class Editor {
         btChapterOffset.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                Meldungen m = new Meldungen(gui, true, "null");
+                Meldungen m = new Meldungen(gamePanel.getGUI(), true, "null");
                 m.chapterAbfrage();
                 ((EditorMap) maps.get(selectedMap)).setchapterXOffset(Integer.parseInt(m.getUserInput(0)));
                 ((EditorMap) maps.get(selectedMap)).setchapterYOffset(Integer.parseInt(m.getUserInput(1)));
-                gui.requestFocus();
+                gamePanel.getGUI().requestFocus();
             }
         });
         mapSelectActionsPanel.add(btChapterOffset);
@@ -112,7 +127,7 @@ public class Editor {
             @Override
             public void actionPerformed(ActionEvent e) {
                 autoSaveMap();
-                gui.requestFocus();
+                gamePanel.getGUI().requestFocus();
             }
         });
         btAutosave = new JButton("Autosave is enabled");
@@ -130,53 +145,46 @@ public class Editor {
                     btAutosave.setText("Autosave disabled");
                     btAutosave.setForeground(Color.red);
                 }
-                gui.requestFocus();
+                gamePanel.getGUI().requestFocus();
             }
         });
         btSimulate = new JButton("Simulate your Level");
         btSimulate.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                Level tempGame = new Level(gui);
+                Level tempGame = new Level(gamePanel);
                 MapBase[] temp = new Map[maps.size()];
                 for (int i = 0; i < maps.size(); i++) {
                     temp[i] = ((EditorMap) maps.get(i));
                 }
                 tempGame.createlevel0(temp, null);
                 tempGame.setLevel(0);
-                gui.requestFocus();
+                gamePanel.getGUI().requestFocus();
             }
         });
         mapSelectActionsPanel.add(btAutosave);
         mapSelectActionsPanel.add(btSimulate);
-        gui.west.add(recent);
-        gui.east.add(selectMapPanel);
-        gui.east.add(mapSelectActionsPanel);
-        gui.buttons[4].setVisible(false);
+        gamePanel.getGUI().west.add(recent);
+        gamePanel.getGUI().east.add(selectMapPanel);
+        gamePanel.getGUI().east.add(mapSelectActionsPanel);
     }
 
-    public void setMenuVisible(boolean b) {
-        for (int i = 0; i < editorbuttons.length; i++) {
-            editorbuttons[i].setVisible(b);
-        }
-
-    }
 
     public void createEditorMap(int mapSizeX, int mapSizeY, TileSet pTileSet, Integer tileID) {
-        EditorMap editorMap = new EditorMap(gui,mapSizeX,mapSizeY,pTileSet);
+        EditorMap editorMap = new EditorMap(gamePanel, mapSizeX, mapSizeY, pTileSet);
         editorMap.createEditorMap(tileID);
         maps.add(editorMap);
-        gui.setCamera(mapSizeX, mapSizeY);
-        cameraPoint.setCamera(gui.camera);
+        gamePanel.setCamera(mapSizeX, mapSizeY);
+        cameraPoint.setCamera(gamePanel.camera);
         createCheckbox();
     }
 
     public void createBlankEditorMap(int mapSizeX, int mapSizeY, TileSet pTileSet) {
-        EditorMap editorMap = new EditorMap(gui, mapSizeX, mapSizeY, pTileSet);
+        EditorMap editorMap = new EditorMap(gamePanel, mapSizeX, mapSizeY, pTileSet);
         editorMap.createBlankMap();
         maps.add(editorMap);
-        gui.setCamera(mapSizeX, mapSizeY);
-        cameraPoint.setCamera(gui.camera);
+        gamePanel.setCamera(mapSizeX, mapSizeY);
+        cameraPoint.setCamera(gamePanel.camera);
         createCheckbox();
     }
 
@@ -193,21 +201,20 @@ public class Editor {
 
 
     public void createTileMenu() {
-        if (firstStart) {
-            tileMenu = new EditorTileMenu(gui, true, this);
+        if (tileMenu == null) {
+            tileMenu = new EditorTileMenu(gamePanel.getGUI(), true, this);
             TileSet tempTS = new TileSet("Content/Graphics/tileSets/12x12x3 - tileSet.png", 12, 12, 3);
             //On release:
-//            Meldungen m = new Meldungen(gui,true,"Map");
+//            Meldungen m = new Meldungen(JFrame,true,"Map");
 //            createEditorMap(Integer.parseInt(m.getUserInput(0)),Integer.parseInt(m.getUserInput(1)), tempTS, null);
             cameraPoint = new Pointer();
             createEditorMap(50, 50, tempTS, null);
             cameraPoint.setSpeed(15);
-            firstStart = false;
         } else {
             tileMenu.setVisible(true);
             ((EditorMap) maps.get(selectedMap)).setGraphicID(tileMenu.getSelectedID());
         } // Damit kein erneutes Starten immer entsteht
-        gui.requestFocus();
+        gamePanel.getGUI().requestFocus();
     }
 
     public void addRecently(int id, TileSet ts) {
@@ -219,11 +226,11 @@ public class Editor {
     }
 
     public void update() {
-        gui.taAnzeige.setText("\n" + "X:" + cameraPoint.getLocation().getX() + "Y:" + cameraPoint.getLocation().getY()
-                + "\n" + "X- Offset:" + gui.camera.getClickXOffset() + "\n" + "Y- Offset:" + gui.camera.getClickYOffset());
-        if (!bordercheck(cameraPoint) && Level.keyInputToMove(gui.keyManager).getX() != 0 || !bordercheck(cameraPoint) && Level.keyInputToMove(gui.keyManager).getY() != 0) {
-            cameraPoint.setMove(Level.keyInputToMove(gui.keyManager));
-            gui.camera.centerOnObject(cameraPoint);
+        gamePanel.getGUI().taAnzeige.setText("\n" + "X:" + cameraPoint.getLocation().getX() + "Y:" + cameraPoint.getLocation().getY()
+                + "\n" + "X- Offset:" + gamePanel.camera.getClickXOffset() + "\n" + "Y- Offset:" + gamePanel.camera.getClickYOffset());
+        if (!bordercheck(cameraPoint) && gamePanel.getGUI().keyInputToMove(gamePanel.keyManager).getX() != 0 || !bordercheck(cameraPoint) && gamePanel.getGUI().keyInputToMove(gamePanel.keyManager).getY() != 0) {
+            cameraPoint.setMove(gamePanel.getGUI().keyInputToMove(gamePanel.keyManager));
+            gamePanel.camera.centerOnObject(cameraPoint);
 
         }
         if (!((EditorMap) maps.get(selectedMap)).isToIgnore()) {
@@ -306,7 +313,7 @@ public class Editor {
             });
             panel.add(temp);
         }
-        gui.repaint();
+        gamePanel.repaint();
         panel.revalidate();
     }
 
@@ -326,11 +333,11 @@ public class Editor {
                 out.newLine();
             }
             if (notification) {
-                JOptionPane.showMessageDialog(gui, "Daten erfolgreich gespeichert.");
+                JOptionPane.showMessageDialog(gamePanel.getGUI(), "Daten erfolgreich gespeichert.");
             }
         } catch (Exception e) {
             if (notification) {
-                JOptionPane.showMessageDialog(gui, "Daten nicht gespeichert.", "", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(gamePanel.getGUI(), "Daten nicht gespeichert.", "", JOptionPane.ERROR_MESSAGE);
             }
         }
     }
@@ -343,45 +350,45 @@ public class Editor {
     }
 
     public void loadMap() {
-        Meldungen m = new Meldungen(gui, true, "null");
+        Meldungen m = new Meldungen(gamePanel.getGUI(), true, "null");
         File f = Meldungen.setMapPath("Open");//Der Filechooeser liefert die Pfadangabe zu dem selektierten Speicherort.
         String path = f.getPath();
-        Map mapTemp = new Map(gui, path, "null", new Point(0, 0));
+        Map mapTemp = new Map(gamePanel, path, "null", new Point(0, 0));
         //Übertragung der Map = lesen muss nicht extra für EditorMap implementier werden
-        EditorMap em = new EditorMap(gui, mapTemp.getMapSizeX(), mapTemp.getMapSizeY(), mapTemp.getTileSet());
+        EditorMap em = new EditorMap(gamePanel, mapTemp.getMapSizeX(), mapTemp.getMapSizeY(), mapTemp.getTileSet());
         em.mapTiles = mapTemp.mapTiles;
 
         if (em != null) {
             maps.add(em);
             createCheckbox();
-            gui.setCamera(em.getMapSizeX(), em.getMapSizeY());
-            cameraPoint.setCamera(gui.camera);
+            gamePanel.setCamera(em.getMapSizeX(), em.getMapSizeY());
+            cameraPoint.setCamera(gamePanel.camera);
             selectedMap = maps.size() - 1;
-            JOptionPane.showMessageDialog(gui, "Map erfolgreich geladen.");
+            JOptionPane.showMessageDialog(gamePanel.getGUI(), "Map erfolgreich geladen.");
         } else {
-            JOptionPane.showMessageDialog(gui, "Map konnte nicht geladen werden.", "", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(gamePanel.getGUI(), "Map konnte nicht geladen werden.", "", JOptionPane.ERROR_MESSAGE);
         }
 
     }
 
     public void createCheckbox(){
         int name = 0;
-        int h = 10;
+        int h = 15;
         mapCheck.clear();
         mapSelectedBox.removeAllItems();
         selectMapPanel.removeAll();
         for (int i = 0; i < maps.size() ; i++) {
             name++;
             mapCheck.add(new JCheckBox("Map " + name));
-            JButton temp = new JButton();
-            temp = new JButton(new ImageIcon(((new ImageIcon("Content/Graphics/UI/deleteIcon.png")).getImage()).getScaledInstance(h, h, Image.SCALE_SMOOTH)));
+            JButton temp = new JButton(new ImageIcon(((new ImageIcon("Content/Graphics/UI/deleteIcon.png")).getImage()).getScaledInstance(h, h, Image.SCALE_SMOOTH)));
+            temp.setOpaque(false);
             temp.setMaximumSize(new Dimension(h, h));
             temp.setBorder(null);
             temp.addActionListener(new RemoveBTActionListener(i) {
                 @Override
                 public void actionPerformed(ActionEvent e) {
                     super.actionPerformed(e);
-                    gui.requestFocus();
+                    gamePanel.getGUI().requestFocus();
                 }
             });
             mapSelectedBox.addItem("Map " + name);
@@ -415,7 +422,7 @@ public class Editor {
     public void zoom(boolean zoomInIsTrueZoomOutisFalse){
         // TODO: 23.03.2019 Zoom an Mapgroesse angepasst EDIT: NICHT WIRKLICH NÖTIG...
         EditorMap m = (EditorMap) maps.get(selectedMap);
-        gui.camera.centerOnObject(cameraPoint);
+        gamePanel.camera.centerOnObject(cameraPoint);
         double zoom = 0.25;
         if (zoomInIsTrueZoomOutisFalse) {
             //Reinzoom:
@@ -458,21 +465,21 @@ public class Editor {
             case "+":
                 System.out.println("Zoom rein");
                 zoom(true);
-                gui.camera.centerOnObject(cameraPoint);
-                cameraPoint.setCamera(gui.camera);
-                gui.requestFocus();
+                gamePanel.camera.centerOnObject(cameraPoint);
+                cameraPoint.setCamera(gamePanel.camera);
+                gamePanel.getGUI().requestFocus();
                 break;
 
             case "-":
                 System.out.println("Zoom raus");
                 zoom(false);
-                gui.camera.centerOnObject(cameraPoint);
-                cameraPoint.setCamera(gui.camera);
-                gui.requestFocus();
+                gamePanel.camera.centerOnObject(cameraPoint);
+                cameraPoint.setCamera(gamePanel.camera);
+                gamePanel.getGUI().requestFocus();
                 break;
             case "Tile Auswaehlen":
                 createTileMenu();
-                gui.requestFocus();
+                gamePanel.getGUI().requestFocus();
                 break;
         }
 

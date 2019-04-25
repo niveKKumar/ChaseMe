@@ -1,10 +1,13 @@
 import com.sun.istack.internal.Nullable;
 
+import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.geom.Point2D;
 
-public class Level {
+public class Level implements ActionListener {
 
     public int level;
     public MapBase[] maps;
@@ -15,42 +18,44 @@ public class Level {
     public Tile start;
     public Tile target;
     public int click = 0;
-    private GUI gui;
+    private GamePanel gamePanel;
     private int currentClick;
     private int currentSteps;
     private int dialog;
     private boolean active;
+    private GridBagConstraints gbc = new GridBagConstraints();
 
 
-    public Level(GUI gui) {
-        this.gui = gui;
+    public Level(GamePanel gp) {
+        this.gamePanel = gp;
         active = true;
     }
 
-    public static Point keyInputToMove(KeyManager keyManager) {
-        int xMove = 0;
-        int yMove = 0;
-        if (keyManager.up) yMove = -1;
-        if (keyManager.down) yMove = 1;
-        if (keyManager.left) xMove = -1;
-        if (keyManager.right) xMove = 1;
-        if (keyManager.upLeft) {
-            yMove = -1;
-            xMove = -1;
+    public JPanel createLevelMenu() {
+        JPanel levelPane;
+        levelPane = new JPanel(new GridBagLayout());
+        levelPane.setFocusable(false);
+        levelPane.setBorder(BorderFactory.createLineBorder(Color.blue, 5));
+
+        gbc.insets = new Insets(5, 0, 5, 0);
+        gbc.fill = GridBagConstraints.BOTH;
+        levelPane.setBackground(null);
+        int j = 2;
+        MenuButton[] buttons = new MenuButton[5];
+        for (int i = 0; i < buttons.length; i++) {
+            buttons[i] = new MenuButton(i);
+            buttons[i].setFocusable(false);
+            buttons[i].addActionListener(this);
+            MenuUI.addObject(gbc, buttons[i], levelPane, 2, j++, 2, 2, true);
         }
-        if (keyManager.upRight) {
-            yMove = -1;
-            xMove = 1;
-        }
-        if (keyManager.downLeft) {
-            yMove = 1;
-            xMove = -1;
-        }
-        if (keyManager.downRight) {
-            yMove = 1;
-            xMove = 1;
-        }
-        return new Point(xMove, yMove);
+
+        gbc.fill = GridBagConstraints.NONE;
+        gbc.insets = new Insets(0, 0, 10, 10);
+        gbc.anchor = GridBagConstraints.LAST_LINE_END;
+        JButton info = new JButton("Info (Platzhalter");
+        MenuUI.addObject(gbc, info, levelPane, gbc.gridx + 1, gbc.gridy + 2, 0.5f, 0.5f, false);
+
+        return levelPane;
     }
 
     public void createLevelObjects(int mapAmount, int enemyAmount) {
@@ -60,28 +65,28 @@ public class Level {
 //        if (moverCords != null) {
 //            System.out.println("!Null");
 //            System.out.println("_________________________"+(int) (moverCords.getX()*Tile.TILEWIDTH)+"||"+ (int) (moverCords.getY()*Tile.TILEHEIGHT));
-//            mover = new Character(gui, (int) (moverCords.getX()*Tile.TILEWIDTH), (int) (moverCords.getY()*Tile.TILEHEIGHT),maps);
+//            mover = new Character(gamePanel, (int) (moverCords.getX()*Tile.TILEWIDTH), (int) (moverCords.getY()*Tile.TILEHEIGHT),maps);
 //                    mover.setLocation((int) (moverCords.getX()*Tile.TILEWIDTH), (int) (moverCords.getY()*Tile.TILEHEIGHT) );
 //
 ////            System.out.println("1 create level objects :"+(moverCords.getX())+"||"+(moverCords.getY()));
 ////            System.out.println("2 create level objects :"+(mover.getLocation().getX())+"||"+(mover.getLocation().getY()));
 //        }else {
 //            try {
-//                mover = new Character(gui, (int) mover.getLocation().getX(), (int) mover.getLocation().getY(), maps);
+//                mover = new Character(gamePanel, (int) mover.getLocation().getX(), (int) mover.getLocation().getY(), maps);
 ////                System.out.println("3 create level objects :"+(mover.getLocation().getX())+"||"+(mover.getLocation().getY()));
 //            } catch (Exception e) {
-//                mover = new Character(gui, 64, 64, maps);
+//                mover = new Character(gamePanel, 64, 64, maps);
 ////                System.out.println("4 create level objects :"+(mover.getLocation().getX())+"||"+(mover.getLocation().getY()));
 //            }
 //        }
 
-        mover = new Character(gui, 0, 0, maps);
+        mover = new Character(gamePanel, 0, 0, maps);
         SpriteSheet playersheet = new SpriteSheet("Content/Graphics/player/playersheet.png", 4, 3);
         enemy = new Runner[enemyAmount];
         for (int i = 0; i < enemy.length; i++) {
-            enemy[i] = new Runner(gui, 0, 0, playersheet, maps);
+            enemy[i] = new Runner(gamePanel, 0, 0, playersheet, maps);
         }
-        pathFinder = new PathFinder(maps, mover, gui);
+        pathFinder = new PathFinder(maps, mover, gamePanel);
         dialog = 0;
         active = true;
     }
@@ -89,14 +94,15 @@ public class Level {
     public void createLobby() {
         createLevelObjects(1, 0/*,null*/);
         //Einlesung der Maps:
-        maps[0] = new Map(gui, "Content/Maps/Menu.txt", "Border", new Point(0, 0));
-        gui.camera = new Camera(0, 0);
+        maps[0] = new Map(gamePanel, "Content/Maps/menu.txt", "Border", new Point(0, 0));
+        gamePanel.camera = new Camera(0, 0);
 
         for (int i = 0; i < maps.length; i++) {
-            analytics[i] = new DisplayAnalytics(gui, maps[i], pathFinder);
+            analytics[i] = new DisplayAnalytics(gamePanel, maps[i], pathFinder);
         }
         // Intialisierung der Spieler:
         mover.setLocation(100, 100);
+        System.out.println("Lobby loaded...");
         setLevel(999);
     }
 
@@ -110,9 +116,9 @@ public class Level {
         // TODO: 14.04.2019 Abfrage von bestimmten Informationen (Mover Spawn Punkt) -> wird einfach abgefragt = ansonsten zu viel Aufwand
         createLevelObjects(pMaps.length, 0/*,moverCords*/);
         maps = pMaps;
-        gui.setCamera(maps[0].getMapSizeX(), maps[0].getMapSizeY());
+        gamePanel.setCamera(maps[0].getMapSizeX(), maps[0].getMapSizeY());
         for (int i = 0; i < maps.length; i++) {
-            analytics[i] = new DisplayAnalytics(gui, maps[i], pathFinder);
+            analytics[i] = new DisplayAnalytics(gamePanel, maps[i], pathFinder);
         }
         // Intialisierung der Spieler:
         setLevel(0);
@@ -131,12 +137,12 @@ public class Level {
     public void createlevel1() {
         createLevelObjects(3, 5/*,new Point(10,20)*/);
         //Laden der Maps:
-        maps[0] = new Map(gui, "Content/Maps/0 Base.txt", "All", new Point(0, 0));
-        maps[1] = new Map(gui, "Content/Maps/0A Items.txt", "Item", new Point(5, 0));
-        maps[2] = new Map(gui, "Content/Maps/0B Items.txt", "Item", new Point(10, 0));
-        gui.setCamera(maps[0].getMapSizeX(), maps[0].getMapSizeY());
+        maps[0] = new Map(gamePanel, "Content/Maps/0 Base.txt", "All", new Point(0, 0));
+        maps[1] = new Map(gamePanel, "Content/Maps/0A Items.txt", "Item", new Point(5, 0));
+        maps[2] = new Map(gamePanel, "Content/Maps/0B Items.txt", "Item", new Point(10, 0));
+        gamePanel.setCamera(maps[0].getMapSizeX(), maps[0].getMapSizeY());
         for (int i = 0; i < maps.length; i++) {
-            analytics[i] = new DisplayAnalytics(gui, maps[i], pathFinder);
+            analytics[i] = new DisplayAnalytics(gamePanel, maps[i], pathFinder);
         }
         // Intialisierung der Spieler:
         mover.setLocation((5 * Tile.TILEWIDTH), 5 * Tile.TILEHEIGHT);
@@ -188,14 +194,14 @@ public class Level {
     }
 
     public void renderLevel(Graphics2D g2d) {
+
         if (active && level != 0) {
             maps[0].renderMap(g2d);
-            mover.render(g2d);
-
+            mover.draw(g2d);
             if (enemy.length > 0) {
                 for (int enemyamount = 0; enemyamount < enemy.length; enemyamount++) {
                     if (enemy[enemyamount] != null) {
-                        enemy[enemyamount].render(g2d);
+                        enemy[enemyamount].draw(g2d);
                     }
                 }
             }
@@ -210,18 +216,17 @@ public class Level {
 
     public void updateLevel() {
         if (active) {
-
-            if (keyInputToMove(gui.keyManager).getX() != 0 || keyInputToMove(gui.keyManager).getY() != 0) {
-                mover.setMove(keyInputToMove(gui.keyManager));
-                gui.camera.centerOnObject(mover);
+            if (gamePanel.getGUI().keyInputToMove(gamePanel.keyManager).getX() != 0 || gamePanel.getGUI().keyInputToMove(gamePanel.keyManager).getY() != 0) {
+                mover.setMove(gamePanel.getGUI().keyInputToMove(gamePanel.keyManager));
+                gamePanel.camera.centerOnObject(mover);
                 pathFinder.resetPath();
-                gui.taAnzeige.setText("\n" + "X:" + mover.moverOnMapTile().x + "Y:" + mover.moverOnMapTile().y
+                gamePanel.getGUI().taAnzeige.setText("Level: " + level + "\n" + "X:" + mover.moverOnMapTile().x + "Y:" + mover.moverOnMapTile().y
                         + "\n" + "Steps:" + mover.getSteps()
-                        + "\n" + "X- Offset:" + gui.camera.getXOffset() + "\n" + "Y- Offset:" + gui.camera.getYOffset());
+                        + "\n" + "X- Offset:" + gamePanel.camera.getXOffset() + "\n" + "Y- Offset:" + gamePanel.camera.getYOffset());
             } // end of if
             Point2D from = pathFinder.getNextStep();
             Point2D to = pathFinder.getNextStep();
-            if (!mover.isSpeaking() && to != null && keyInputToMove(gui.keyManager).getX() == 0 && keyInputToMove(gui.keyManager).getY() == 0) {
+            if (!mover.isSpeaking() && to != null && gamePanel.getGUI().keyInputToMove(gamePanel.keyManager).getX() == 0 && gamePanel.getGUI().keyInputToMove(gamePanel.keyManager).getY() == 0) {
                 mover.setPathMove(from, to);
             } // end of if
 
@@ -250,7 +255,7 @@ public class Level {
     }
 
     public void clear() {
-        gui.getGamePanel().removeAll();
+        gamePanel.getGUI().getGamePanel().removeAll();
         active = false;
     }
 
@@ -260,9 +265,9 @@ public class Level {
 
     public void mouseClicked(MouseEvent e) {
         for (int i = 0; i < maps.length; i++) {
-            if (maps[i].isActiveInPosition(new Point(e.getX() + gui.camera.getXOffset() + maps[i].chapterXOffset, e.getY() + gui.camera.getYOffset() + +maps[i].chapterYOffset))) {
+            if (maps[i].isActiveInPosition(new Point(e.getX() + gamePanel.camera.getXOffset() + maps[i].chapterXOffset, e.getY() + gamePanel.camera.getYOffset() + +maps[i].chapterYOffset))) {
                 start = maps[i].mapTiles[(int) (mover.getLocation().getX() / Tile.TILEWIDTH)][(int) mover.getLocation().getY() / Tile.TILEHEIGHT];
-                target = maps[i].mapTiles[(e.getX() + gui.camera.getXOffset()) / Tile.TILEWIDTH][(e.getY() + gui.camera.getYOffset()) / Tile.TILEHEIGHT];
+                target = maps[i].mapTiles[(e.getX() + gamePanel.camera.getXOffset()) / Tile.TILEWIDTH][(e.getY() + gamePanel.camera.getYOffset()) / Tile.TILEHEIGHT];
                 pathFinder.searchPath(start, target);
                 click++;
             }
@@ -276,5 +281,27 @@ public class Level {
     public void setLevel(int level) {
         dialog = 1;
         this.level = level;
+    }
+
+    @Override
+    public void actionPerformed(ActionEvent e) {
+        JButton temp = (JButton) e.getSource();
+        switch (temp.getText()) {
+            case "1":
+                createlevel1();
+                break;
+            case "2":
+                createlevel1();
+                break;
+            case "3":
+                createlevel1();
+                break;
+            case "4":
+                createlevel1();
+                break;
+            case "5":
+                createlevel1();
+                break;
+        }
     }
 }

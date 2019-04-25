@@ -8,8 +8,8 @@ public class EditorMap extends MapBase {
     private int click = 0, firstX, firstY, secondX, secondY;
     private boolean toIgnore;
 
-    public EditorMap(GUI pGUI, int pMapSizeX, int pMapSizeY, TileSet pTileSet) {
-        super(pGUI, pTileSet, null, null);
+    public EditorMap(GamePanel gp, int pMapSizeX, int pMapSizeY, TileSet pTileSet) {
+        super(gp, pTileSet, null, null);
         setMapSizeX(pMapSizeX);
         setMapSizeY(pMapSizeY);
         toIgnore = false;
@@ -54,7 +54,7 @@ public class EditorMap extends MapBase {
     private void setMapTile(int xIndex, int yIndex, TileSet ts) {
         System.out.println("Notfi Map " + toIgnore);
         if (!tileSet.getTileSetImagePath().equals(ts.getTileSetImagePath()) && !toIgnore) {
-            Meldungen meld = new Meldungen(gui, true, "null");
+            Meldungen meld = new Meldungen(gamePanel.getGUI(), true, "null");
             meld.unSimilarTS(this, ts);
             if (tileSet.getTileSetImagePath().equals(meld.selectedTS)) {
                 ts = tileSet;
@@ -68,18 +68,18 @@ public class EditorMap extends MapBase {
     }
 
     public void setTile(MouseEvent e, TileSet ts) {
-        int x = (e.getX() + gui.getCamera().getClickXOffset() + chapterXOffset) / Tile.TILEWIDTH;
-        int y = (e.getY() + gui.getCamera().getClickYOffset() + chapterYOffset) / Tile.TILEHEIGHT;
+        int x = (e.getX() + gamePanel.getCamera().getClickXOffset() + chapterXOffset) / Tile.TILEWIDTH;
+        int y = (e.getY() + gamePanel.getCamera().getClickYOffset() + chapterYOffset) / Tile.TILEHEIGHT;
         setMapTile(x, y, ts);
     }
 
     public void setPointed(MouseEvent e){
-        int x = Math.round(e.getX() + gui.getCamera().getClickXOffset() + chapterXOffset) / Tile.TILEWIDTH;
-        int y = Math.round(e.getY() + gui.getCamera().getClickYOffset() + chapterYOffset) / Tile.TILEHEIGHT;
+        int x = Math.round(e.getX() + gamePanel.getCamera().getClickXOffset() + chapterXOffset) / Tile.TILEWIDTH;
+        int y = Math.round(e.getY() + gamePanel.getCamera().getClickYOffset() + chapterYOffset) / Tile.TILEHEIGHT;
         mapTiles[x][y].setPointed();
 // FIXME: 05.04.2019 Buggy !! Aber anzeige klappt halbwegs (wenn man markierung removed dann bleibt es im Textfeld
 
-        gui.taAnzeige.append("Markiert unter: " + mapTiles[x][y].getX() / Tile.TILEWIDTH + " und " + mapTiles[x][y].getY() / Tile.TILEHEIGHT + "\n");
+        gamePanel.getGUI().taAnzeige.append("Markiert unter: " + mapTiles[x][y].getX() / Tile.TILEWIDTH + " und " + mapTiles[x][y].getY() / Tile.TILEHEIGHT + "\n");
 
     }
 
@@ -87,14 +87,14 @@ public class EditorMap extends MapBase {
         System.out.println("Klick ist beim Aufruf" + click);
         click++;
         if (click == 1) {
-            firstX = (Math.round(e.getX() + gui.getCamera().getClickXOffset() + chapterXOffset) / Tile.TILEWIDTH);
-            firstY = (Math.round(e.getY() + gui.getCamera().getClickYOffset() + chapterYOffset) / Tile.TILEHEIGHT);
-            gui.taAnzeige.setText("Fläche zeichnen :"+"\n"+" erster Klick");
+            firstX = (Math.round(e.getX() + gamePanel.getCamera().getClickXOffset() + chapterXOffset) / Tile.TILEWIDTH);
+            firstY = (Math.round(e.getY() + gamePanel.getCamera().getClickYOffset() + chapterYOffset) / Tile.TILEHEIGHT);
+            gamePanel.getGUI().taAnzeige.setText("Fläche zeichnen :" + "\n" + " erster Klick");
         }
         if (click == 2) {
-            secondX = Math.round(e.getX() + gui.getCamera().getClickXOffset() + chapterXOffset) / Tile.TILEWIDTH;
-            secondY = Math.round(e.getY() + gui.getCamera().getClickYOffset() + chapterYOffset) / Tile.TILEHEIGHT;
-            gui.taAnzeige.setText("");
+            secondX = Math.round(e.getX() + gamePanel.getCamera().getClickXOffset() + chapterXOffset) / Tile.TILEWIDTH;
+            secondY = Math.round(e.getY() + gamePanel.getCamera().getClickYOffset() + chapterYOffset) / Tile.TILEHEIGHT;
+            gamePanel.getGUI().taAnzeige.setText("");
 
             if (firstX > secondX) {
                 int swap;

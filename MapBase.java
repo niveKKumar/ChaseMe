@@ -4,7 +4,7 @@ import java.awt.*;
 import java.util.LinkedList;
 
 public class MapBase {
-    protected static GUI gui;
+    protected static GamePanel gamePanel;
     public Tile[][] mapTiles;
     public int mapSizeX;
     public int mapSizeY;
@@ -15,8 +15,8 @@ public class MapBase {
     private int[] blockedID;
     private boolean active;
 
-    public MapBase(GUI pGUI, TileSet pTileSet, @Nullable String pStatus, @Nullable Point pChapterOffset) {
-        gui = pGUI;
+    public MapBase(GamePanel gp, TileSet pTileSet, @Nullable String pStatus, @Nullable Point pChapterOffset) {
+        gamePanel = gp;
         tileSet = pTileSet;
         mapStatus = pStatus;
         if (pStatus == null) {
@@ -114,7 +114,7 @@ public class MapBase {
     public void renderMap(Graphics2D g2d) {
         for (int zeile = 0; zeile < mapSizeY; zeile++) {
             for (int spalte = 0; spalte < mapSizeX; spalte++) {
-                mapTiles[zeile][spalte].renderTile(g2d, zeile * Tile.TILEWIDTH - EditorMap.gui.getCamera().getXOffset() - chapterXOffset, spalte * Tile.TILEHEIGHT - EditorMap.gui.getCamera().getYOffset() - chapterYOffset);
+                mapTiles[zeile][spalte].renderTile(g2d, zeile * Tile.TILEWIDTH - gamePanel.getCamera().getXOffset() - chapterXOffset, spalte * Tile.TILEHEIGHT - gamePanel.getCamera().getYOffset() - chapterYOffset);
             }
 
         }

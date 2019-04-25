@@ -7,13 +7,13 @@ public class Character extends Mover {
     protected int steps;
     protected boolean speaking = false;
 
-    public Character(GUI pGUI, int pXpos, int pYpos, MapBase[] pMap) {
-        super(pGUI, pXpos, pYpos, pMap);
+    public Character(GamePanel pGP, int pXpos, int pYpos, MapBase[] pMap) {
+        super(pGP, pXpos, pYpos, pMap);
         sprites = new SpriteSheet("Content/Graphics/player/playersheet.png", 4, 3);
         MOVER_WIDTH = sprites.getWidth();
         MOVER_HEIGHT = sprites.getHeight();
         img = sprites.getSpriteElement(0, 1);
-        gui.south.add(speechBubble = new JTextArea("Mover:"));
+        gamePanel.getGUI().south.add(speechBubble = new JTextArea("Mover:"));
         speechBubble.setVisible(false);
     }
 
@@ -25,7 +25,7 @@ public class Character extends Mover {
                 steps++;
             }
         }
-        gui.camera.centerOnObject(this);
+        gamePanel.getCamera().centerOnObject(this);
     }
 
     public boolean isOnThisTile(int xPos, int yPos) {

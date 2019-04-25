@@ -3,41 +3,35 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 
-public class GUI extends JFrame implements ActionListener {
-    public static final int FRAME_WIDTH = 800;
-    public static final int FRAME_HEIGHT = 800;
-    public static final int GAMEPANEL_WIDTH = 600;
-    public static final int GAMEPANEL_HEIGHT = 600;
+public class GUI extends JFrame implements ActionListener, MouseListener, MouseMotionListener, KeyListener {
+    /**
+     * Model + Controller des Spiels
+     */
+    public static final int FRAME_WIDTH = 1300;
+    public static final int FRAME_HEIGHT = 750;
+
+    public static int GAMEPANEL_WIDTH = 0;
+    public static int GAMEPANEL_HEIGHT = 0;
     public JPanel south = new JPanel(new FlowLayout());
     private JPanel north = new JPanel(new FlowLayout());
     public JPanel east = new JPanel(new FlowLayout());
     public JPanel west = new JPanel(new FlowLayout());
-    public KeyManager keyManager;
-    public JButton[] buttons = new JButton[6];
+    public MenuUI menuUI;
     public JTextArea taAnzeige = new JTextArea();
-    public Tile target;
 
     private Loop loop = new Loop();
     private Thread t = new Thread(loop);
     public static final int FPS = 60; //(Bilder pro Sekunde)
     public static final long maxLoopTime = 1000 / FPS;
-    public Tile start;
     public Container cp;
-    private DisplayAnalytics[] analytics;
     private JLabel focuslb = new JLabel();
-    private GamePanel gamePanel = new GamePanel(GAMEPANEL_WIDTH, GAMEPANEL_HEIGHT);
-    public Camera camera;
+    public Editor editor;
     public Level level;
-    private Editor editor;
+    private GamePanel gamePanel;
 
 
     public GUI() {
         super();
-
-        keyManager = new KeyManager();
-        this.addKeyListener(keyManager);
-        this.addMouseListener(gamePanel);
-        this.addMouseMotionListener(gamePanel);
         this.setBackground(Color.white);
         setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
         setSize(FRAME_WIDTH, FRAME_HEIGHT);
@@ -45,16 +39,16 @@ public class GUI extends JFrame implements ActionListener {
         Dimension d = Toolkit.getDefaultToolkit().getScreenSize();
         int x = (d.width - getSize().width) / 2;
         int y = (d.height - getSize().height) / 2;
-        y = -60;
+        y = -30;
         setLocation(x, y);
-        setTitle("Das tolle Spiel");
-        setResizable(false);
+        setTitle("Chase ME");
+        setResizable(true);
         cp = getContentPane();
-        level = new Level(this);
-        camera = new Camera();
+        cp.setLayout(new BorderLayout());
         south.add(focuslb);
+//        UIManager.getLookAndFeelDefaults().put("DefaultFont",new Font("Arial",Font.PLAIN,UIManager.getFont(this).getSize()));
         createGUI();
-        createMenu();
+        createGameComponents();
         setVisible(true);
 
 //        System.out.println("Backslash Test:");
@@ -67,12 +61,54 @@ public class GUI extends JFrame implements ActionListener {
     
     }
 
+    public Point keyInputToMove(KeyManager keyManager) {
+        int xMove = 0;
+        int yMove = 0;
+        if (keyManager.up) yMove = -1;
+        if (keyManager.down) yMove = 1;
+        if (keyManager.left) xMove = -1;
+        if (keyManager.right) xMove = 1;
+        if (keyManager.upLeft) {
+            yMove = -1;
+            xMove = -1;
+        }
+        if (keyManager.upRight) {
+            yMove = -1;
+            xMove = 1;
+        }
+        if (keyManager.downLeft) {
+            yMove = 1;
+            xMove = -1;
+        }
+        if (keyManager.downRight) {
+            yMove = 1;
+            xMove = 1;
+        }
+        gamePanel.requestFocus();
+        return new Point(xMove, yMove);
+    }
+
+    public void createGameComponents() {
+        addKeyListener(this);
+        addMouseListener(this);
+        addMouseMotionListener(this);
+        gamePanel = new GamePanel(this);
+        cp.add(gamePanel);
+        menuUI = new MenuUI(gamePanel.getSize(), new String[]{"Level", "Restart", "GridLines", "Editor", "Exit", "TestButton"}, this);
+//        cp.add(menuUI);
+        level = new Level(gamePanel);
+        level.createLobby();
+        t.start();
+        gamePanel.requestFocus();
+    }
 
     public void actionPerformed(ActionEvent evt) {
         JButton temp = (JButton) evt.getSource();
+
         if (level.level == 0) {
             editor.actionPerformed(evt);
         }
+
         switch (temp.getText()) {
             case "Exit":
                 System.exit(0);
@@ -102,34 +138,47 @@ public class GUI extends JFrame implements ActionListener {
                         gamePanel.requestFocus();
                     } // end of if-else
                 } // end of for
-                this.requestFocus();
                 break;
-            case "Tutorial":
-                level.createlevel1();
+
+            case "Level":
+                if (!menuUI.searchForPanel("LevelMenu")) {
+                    JPanel levelMenuPane = level.createLevelMenu();
+                    levelMenuPane.setName("LevelMenu");
+                    menuUI.addCustomPanel(levelMenuPane);
+                } else {
+                    menuUI.showMenu("LevelMenu");
+                }
+
                 this.requestFocus();
                 break;
 
             case "Editor":
-                createEditor();
+                if (editor == null) {
+                    createEditor();
+                    JPanel editorMenuPane = editor.createEditorMenu();
+                    editorMenuPane.setName("Editor");
+                    menuUI.addCustomPanel(editorMenuPane);
+                } else {
+                    menuUI.showMenu("Editor");
+                }
+
                 this.requestFocus();
                 break;
 
             case "Neustart":
-                dispose();
-                GUI gui = new GUI();
+                System.out.println("Spawn to CP");
                 break;
             case "TestButton":
 
                 break;
-
         }
-        System.out.println(level.level);
+
+        this.requestFocus();
     }
 
 
     private void createGUI() {
         cp.setLayout(new BorderLayout());
-        cp.add(gamePanel, BorderLayout.CENTER);
         cp.add(south, BorderLayout.SOUTH);
         cp.add(east, BorderLayout.EAST);
         east.setPreferredSize(new Dimension(150, 750));
@@ -139,24 +188,37 @@ public class GUI extends JFrame implements ActionListener {
         taAnzeige.setBorder(BorderFactory.createLineBorder(Color.black));
         taAnzeige.setMinimumSize(new Dimension(east.getWidth(), 50));
         east.add(taAnzeige);
-        String[] btNamesMenu = {"Exit", "Neustart", "gridLines", "Tutorial", "Editor", "TestButton"};
-        for (int i = 0; i < buttons.length; i++) {
-            buttons[i] = new JButton(btNamesMenu[i]);
-            buttons[i].setFocusable(false);
-            buttons[i].addActionListener(this);
-            south.add(buttons[i]);
-        }
-        gamePanel.requestFocus();
+        JButton btMenu = new JButton("Menu");
+        btMenu.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                System.out.println("Menu");
+                if (menuUI.isVisible()) {
+                    menuUI.setVisible(false);
+                } else {
+                    menuUI.setVisible(true);
+                    gamePanel.moveToBack();
+                    menuUI.moveToFront();
+                }
+            }
+        });
+        south.add(btMenu);
+
+        JButton appRestart = new JButton("Komplettes Spiel neustarten");
+        appRestart.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                dispose();
+                new GUI();
+            }
+        });
+        south.add(appRestart);
 
     }
 
-    private void createMenu() {
-        level.createLobby();
-        t.start();
-    }
 
     private void createEditor() {
-        editor = new Editor(this, keyManager);
+        editor = new Editor(gamePanel, gamePanel.keyManager);
         level.setLevel(0);
         level.clear();
     }
@@ -172,16 +234,8 @@ public class GUI extends JFrame implements ActionListener {
         new GUI();
     } // end of main
 
-    public Camera getCamera() {
-        return camera;
-    }
-
-    public void setCamera(int pXSize, int pYSize) {
-        camera = new Camera(pXSize, pYSize);
-    }
-
     public void update() {
-        keyManager.update();
+        gamePanel.keyManager.update();
         if (level.level != 0) {
             level.updateLevel();
         }else { //Editor:
@@ -200,72 +254,60 @@ public class GUI extends JFrame implements ActionListener {
         return gamePanel;
     }
 
-    class GamePanel extends JPanel implements MouseListener, MouseMotionListener {
-
-        public GamePanel(int width, int height) {
-            super(new BorderLayout());
-            setSize(width, height);
-            setBackground(Color.green);
-            this.addMouseListener(this);
-            this.addMouseMotionListener(this);
-            Container container = getContentPane();
-            container.setLayout(null);
-
+    //LISTENER:
+    @Override
+    public void mouseClicked(MouseEvent e) {
+        if (level.level != 0) {
+            level.mouseClicked(e);
+        } else {
+            editor.mouseClicked(e);
         }
+    }
 
-        @Override
-        public void mouseClicked(MouseEvent e) {
-            if (level.level != 0){
-                level.mouseClicked(e);
-            }else{
-                editor.mouseClicked(e);
-            }
+    @Override
+    public void mousePressed(MouseEvent e) {
+
+    }
+
+    @Override
+    public void mouseReleased(MouseEvent e) {
+
+    }
+
+    @Override
+    public void mouseEntered(MouseEvent e) {
+
+    }
+
+    @Override
+    public void mouseExited(MouseEvent e) {
+
+    }
+
+    @Override
+    public void mouseDragged(MouseEvent e) {
+        if (level.level == 0) {
+            editor.mouseDragged(e);
         }
+    }
 
-        @Override
-        public void mousePressed(MouseEvent e) {
+    @Override
+    public void mouseMoved(MouseEvent e) {
 
-        }
+    }
 
-        @Override
-        public void mouseReleased(MouseEvent e) {
+    @Override
+    public void keyTyped(KeyEvent e) {
 
-        }
+    }
 
-        @Override
-        public void mouseEntered(MouseEvent e) {
+    @Override
+    public void keyPressed(KeyEvent e) {
+        System.out.println("Key");
+    }
 
-        }
-
-        @Override
-        public void mouseExited(MouseEvent e) {
-
-        }
-
-        @Override
-        public void mouseDragged(MouseEvent e) {
-            if (level.level == 0) {
-                editor.mouseDragged(e);
-            }
-        }
-
-        @Override
-        public void mouseMoved(MouseEvent e) {
-
-        }
-
-        public void paintComponent(Graphics g) {
-            super.paintComponent(g);
-            Graphics2D g2d = (Graphics2D) g;
-
-            if (level.isActive()) {
-                level.renderLevel(g2d);
-            } else {
-                editor.setMenuVisible(true);
-                editor.renderEditor(g2d);
-            }
-        }
-
+    @Override
+    public void keyReleased(KeyEvent e) {
 
     }
 

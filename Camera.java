@@ -47,14 +47,14 @@ public class Camera {
         xOffset = Math.min(xSize * Tile.TILEWIDTH - GUI.GAMEPANEL_WIDTH, Math.max(0, xOffset));
         yOffset = Math.min(ySize * Tile.TILEHEIGHT - GUI.GAMEPANEL_HEIGHT, Math.max(0, yOffset));
 
-        if (xSize * Tile.TILEWIDTH < GUI.GAMEPANEL_WIDTH) {
-            clickXOffset = xSize * Tile.TILEWIDTH / 2;
-            xOffset = xSize * Tile.TILEWIDTH / 2;
-        }
-        if (ySize * Tile.TILEHEIGHT < GUI.GAMEPANEL_WIDTH) {
-            clickYOffset = ySize * Tile.TILEHEIGHT / 2;
-            yOffset = ySize * Tile.TILEHEIGHT / 2;
-        }
+//        if (xSize * Tile.TILEWIDTH < GUI.GAMEPANEL_WIDTH) {
+//            clickXOffset = xSize * Tile.TILEWIDTH / 2;
+//            xOffset = xSize * Tile.TILEWIDTH / 2;
+//        }
+//        if (ySize * Tile.TILEHEIGHT < GUI.GAMEPANEL_WIDTH) {
+//            clickYOffset = ySize * Tile.TILEHEIGHT / 2;
+//            yOffset = ySize * Tile.TILEHEIGHT / 2;
+//        }
 
      }
 

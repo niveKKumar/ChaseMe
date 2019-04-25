@@ -6,14 +6,14 @@ public class Map extends MapBase {
 
   private String[] mapText;
 
-  public Map(GUI pGUI, TileSet pTileSet, String pMapPlanPath, String pStatus, Point pChapterOffset) {
-    super(pGUI, pTileSet, pStatus, pChapterOffset);
+    public Map(GamePanel gamePanel, TileSet pTileSet, String pMapPlanPath, String pStatus, Point pChapterOffset) {
+        super(gamePanel, pTileSet, pStatus, pChapterOffset);
     mapText = readMap(pMapPlanPath);
     createMap();
     }
 
-  public Map(GUI pGUI, String pMapPlanPath, String pStatus, Point pChapterOffset) {
-    super(pGUI, null, pStatus, pChapterOffset);
+    public Map(GamePanel gp, String pMapPlanPath, String pStatus, Point pChapterOffset) {
+        super(gp, null, pStatus, pChapterOffset);
     mapText = readMap(pMapPlanPath);
     System.out.println("Konnte Pfad lesen ! " + mapText[0]);
     tileSet = new TileSet(mapText[0]);

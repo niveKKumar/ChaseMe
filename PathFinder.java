@@ -12,13 +12,13 @@ public class PathFinder{
   private PriorityList openList = new PriorityList();
   public LinkedList pathTiles = new LinkedList();
   private LinkedList pointsOnPath = new LinkedList();
-  GUI gui;
+    private GamePanel gamePanel;
 
 
-    public PathFinder(MapBase[] pMap, Mover pMover, GUI pGui) {
+    public PathFinder(MapBase[] pMap, Mover pMover, GamePanel gp) {
     map = pMap;
     mover = pMover;
-    gui = pGui;
+        gamePanel = gp;
   }
 
   public Shape getPathShape(){
@@ -91,7 +91,7 @@ public class PathFinder{
     Tile t;
     for (int i =0;i< pathTiles.size();i++) {
       t = (Tile) pathTiles.get(i);
-      pathShape.lineTo((t.getX() + Tile.TILEHEIGHT/2) + (gui.getCamera().getXOffset()), (t.getY()+Tile.TILEHEIGHT/2) + (gui.getCamera().getYOffset()));
+        pathShape.lineTo((t.getX() + Tile.TILEHEIGHT / 2) + (gamePanel.getCamera().getXOffset()), (t.getY() + Tile.TILEHEIGHT / 2) + (gamePanel.getCamera().getYOffset()));
     }
     calculateMovingPointsOnPath(pathShape);
   }

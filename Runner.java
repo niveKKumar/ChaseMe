@@ -8,13 +8,13 @@ public class Runner extends Mover {
     private int speed;
     int collisionduration = 0;
 
-    public Runner(GUI pGUI, int xPos, int yPos, SpriteSheet pSpriteSheet, MapBase[] pMap) {
-        super(pGUI, xPos, yPos, pMap);
+    public Runner(GamePanel gp, int xPos, int yPos, SpriteSheet pSpriteSheet, MapBase[] pMap) {
+        super(gp, xPos, yPos, pMap);
         sprites = pSpriteSheet;
         MOVER_WIDTH = sprites.getWidth();
         MOVER_HEIGHT = sprites.getHeight();
         img = sprites.getSpriteElement(0, 1);
-        pathfinder = new PathFinder(map,this,gui);
+        pathfinder = new PathFinder(map, this, gamePanel);
     }
 
     public void enemystraightrun(int pBorder, int pSpeed, int x, int y) {   //Gegner der nur gerade aus läuft (Delay = 1 - Kein Delay)

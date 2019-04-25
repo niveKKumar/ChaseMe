@@ -12,18 +12,17 @@ public class Mover extends Pointer {
     protected double angleCheck;
     protected double angle ;
     protected Point[] checkPoint = new Point[4];
-    protected GUI gui;
+    protected GamePanel gamePanel;
 
-    public Mover(GUI pGUI, int pXpos, int pYpos, MapBase[] pMap) { //Image Initialisierung nachher...
-        super(pXpos, pYpos);
-//        System.out.println("Mover :" + pXpos + " || " + pYpos);
-        gui = pGUI;
+    public Mover(GamePanel gp, int pXpos, int pYpos, MapBase[] pMap) { //Image Initialisierung nachher...
+        super(gp, pXpos, pYpos);
+        System.out.println("Mover :" + pXpos + " || " + pYpos);
+        gamePanel = gp;
         map = pMap;
         for (int i = 0; i < checkPoint.length; i++) {
             checkPoint[i] = new Point();
         }
     }
-
     @Override
     public void setMove(Point pMove){
         int oldXPos = xPos;
@@ -65,14 +64,11 @@ public class Mover extends Pointer {
         this.yPos = (int) to.getY() - Character.MOVER_HEIGHT / 2;
     }
 
-    public void render(Graphics2D g2d) {
-
-        if (xPos != 0 && yPos != 0) {
-            AffineTransform at = new AffineTransform();
-            at.translate((xPos - gui.getCamera().getXOffset()), (yPos - gui.getCamera().getYOffset()));
-            at.rotate(angle, img.getWidth(null) / 2, img.getHeight(null) / 2);
-            g2d.drawImage(img, at, null);
-        }
+    public void draw(Graphics2D g2d) {
+        AffineTransform at = new AffineTransform();
+        at.translate((xPos - gamePanel.getCamera().getXOffset()), (yPos - gamePanel.getCamera().getYOffset()));
+        at.rotate(angle, img.getWidth(null) / 2, img.getHeight(null) / 2);
+        g2d.drawImage(img, at, null);
 
     }
 
@@ -103,24 +99,18 @@ public class Mover extends Pointer {
         for (int i = 0;i < map.length ;i++ ) {
             Tile[][] temp = new Tile[map.length][checkPoint.length];
             for (int j = 0; j < checkPoint.length /*(4 CP)*/; j++) {
-                // FIXME: 16.04.2019 Kollision returnt trotz blocks true ! UND  false ?
-                //  Mover bleibt aber stehen ; steps (Character Klasse) werden wegen false collisioncheck aber hochgezählt
-                //  = Wiederspruch
-                //  Vielleicht werden die anderen Checkpoints gecheckt und daher true ?
-                //      -> Darf eigentlich nicht sein weil bei geblockten Tile true returnt wird (Durchlauf der for schleife wird gestoppt weil ja returnt wird)
-                //         ansonsten nachdem ALLE durchlaufen sind und kein geblocktes Tile ´gefunden´ wurde wird false ausgegeben = kann nicht beides sein
                 map[i].checkActive(checkPoint[j]);
-//                System.out.println("Check checkpoint"+ j);
+                System.out.println("Check checkpoint" + j);
                 if (map[i].isActive()) {
                     temp[i][j] = map[i].mapTiles[(int) (checkPoint[j].getX() - map[i].chapterXOffset) / Tile.TILEWIDTH][(int) (checkPoint[j].getY() - map[i].chapterYOffset) / Tile.TILEHEIGHT];
                     if (temp[i][j].isBlocked()) {
-//                        System.out.println("block on CP: "+j);
+                        System.out.println("block on CP: " + j);
                         return true;
                     }
                 }
             }
         }
-//        System.out.println("no block");
+        System.out.println("no block");
         return false;
     }
 
