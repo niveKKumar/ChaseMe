@@ -9,6 +9,9 @@ import java.awt.geom.Point2D;
 
 public class Level implements ActionListener {
 
+    private GamePanel gamePanel;
+    private GUI gui;
+    
     public int level;
     public MapBase[] maps;
     public Character mover;
@@ -18,17 +21,17 @@ public class Level implements ActionListener {
     public Tile start;
     public Tile target;
     public int click = 0;
-    private GamePanel gamePanel;
     private int currentClick;
     private int currentSteps;
     private int dialog;
-    private boolean active;
+    private boolean active = false;
     private GridBagConstraints gbc = new GridBagConstraints();
 
 
     public Level(GamePanel gp) {
         this.gamePanel = gp;
-        active = true;
+        gui = gp.getGUI();
+        createLobby();
     }
 
     public JPanel createLevelMenu() {
@@ -95,7 +98,7 @@ public class Level implements ActionListener {
         createLevelObjects(1, 0/*,null*/);
         //Einlesung der Maps:
         maps[0] = new Map(gamePanel, "Content/Maps/menu.txt", "Border", new Point(0, 0));
-        gamePanel.camera = new Camera(0, 0);
+        gamePanel.setCamera(maps[0].mapSizeX, maps[0].getMapSizeY());
 
         for (int i = 0; i < maps.length; i++) {
             analytics[i] = new DisplayAnalytics(gamePanel, maps[i], pathFinder);
@@ -103,6 +106,7 @@ public class Level implements ActionListener {
         // Intialisierung der Spieler:
         mover.setLocation(100, 100);
         System.out.println("Lobby loaded...");
+        active = true;
         setLevel(999);
     }
 
@@ -216,17 +220,18 @@ public class Level implements ActionListener {
 
     public void updateLevel() {
         if (active) {
-            if (gamePanel.getGUI().keyInputToMove(gamePanel.keyManager).getX() != 0 || gamePanel.getGUI().keyInputToMove(gamePanel.keyManager).getY() != 0) {
-                mover.setMove(gamePanel.getGUI().keyInputToMove(gamePanel.keyManager));
-                gamePanel.camera.centerOnObject(mover);
+            if (gui.keyInputToMove().getX() != 0 || gui.keyInputToMove().getY() != 0) {
+                System.out.println("Level");
+                mover.setMove(gui.keyInputToMove());
+                gamePanel.getCamera().centerOnObject(mover);
                 pathFinder.resetPath();
-                gamePanel.getGUI().taAnzeige.setText("Level: " + level + "\n" + "X:" + mover.moverOnMapTile().x + "Y:" + mover.moverOnMapTile().y
+                gui.debugAnzeige.setText("Level: " + level + "\n" + "X:" + mover.moverOnMapTile().x + "Y:" + mover.moverOnMapTile().y
                         + "\n" + "Steps:" + mover.getSteps()
-                        + "\n" + "X- Offset:" + gamePanel.camera.getXOffset() + "\n" + "Y- Offset:" + gamePanel.camera.getYOffset());
+                        + "\n" + "X- Offset:" + gamePanel.getCamera().getXOffset() + "\n" + "Y- Offset:" + gamePanel.getCamera().getYOffset());
             } // end of if
             Point2D from = pathFinder.getNextStep();
             Point2D to = pathFinder.getNextStep();
-            if (!mover.isSpeaking() && to != null && gamePanel.getGUI().keyInputToMove(gamePanel.keyManager).getX() == 0 && gamePanel.getGUI().keyInputToMove(gamePanel.keyManager).getY() == 0) {
+            if (!mover.isSpeaking() && to != null && gui.keyInputToMove().getX() == 0 && gui.keyInputToMove().getY() == 0) {
                 mover.setPathMove(from, to);
             } // end of if
 
@@ -255,7 +260,7 @@ public class Level implements ActionListener {
     }
 
     public void clear() {
-        gamePanel.getGUI().getGamePanel().removeAll();
+        gui.getGamePanel().removeAll();
         active = false;
     }
 
@@ -265,9 +270,9 @@ public class Level implements ActionListener {
 
     public void mouseClicked(MouseEvent e) {
         for (int i = 0; i < maps.length; i++) {
-            if (maps[i].isActiveInPosition(new Point(e.getX() + gamePanel.camera.getXOffset() + maps[i].chapterXOffset, e.getY() + gamePanel.camera.getYOffset() + +maps[i].chapterYOffset))) {
+            if (maps[i].isActiveInPosition(new Point(e.getX() + gamePanel.getCamera().getXOffset() + maps[i].chapterXOffset, e.getY() + gamePanel.getCamera().getYOffset() + +maps[i].chapterYOffset))) {
                 start = maps[i].mapTiles[(int) (mover.getLocation().getX() / Tile.TILEWIDTH)][(int) mover.getLocation().getY() / Tile.TILEHEIGHT];
-                target = maps[i].mapTiles[(e.getX() + gamePanel.camera.getXOffset()) / Tile.TILEWIDTH][(e.getY() + gamePanel.camera.getYOffset()) / Tile.TILEHEIGHT];
+                target = maps[i].mapTiles[(e.getX() + gamePanel.getCamera().getXOffset()) / Tile.TILEWIDTH][(e.getY() + gamePanel.getCamera().getYOffset()) / Tile.TILEHEIGHT];
                 pathFinder.searchPath(start, target);
                 click++;
             }

@@ -3,65 +3,128 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 
-public class GUI extends JFrame implements ActionListener, MouseListener, MouseMotionListener, KeyListener {
+public class GUI extends JFrame implements ActionListener, MouseListener, MouseMotionListener, ComponentListener {
     /**
      * Model + Controller des Spiels
      */
-    public static final int FRAME_WIDTH = 1300;
-    public static final int FRAME_HEIGHT = 750;
+    public static final int FRAME_WIDTH = 1080;
+    public static final int FRAME_HEIGHT = 720;
 
-    public static int GAMEPANEL_WIDTH = 0;
-    public static int GAMEPANEL_HEIGHT = 0;
     public JPanel south = new JPanel(new FlowLayout());
     private JPanel north = new JPanel(new FlowLayout());
-    public JPanel east = new JPanel(new FlowLayout());
-    public JPanel west = new JPanel(new FlowLayout());
+    public JPanel east = new JPanel(new GridBagLayout());
+    public JPanel west = new JPanel(new BorderLayout());
+    public JTextArea debugAnzeige = new JTextArea();
+
     public MenuUI menuUI;
-    public JTextArea taAnzeige = new JTextArea();
+    public KeyManager keyManager;
+    private JPanel tempDebugPane;
+    private GamePanel gamePanel;
+    private Editor editor;
+    private Level level;
 
     private Loop loop = new Loop();
     private Thread t = new Thread(loop);
     public static final int FPS = 60; //(Bilder pro Sekunde)
     public static final long maxLoopTime = 1000 / FPS;
+
     public Container cp;
     private JLabel focuslb = new JLabel();
-    public Editor editor;
-    public Level level;
-    private GamePanel gamePanel;
 
 
     public GUI() {
         super();
+        setName("GUI");
         this.setBackground(Color.white);
         setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
         setSize(FRAME_WIDTH, FRAME_HEIGHT);
-        setPreferredSize(new Dimension(FRAME_WIDTH, FRAME_HEIGHT));
         Dimension d = Toolkit.getDefaultToolkit().getScreenSize();
         int x = (d.width - getSize().width) / 2;
         int y = (d.height - getSize().height) / 2;
-        y = -30;
+
         setLocation(x, y);
-        setTitle("Chase ME");
+        setTitle("ChaseME");
         setResizable(true);
         cp = getContentPane();
         cp.setLayout(new BorderLayout());
-        south.add(focuslb);
-//        UIManager.getLookAndFeelDefaults().put("DefaultFont",new Font("Arial",Font.PLAIN,UIManager.getFont(this).getSize()));
         createGUI();
-        createGameComponents();
         setVisible(true);
-
-//        System.out.println("Backslash Test:");
-//        System.out.println("___________________");
-//        String test = new String("Hallo \\ hier zwischen soll ein Blackslash stehen");
-//        System.out.println("Anfangsstring: "+test);
-//        String changed = test.replaceAll("\\\\","/");
-//        System.out.println("Der String wurde ersetzt");
-//        System.out.println(changed);
-    
+        createGameComponents();
     }
 
-    public Point keyInputToMove(KeyManager keyManager) {
+    private void createGUI() {
+
+        keyManager = new KeyManager();
+        addKeyListener(keyManager);
+        addMouseListener(this);
+        addMouseMotionListener(this);
+
+        cp.setLayout(new BorderLayout());
+        cp.add(south, BorderLayout.SOUTH);
+        cp.add(east, BorderLayout.EAST);
+        cp.add(west, BorderLayout.WEST);
+        cp.add(north, BorderLayout.NORTH);
+
+        tempDebugPane = new JPanel();
+        west.add(tempDebugPane, BorderLayout.NORTH);
+
+        debugAnzeige.setFocusable(false);
+        debugAnzeige.setBorder(BorderFactory.createLineBorder(Color.black));
+        debugAnzeige.setMinimumSize(new Dimension(east.getWidth(), 50));
+        debugAnzeige.setSize(100, 100);
+        tempDebugPane.add(debugAnzeige);
+        debugAnzeige.setText("Debugging TextArea");
+        focuslb.setText("Shows current Focus");
+        focuslb.setBorder(BorderFactory.createLineBorder(Color.red, 3));
+        tempDebugPane.add(focuslb);
+
+
+        JButton btMenu = new JButton("Menu");
+        btMenu.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                menuUI.toFront();
+                menuUI.showMenu();
+                menuUI.repaint();
+                repaint();
+                revalidate();
+            }
+        });
+        south.add(btMenu);
+
+        JButton appRestart = new JButton("Komplettes Spiel neustarten");
+        appRestart.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                dispose();
+                new GUI();
+            }
+        });
+        south.add(appRestart);
+    }
+
+    private void createEditor() {
+        editor = new Editor(this);
+        level.setLevel(0);
+        level.clear();
+    }
+
+    private void createGameComponents() {
+        JPanel mainPane = new JPanel(new BorderLayout(), true);
+        cp.add(mainPane);
+
+        gamePanel = new GamePanel(mainPane, this);
+        menuUI = new MenuUI(mainPane, this);
+        menuUI.loadMainMenu(new String[]{"Level", "Restart", "GridLines", "Editor", "Exit", "TestButton"});
+        gamePanel.toBack();
+        menuUI.toFront();
+
+        level = new Level(gamePanel);
+
+        t.start();
+    }
+
+    public Point keyInputToMove(/*KeyManager keyManager*/) {
         int xMove = 0;
         int yMove = 0;
         if (keyManager.up) yMove = -1;
@@ -84,22 +147,8 @@ public class GUI extends JFrame implements ActionListener, MouseListener, MouseM
             yMove = 1;
             xMove = 1;
         }
-        gamePanel.requestFocus();
+        this.requestFocus();
         return new Point(xMove, yMove);
-    }
-
-    public void createGameComponents() {
-        addKeyListener(this);
-        addMouseListener(this);
-        addMouseMotionListener(this);
-        gamePanel = new GamePanel(this);
-        cp.add(gamePanel);
-        menuUI = new MenuUI(gamePanel.getSize(), new String[]{"Level", "Restart", "GridLines", "Editor", "Exit", "TestButton"}, this);
-//        cp.add(menuUI);
-        level = new Level(gamePanel);
-        level.createLobby();
-        t.start();
-        gamePanel.requestFocus();
     }
 
     public void actionPerformed(ActionEvent evt) {
@@ -114,7 +163,7 @@ public class GUI extends JFrame implements ActionListener, MouseListener, MouseM
                 System.exit(0);
                 this.requestFocus();
                 break;
-            case "gridLines":
+            case "GridLines":
                 for (int i = 0; i < level.analytics.length; i++) {
                     if (level.analytics[i].showGridLines == true) {
                         level.analytics[i].showGridLines = false;
@@ -125,7 +174,7 @@ public class GUI extends JFrame implements ActionListener, MouseListener, MouseM
                         level.analytics[i].displayPath = false;
                         level.analytics[i].displayPathTiles = false;
                         level.analytics[i].moverHitbox = false;
-                        gamePanel.requestFocus();
+                        this.requestFocus();
                     } else {
                         level.analytics[i].showGridLines = true;
                         level.analytics[i].showTileIndices = true;
@@ -135,7 +184,7 @@ public class GUI extends JFrame implements ActionListener, MouseListener, MouseM
                         level.analytics[i].displayPathTiles = true;
                         level.analytics[i].setMover(level.mover);
                         level.analytics[i].moverHitbox = true;
-                        gamePanel.requestFocus();
+                        this.requestFocus();
                     } // end of if-else
                 } // end of for
                 break;
@@ -146,7 +195,7 @@ public class GUI extends JFrame implements ActionListener, MouseListener, MouseM
                     levelMenuPane.setName("LevelMenu");
                     menuUI.addCustomPanel(levelMenuPane);
                 } else {
-                    menuUI.showMenu("LevelMenu");
+                    menuUI.showButtonPane("LevelMenu");
                 }
 
                 this.requestFocus();
@@ -159,7 +208,7 @@ public class GUI extends JFrame implements ActionListener, MouseListener, MouseM
                     editorMenuPane.setName("Editor");
                     menuUI.addCustomPanel(editorMenuPane);
                 } else {
-                    menuUI.showMenu("Editor");
+                    menuUI.showButtonPane("Editor");
                 }
 
                 this.requestFocus();
@@ -172,57 +221,33 @@ public class GUI extends JFrame implements ActionListener, MouseListener, MouseM
 
                 break;
         }
-
         this.requestFocus();
     }
 
+    public void render(Graphics2D g2d) {
 
-    private void createGUI() {
-        cp.setLayout(new BorderLayout());
-        cp.add(south, BorderLayout.SOUTH);
-        cp.add(east, BorderLayout.EAST);
-        east.setPreferredSize(new Dimension(150, 750));
-        cp.add(west, BorderLayout.WEST);
-        cp.add(north, BorderLayout.NORTH);
-        taAnzeige.setFocusable(false);
-        taAnzeige.setBorder(BorderFactory.createLineBorder(Color.black));
-        taAnzeige.setMinimumSize(new Dimension(east.getWidth(), 50));
-        east.add(taAnzeige);
-        JButton btMenu = new JButton("Menu");
-        btMenu.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                System.out.println("Menu");
-                if (menuUI.isVisible()) {
-                    menuUI.setVisible(false);
-                } else {
-                    menuUI.setVisible(true);
-                    gamePanel.moveToBack();
-                    menuUI.moveToFront();
-                }
+        try {
+            if (level.isActive()) {
+                level.renderLevel(g2d);
+            } else {
+                editor.renderEditor(g2d);
             }
-        });
-        south.add(btMenu);
-
-        JButton appRestart = new JButton("Komplettes Spiel neustarten");
-        appRestart.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                dispose();
-                new GUI();
-            }
-        });
-        south.add(appRestart);
-
+        } catch (Exception e) {
+            System.out.println("Level ist noch gar nicht existent");
+        }
     }
 
-
-    private void createEditor() {
-        editor = new Editor(gamePanel, gamePanel.keyManager);
-        level.setLevel(0);
-        level.clear();
+    public Level getLevel() {
+        return level;
     }
 
+    public Editor getEditor() {
+        return editor;
+    }
+
+    public GamePanel getGamePanel() {
+        return gamePanel;
+    }
 
     public static void main(String[] args) {
         //https://www.java-forum.org/thema/swing-komponenten-standart-windows-design.34019/
@@ -235,26 +260,41 @@ public class GUI extends JFrame implements ActionListener, MouseListener, MouseM
     } // end of main
 
     public void update() {
-        gamePanel.keyManager.update();
+        keyManager.update();
         if (level.level != 0) {
             level.updateLevel();
         }else { //Editor:
             editor.update();
         }
-
-        try {
-            focuslb.setText("Aktueller Fokus : " + FocusManager.getCurrentManager().getFocusOwner().getName());
-        } catch (Exception e) {
-
-        }
+        // Nicht nötig wenn maximized !!
+//        if (gamePanel.getSize() != menuUI.getSize()){
+//            if (gamePanel.getWidth() > menuUI.getWidth()){
+//            menuUI.setSize(gamePanel.getWidth(),menuUI.getHeight());
+//            }else{
+//                gamePanel.setSize(menuUI.getWidth(),gamePanel.getHeight());}
+//
+//            if (gamePanel.getHeight() > menuUI.getHeight()){
+//              menuUI.setSize(menuUI.getWidth(),gamePanel.getHeight());
+//            }else{
+//                gamePanel.setSize(gamePanel.getWidth(),menuUI.getHeight());}
+//
+//        }
         repaint();
+        //Debugging:
+        try {
+            if (FocusManager.getCurrentManager().getFocusOwner().getName() == null) {
+                System.out.println(FocusManager.getCurrentManager().getFocusOwner());
+                focuslb.setText("See in OutPrint");
+            } else {
+                focuslb.setText(FocusManager.getCurrentManager().getFocusOwner().getName());
+            }
+        } catch (Exception e) {
+            System.out.println("Focus outside");
+        }
     }
 
-    public GamePanel getGamePanel() {
-        return gamePanel;
-    }
 
-    //LISTENER:
+    //LISTENER- Methoden:
     @Override
     public void mouseClicked(MouseEvent e) {
         if (level.level != 0) {
@@ -296,18 +336,25 @@ public class GUI extends JFrame implements ActionListener, MouseListener, MouseM
 
     }
 
+
     @Override
-    public void keyTyped(KeyEvent e) {
+    public void componentResized(ComponentEvent e) {
+        menuUI.setSize(getSize());
+        System.out.println("Groesse vom GamePanel hat sich geändert " + getSize());
+    }
+
+    @Override
+    public void componentMoved(ComponentEvent e) {
 
     }
 
     @Override
-    public void keyPressed(KeyEvent e) {
-        System.out.println("Key");
+    public void componentShown(ComponentEvent e) {
+
     }
 
     @Override
-    public void keyReleased(KeyEvent e) {
+    public void componentHidden(ComponentEvent e) {
 
     }
 

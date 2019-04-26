@@ -79,7 +79,7 @@ public class EditorMap extends MapBase {
         mapTiles[x][y].setPointed();
 // FIXME: 05.04.2019 Buggy !! Aber anzeige klappt halbwegs (wenn man markierung removed dann bleibt es im Textfeld
 
-        gamePanel.getGUI().taAnzeige.append("Markiert unter: " + mapTiles[x][y].getX() / Tile.TILEWIDTH + " und " + mapTiles[x][y].getY() / Tile.TILEHEIGHT + "\n");
+        gamePanel.getGUI().debugAnzeige.append("Markiert unter: " + mapTiles[x][y].getX() / Tile.TILEWIDTH + " und " + mapTiles[x][y].getY() / Tile.TILEHEIGHT + "\n");
 
     }
 
@@ -89,12 +89,12 @@ public class EditorMap extends MapBase {
         if (click == 1) {
             firstX = (Math.round(e.getX() + gamePanel.getCamera().getClickXOffset() + chapterXOffset) / Tile.TILEWIDTH);
             firstY = (Math.round(e.getY() + gamePanel.getCamera().getClickYOffset() + chapterYOffset) / Tile.TILEHEIGHT);
-            gamePanel.getGUI().taAnzeige.setText("Fläche zeichnen :" + "\n" + " erster Klick");
+            gamePanel.getGUI().debugAnzeige.setText("Fläche zeichnen :" + "\n" + " erster Klick");
         }
         if (click == 2) {
             secondX = Math.round(e.getX() + gamePanel.getCamera().getClickXOffset() + chapterXOffset) / Tile.TILEWIDTH;
             secondY = Math.round(e.getY() + gamePanel.getCamera().getClickYOffset() + chapterYOffset) / Tile.TILEHEIGHT;
-            gamePanel.getGUI().taAnzeige.setText("");
+            gamePanel.getGUI().debugAnzeige.setText("");
 
             if (firstX > secondX) {
                 int swap;

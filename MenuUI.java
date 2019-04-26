@@ -3,9 +3,13 @@ import javax.swing.plaf.basic.BasicInternalFrameUI;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.beans.PropertyVetoException;
 import java.util.LinkedList;
 
-public class MenuUI extends JInternalFrame implements ActionListener {
+public class MenuUI extends JInternalFrame {
+
+    public static int MENUUI_WIDTH = 500;
+    public static int MENUUI_HEIGHT = 500;
 
     private JPanel menuPane;
     private JPanel buttonPane;
@@ -14,25 +18,36 @@ public class MenuUI extends JInternalFrame implements ActionListener {
     private MenuButton btInfo;
     private ActionListener actionListener;
     private GridBagConstraints gbc = new GridBagConstraints();
-    private String[] mainMenuBTNames;
     private LinkedList<JPanel> addedMenus;
 
-    public MenuUI(Dimension size, String[] mainMenuBT, ActionListener e) {
-        super("MenuUI", false, false, false, false);
-        setSize(size);
-        this.mainMenuBTNames = mainMenuBT;
-        actionListener = e;
+    public MenuUI(JPanel display, ActionListener act) {
+        super("MenuUI", true, true, true, true);
+        actionListener = act;
         addedMenus = new LinkedList<>();
+        setName("MenuUI");
+        display.add(this, BorderLayout.CENTER);
         setOpaque(false);
         setBackground(null);
         setLayout(new BorderLayout());
         createMenuPane();
-        loadMainMenu();
         ((BasicInternalFrameUI) getUI()).setNorthPane(null);
         setBorder(null);
         setBorder(BorderFactory.createLineBorder(Color.black, 5));
+        MENUUI_HEIGHT = getHeight();
+        MENUUI_WIDTH = getWidth();
+        try {
+            setMaximum(true);
+        } catch (PropertyVetoException e) {
+            e.printStackTrace();
+        }
+        repaint();
+        revalidate();
         setVisible(true);
+    }
 
+    public MenuUI(JPanel display, String[] btStringNames, ActionListener e) {
+        new MenuUI(display, e);
+        loadMainMenu(btStringNames);
     }
 
     public static void addObject(GridBagConstraints gbc, JComponent comp, JComponent target, int gridX, int gridY, double weightX, double weightY, boolean resetGBC) {
@@ -51,12 +66,12 @@ public class MenuUI extends JInternalFrame implements ActionListener {
         menuPane = new JPanel(new FlowLayout(FlowLayout.CENTER)) {
             protected void paintComponent(Graphics g) {
                 super.paintComponent(g);
-                g.setColor(getBackground());
-                g.fillRect(0, 0, getSize().width, getSize().height);
+//                g.setColor(menuPane.getBackground());
+//                g.fillRect(0, 0, getSize().width, getSize().height);
             }
         };
         menuPane.setLayout(new GridBagLayout());
-        menuPane.setBackground(new Color(0, 0, 0, 50));
+//        menuPane.setBackground(new Color(0, 0, 0, 50));
         menuPane.setOpaque(false);
         menuPane.setFocusable(false);
         add(menuPane, BorderLayout.CENTER);
@@ -72,48 +87,63 @@ public class MenuUI extends JInternalFrame implements ActionListener {
 
         Image imgReturn = (new ImageIcon("Content/Graphics/UI/returnIcon.png")).getImage().getScaledInstance(50, 50, Image.SCALE_SMOOTH);
         btReturn = new MenuButton(new ImageIcon(imgReturn));
-        btReturn.addActionListener(this);
+        btReturn.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                showButtonPane("MainMenu");
+                btReturn.setVisible(false);
+            }
+        });
         btReturn.setAlignmentX(Component.LEFT_ALIGNMENT);
         btReturn.setVisible(false);
         gbc = new GridBagConstraints();
         gbc.anchor = GridBagConstraints.FIRST_LINE_START;
-        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.fill = GridBagConstraints.NONE;
         addObject(gbc, btReturn, menuPane, 0, 0, 1, 1, false);
 
         gbc.insets = new Insets(5, 5, 5, 5);
         Image imgSettings = (new ImageIcon("Content/Graphics/UI/settingsIcon.png")).getImage().getScaledInstance(50, 50, Image.SCALE_SMOOTH);
         btSettings = new MenuButton(new ImageIcon(imgSettings));
-        btSettings.addActionListener(this);
+        btSettings.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                showButtonPane("Settings");
+            }
+        });
         btSettings.setAlignmentX(RIGHT_ALIGNMENT);
         gbc = new GridBagConstraints();
         gbc.anchor = GridBagConstraints.SOUTHEAST;
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-//        addObject(gbc,btSettings,menuPane,1,2,0.5f,0.5f,false);
-        add(btSettings, BorderLayout.SOUTH);
+        gbc.fill = GridBagConstraints.NONE;
+        addObject(gbc, btSettings, menuPane, 1, 2, 0.5f, 0.5f, false);
+//        add(btSettings, BorderLayout.SOUTH);
         Image imgInfo = (new ImageIcon("Content/Graphics/UI/infoIcon.png")).getImage().getScaledInstance(50, 50, Image.SCALE_SMOOTH);
         btInfo = new MenuButton(new ImageIcon(imgInfo));
-        btInfo.addActionListener(this);
+        btInfo.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                showButtonPane("Info");
+            }
+        });
         btInfo.setAlignmentX(LEFT_ALIGNMENT);
         gbc = new GridBagConstraints();
         gbc.anchor = GridBagConstraints.SOUTHWEST;
         gbc.fill = GridBagConstraints.HORIZONTAL;
         addObject(gbc, btInfo, menuPane, 3, 2, 0.5f, 0.5f, false);
-        add(btInfo, BorderLayout.SOUTH);
+//        add(btInfo, BorderLayout.SOUTH);
 
         btSettings.setBackground(Color.RED);
         btInfo.setBackground(Color.RED);
-
     }
 
     public void showMenu() {
-        if (menuPane.isVisible()) {
-            menuPane.setVisible(false);
+        if (isVisible()) {
+            setVisible(false);
         } else {
-            menuPane.setVisible(true);
+            setVisible(true);
         }
     }
 
-    private void loadMainMenu() {
+    public void loadMainMenu(String[] mainMenuBTNames) {
         Menu mainM = new Menu("MainMenu", mainMenuBTNames);
         addCustomMenu(mainM);
         btReturn.setVisible(false);
@@ -129,7 +159,7 @@ public class MenuUI extends JInternalFrame implements ActionListener {
         if (!searchForPanel(yourPanelWithButtons.getName())) {
             addedMenus.add(yourPanelWithButtons);
         }
-        showMenu(yourPanelWithButtons.getName());
+        showButtonPane(yourPanelWithButtons.getName());
     }
 
     public boolean searchForPanel(String name) {
@@ -141,7 +171,7 @@ public class MenuUI extends JInternalFrame implements ActionListener {
         return false;
     }
 
-    public void showMenu(String name) {
+    public void showButtonPane(String name) {
         buttonPane.removeAll();
         for (int i = 0; i < addedMenus.size(); i++) {
             if (addedMenus.get(i).getName().equals(name)) {
@@ -166,13 +196,6 @@ public class MenuUI extends JInternalFrame implements ActionListener {
         addObject(comp, gridX, gridY, weightX, weightY, resetGBC);
     }
 
-    @Override
-    public void actionPerformed(ActionEvent e) {
-        if (e.getSource() == btReturn) {
-            showMenu("MainMenu");
-            btReturn.setVisible(false);
-        }
-    }
 
     class Menu extends JPanel {
 
@@ -186,7 +209,6 @@ public class MenuUI extends JInternalFrame implements ActionListener {
 
         public void createButtons(String[] btNames) {
             setOpaque(false);
-            setFocusable(false);
             setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 
             MenuButton[] buttons = new MenuButton[btNames.length];

@@ -9,16 +9,15 @@ import java.util.Calendar;
 import java.util.LinkedList;
 
 public class Editor {
-    private static GamePanel gamePanel;
     public LinkedList maps = new LinkedList<EditorMap>();
     public EditorTileMenu tileMenu;
+    double zoomFactor = 0.25;
     public Pointer cameraPoint;
     public int selectedMap;
-    private KeyManager keyManager;
+    private GUI gui;
     private int zoomSteps = 0;
-    private int maxZoom = 10, minZoom = 10;
+    private int zoomRange = 10;
     private LinkedList recentList = new LinkedList();
-    //    private boolean firstStart = true;
     private int maxRecent = 10;
     public JLabel idAnzeige;
     private Timer autosaver;
@@ -32,10 +31,8 @@ public class Editor {
     private LinkedList mapCheck = new LinkedList<JCheckBox>();
     private GroupLayout layout;
 
-    public Editor(GamePanel gp, KeyManager pKeyManager) {
-        gamePanel = gp;
-        keyManager = pKeyManager;
-        gp.getGUI().addKeyListener(keyManager);
+    public Editor(GUI gui) {
+        this.gui = gui;
         createMenu();
         createTileMenu();
 
@@ -60,7 +57,7 @@ public class Editor {
         for (int i = 0; i < editorbuttons.length; i++) {
             editorbuttons[i] = new MenuButton(btNamesEditor[i]);
             editorbuttons[i].setFocusable(false);
-            editorbuttons[i].addActionListener(gamePanel.getGUI());
+            editorbuttons[i].addActionListener(gui);
             MenuUI.addObject(gbc, editorbuttons[i], editorPane, 2, j++, 2, 2, true);
         }
         return editorPane;
@@ -103,7 +100,7 @@ public class Editor {
                         cameraPoint.setLocation(((EditorMap) maps.get(selectedMap)).getMapSizeX() / 2, ((EditorMap) maps.get(selectedMap)).getMapSizeY() / 2);
                     }
                 }
-                gamePanel.requestFocus();
+                gui.requestFocus();
             }
         });
 
@@ -114,11 +111,11 @@ public class Editor {
         btChapterOffset.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                Meldungen m = new Meldungen(gamePanel.getGUI(), true, "null");
+                Meldungen m = new Meldungen(gui, true, "null");
                 m.chapterAbfrage();
                 ((EditorMap) maps.get(selectedMap)).setchapterXOffset(Integer.parseInt(m.getUserInput(0)));
                 ((EditorMap) maps.get(selectedMap)).setchapterYOffset(Integer.parseInt(m.getUserInput(1)));
-                gamePanel.getGUI().requestFocus();
+                gui.requestFocus();
             }
         });
         mapSelectActionsPanel.add(btChapterOffset);
@@ -127,7 +124,7 @@ public class Editor {
             @Override
             public void actionPerformed(ActionEvent e) {
                 autoSaveMap();
-                gamePanel.getGUI().requestFocus();
+                gui.requestFocus();
             }
         });
         btAutosave = new JButton("Autosave is enabled");
@@ -145,46 +142,55 @@ public class Editor {
                     btAutosave.setText("Autosave disabled");
                     btAutosave.setForeground(Color.red);
                 }
-                gamePanel.getGUI().requestFocus();
+                gui.requestFocus();
             }
         });
         btSimulate = new JButton("Simulate your Level");
         btSimulate.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                Level tempGame = new Level(gamePanel);
+                Level tempGame = new Level(gui.getGamePanel());
                 MapBase[] temp = new Map[maps.size()];
                 for (int i = 0; i < maps.size(); i++) {
                     temp[i] = ((EditorMap) maps.get(i));
                 }
                 tempGame.createlevel0(temp, null);
                 tempGame.setLevel(0);
-                gamePanel.getGUI().requestFocus();
+                gui.requestFocus();
             }
         });
         mapSelectActionsPanel.add(btAutosave);
         mapSelectActionsPanel.add(btSimulate);
-        gamePanel.getGUI().west.add(recent);
-        gamePanel.getGUI().east.add(selectMapPanel);
-        gamePanel.getGUI().east.add(mapSelectActionsPanel);
+        // FIXME: 25.04.2019 Unschön...
+        recent.setBorder(BorderFactory.createLineBorder(Color.DARK_GRAY, 3));
+        selectMapPanel.setBorder(BorderFactory.createLineBorder(Color.PINK, 3));
+        mapSelectActionsPanel.setBorder(BorderFactory.createLineBorder(Color.CYAN, 3));
+
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.gridy = 0;
+        gbc.gridx = 0;
+        gui.west.add(recent);
+        gui.east.add(selectMapPanel, gbc);
+        gbc.gridy = 1;
+        gui.east.add(mapSelectActionsPanel, gbc);
     }
 
 
     public void createEditorMap(int mapSizeX, int mapSizeY, TileSet pTileSet, Integer tileID) {
-        EditorMap editorMap = new EditorMap(gamePanel, mapSizeX, mapSizeY, pTileSet);
+        EditorMap editorMap = new EditorMap(gui.getGamePanel(), mapSizeX, mapSizeY, pTileSet);
         editorMap.createEditorMap(tileID);
         maps.add(editorMap);
-        gamePanel.setCamera(mapSizeX, mapSizeY);
-        cameraPoint.setCamera(gamePanel.camera);
+        gui.getGamePanel().setCamera(mapSizeX, mapSizeY);
+        cameraPoint.setCamera(gui.getGamePanel().getCamera());
         createCheckbox();
     }
 
     public void createBlankEditorMap(int mapSizeX, int mapSizeY, TileSet pTileSet) {
-        EditorMap editorMap = new EditorMap(gamePanel, mapSizeX, mapSizeY, pTileSet);
+        EditorMap editorMap = new EditorMap(gui.getGamePanel(), mapSizeX, mapSizeY, pTileSet);
         editorMap.createBlankMap();
         maps.add(editorMap);
-        gamePanel.setCamera(mapSizeX, mapSizeY);
-        cameraPoint.setCamera(gamePanel.camera);
+        gui.getGamePanel().setCamera(mapSizeX, mapSizeY);
+        cameraPoint.setCamera(gui.getGamePanel().getCamera());
         createCheckbox();
     }
 
@@ -202,7 +208,7 @@ public class Editor {
 
     public void createTileMenu() {
         if (tileMenu == null) {
-            tileMenu = new EditorTileMenu(gamePanel.getGUI(), true, this);
+            tileMenu = new EditorTileMenu(gui, true, this);
             TileSet tempTS = new TileSet("Content/Graphics/tileSets/12x12x3 - tileSet.png", 12, 12, 3);
             //On release:
 //            Meldungen m = new Meldungen(JFrame,true,"Map");
@@ -214,7 +220,7 @@ public class Editor {
             tileMenu.setVisible(true);
             ((EditorMap) maps.get(selectedMap)).setGraphicID(tileMenu.getSelectedID());
         } // Damit kein erneutes Starten immer entsteht
-        gamePanel.getGUI().requestFocus();
+        gui.requestFocus();
     }
 
     public void addRecently(int id, TileSet ts) {
@@ -226,17 +232,33 @@ public class Editor {
     }
 
     public void update() {
-        gamePanel.getGUI().taAnzeige.setText("\n" + "X:" + cameraPoint.getLocation().getX() + "Y:" + cameraPoint.getLocation().getY()
-                + "\n" + "X- Offset:" + gamePanel.camera.getClickXOffset() + "\n" + "Y- Offset:" + gamePanel.camera.getClickYOffset());
-        if (!bordercheck(cameraPoint) && gamePanel.getGUI().keyInputToMove(gamePanel.keyManager).getX() != 0 || !bordercheck(cameraPoint) && gamePanel.getGUI().keyInputToMove(gamePanel.keyManager).getY() != 0) {
-            cameraPoint.setMove(gamePanel.getGUI().keyInputToMove(gamePanel.keyManager));
-            gamePanel.camera.centerOnObject(cameraPoint);
+        gui.debugAnzeige.setText("\n" + "X:" + cameraPoint.getLocation().getX() + "Y:" + cameraPoint.getLocation().getY()
+                + "\n" + "X- Offset:" + gui.getGamePanel().getCamera().getClickXOffset() + "\n" + "Y- Offset:" + gui.getGamePanel().getCamera().getClickYOffset());
+        if (!bordercheck(cameraPoint) && gui.keyInputToMove().getX() != 0 || !bordercheck(cameraPoint) && gui.keyInputToMove().getY() != 0) {
+            cameraPoint.setMove(gui.keyInputToMove());
+            gui.getGamePanel().getCamera().centerOnObject(cameraPoint);
 
         }
         if (!((EditorMap) maps.get(selectedMap)).isToIgnore()) {
             JLabel warning = new JLabel("Es können beim Speichern Fehler unterlaufen weil möglicherweise zwei verschiedene Tile Sets benutzt werden ", UIManager.getIcon("OptionPane.warningIcon"), SwingConstants.CENTER);
             warning.setForeground(Color.RED);
+        }
 
+        if (gui.keyManager.plus) {
+            double before = zoomFactor;
+            zoomFactor = 0.02;
+            double comparison = before / zoomFactor;
+            zoomRange = (int) Math.round(zoomRange * comparison);
+            zoom(true);
+            zoomFactor = before;
+        }
+        if (gui.keyManager.minus) {
+            double before = zoomFactor;
+            zoomFactor = 0.02;
+            double comparison = before / zoomFactor;
+            zoomRange = (int) Math.round(zoomRange * comparison);
+            zoom(false);
+            zoomFactor = before;
         }
     }
 
@@ -251,12 +273,11 @@ public class Editor {
         boolean rightBorder;
         boolean upBorder;
         boolean downBorder;
-        int virtualSpace = 500;
-        int bounce = virtualSpace / 4;
-        leftBorder = pointer.getLocation().getX() < GUI.GAMEPANEL_WIDTH / 2 - virtualSpace;
-        rightBorder = pointer.getLocation().getX() > (((EditorMap) maps.get(selectedMap)).getMapSizeX() + 1) * Tile.TILEWIDTH - GUI.GAMEPANEL_WIDTH / 2 + virtualSpace;
-        upBorder = pointer.getLocation().getY() + virtualSpace < 0 + GUI.GAMEPANEL_HEIGHT / 2;
-        downBorder = pointer.getLocation().getY() > (((EditorMap) maps.get(selectedMap)).getMapSizeY() + 1) * Tile.TILEHEIGHT - GUI.GAMEPANEL_HEIGHT / 2 + virtualSpace;
+        int bounce = 100;
+        leftBorder = pointer.getLocation().getX() < GamePanel.GAMEPANEL_WIDTH / 2;
+        rightBorder = pointer.getLocation().getX() > (((EditorMap) maps.get(selectedMap)).getMapSizeX()) * Tile.TILEWIDTH - GamePanel.GAMEPANEL_WIDTH / 2;
+        upBorder = pointer.getLocation().getY() < 0 + GamePanel.GAMEPANEL_HEIGHT / 2;
+        downBorder = pointer.getLocation().getY() > (((EditorMap) maps.get(selectedMap)).getMapSizeY()) * Tile.TILEHEIGHT - GamePanel.GAMEPANEL_HEIGHT / 2;
         if (leftBorder || rightBorder || upBorder || downBorder) {
             if (leftBorder == false) {
                 pointer.setXPos((int) pointer.getLocation().getX() - bounce);
@@ -313,7 +334,7 @@ public class Editor {
             });
             panel.add(temp);
         }
-        gamePanel.repaint();
+        gui.getGamePanel().repaint();
         panel.revalidate();
     }
 
@@ -333,11 +354,11 @@ public class Editor {
                 out.newLine();
             }
             if (notification) {
-                JOptionPane.showMessageDialog(gamePanel.getGUI(), "Daten erfolgreich gespeichert.");
+                JOptionPane.showMessageDialog(gui, "Daten erfolgreich gespeichert.");
             }
         } catch (Exception e) {
             if (notification) {
-                JOptionPane.showMessageDialog(gamePanel.getGUI(), "Daten nicht gespeichert.", "", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(gui, "Daten nicht gespeichert.", "", JOptionPane.ERROR_MESSAGE);
             }
         }
     }
@@ -350,23 +371,23 @@ public class Editor {
     }
 
     public void loadMap() {
-        Meldungen m = new Meldungen(gamePanel.getGUI(), true, "null");
+        Meldungen m = new Meldungen(gui, true, "null");
         File f = Meldungen.setMapPath("Open");//Der Filechooeser liefert die Pfadangabe zu dem selektierten Speicherort.
         String path = f.getPath();
-        Map mapTemp = new Map(gamePanel, path, "null", new Point(0, 0));
+        Map mapTemp = new Map(gui.getGamePanel(), path, "null", new Point(0, 0));
         //Übertragung der Map = lesen muss nicht extra für EditorMap implementier werden
-        EditorMap em = new EditorMap(gamePanel, mapTemp.getMapSizeX(), mapTemp.getMapSizeY(), mapTemp.getTileSet());
+        EditorMap em = new EditorMap(gui.getGamePanel(), mapTemp.getMapSizeX(), mapTemp.getMapSizeY(), mapTemp.getTileSet());
         em.mapTiles = mapTemp.mapTiles;
 
         if (em != null) {
             maps.add(em);
             createCheckbox();
-            gamePanel.setCamera(em.getMapSizeX(), em.getMapSizeY());
-            cameraPoint.setCamera(gamePanel.camera);
+            gui.getGamePanel().setCamera(em.getMapSizeX(), em.getMapSizeY());
+            cameraPoint.setCamera(gui.getGamePanel().getCamera());
             selectedMap = maps.size() - 1;
-            JOptionPane.showMessageDialog(gamePanel.getGUI(), "Map erfolgreich geladen.");
+            JOptionPane.showMessageDialog(gui, "Map erfolgreich geladen.");
         } else {
-            JOptionPane.showMessageDialog(gamePanel.getGUI(), "Map konnte nicht geladen werden.", "", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(gui, "Map konnte nicht geladen werden.", "", JOptionPane.ERROR_MESSAGE);
         }
 
     }
@@ -377,6 +398,7 @@ public class Editor {
         mapCheck.clear();
         mapSelectedBox.removeAllItems();
         selectMapPanel.removeAll();
+
         for (int i = 0; i < maps.size() ; i++) {
             name++;
             mapCheck.add(new JCheckBox("Map " + name));
@@ -388,7 +410,7 @@ public class Editor {
                 @Override
                 public void actionPerformed(ActionEvent e) {
                     super.actionPerformed(e);
-                    gamePanel.getGUI().requestFocus();
+                    gui.requestFocus();
                 }
             });
             mapSelectedBox.addItem("Map " + name);
@@ -422,27 +444,26 @@ public class Editor {
     public void zoom(boolean zoomInIsTrueZoomOutisFalse){
         // TODO: 23.03.2019 Zoom an Mapgroesse angepasst EDIT: NICHT WIRKLICH NÖTIG...
         EditorMap m = (EditorMap) maps.get(selectedMap);
-        gamePanel.camera.centerOnObject(cameraPoint);
-        double zoom = 0.25;
+        gui.getGamePanel().getCamera().centerOnObject(cameraPoint);
         if (zoomInIsTrueZoomOutisFalse) {
             //Reinzoom:
-            if (zoomSteps < maxZoom) {
+            if (zoomSteps < +(zoomRange)) {
                 zoomSteps = zoomSteps + 1;
-                zoom = 1 + zoom;
-                Tile.setTILEWIDTH((int) Math.round(Tile.TILEWIDTH * zoom));
-                Tile.setTILEHEIGHT((int) Math.round(Tile.TILEHEIGHT * zoom));
+                zoomFactor = 1 + zoomFactor;
+                Tile.setTILEWIDTH((int) Math.round(Tile.TILEWIDTH * zoomFactor));
+                Tile.setTILEHEIGHT((int) Math.round(Tile.TILEHEIGHT * zoomFactor));
             } else {
-                zoomSteps = 5;
+                zoomSteps = zoomRange;
             }
         } else {
             //Rauszoom:
-            if (zoomSteps > -minZoom) {
+            if (zoomSteps > -(zoomRange)) {
                 zoomSteps = zoomSteps - 1;
-                zoom = 1 - zoom;
-                Tile.setTILEWIDTH((int) Math.round(Tile.TILEWIDTH * zoom));
-                Tile.setTILEHEIGHT((int) Math.round(Tile.TILEHEIGHT * zoom));
+                zoomFactor = 1 - zoomFactor;
+                Tile.setTILEWIDTH((int) Math.round(Tile.TILEWIDTH * zoomFactor));
+                Tile.setTILEHEIGHT((int) Math.round(Tile.TILEHEIGHT * zoomFactor));
             } else {
-                zoomSteps = -5;
+                zoomSteps = -zoomRange;
             }
         }
 
@@ -465,21 +486,21 @@ public class Editor {
             case "+":
                 System.out.println("Zoom rein");
                 zoom(true);
-                gamePanel.camera.centerOnObject(cameraPoint);
-                cameraPoint.setCamera(gamePanel.camera);
-                gamePanel.getGUI().requestFocus();
+                gui.getGamePanel().getCamera().centerOnObject(cameraPoint);
+                cameraPoint.setCamera(gui.getGamePanel().getCamera());
+                gui.requestFocus();
                 break;
 
             case "-":
                 System.out.println("Zoom raus");
                 zoom(false);
-                gamePanel.camera.centerOnObject(cameraPoint);
-                cameraPoint.setCamera(gamePanel.camera);
-                gamePanel.getGUI().requestFocus();
+                gui.getGamePanel().getCamera().centerOnObject(cameraPoint);
+                cameraPoint.setCamera(gui.getGamePanel().getCamera());
+                gui.requestFocus();
                 break;
             case "Tile Auswaehlen":
                 createTileMenu();
-                gamePanel.getGUI().requestFocus();
+                gui.requestFocus();
                 break;
         }
 
@@ -488,14 +509,14 @@ public class Editor {
     public void mouseClicked(MouseEvent e) {
         EditorMap m = (EditorMap) maps.get(selectedMap);
         TileSet ts = tileMenu.getTileSet(tileMenu.getSelectedTileSetIndex());
-        if (keyManager.shift) {
+        if (gui.keyManager.shift) {
             m.setTileRect(e, ts);
         } else {
             m.setClick(0);
             m.setTile(e, ts);
         }
 
-        if (keyManager.str){
+        if (gui.keyManager.str) {
             m.setPointed(e);
         }
     }

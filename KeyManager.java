@@ -6,11 +6,12 @@ public class KeyManager implements KeyListener {
   public boolean up,down,left,right,upLeft,upRight,downLeft,downRight;
   public boolean shift;
   public boolean str;
+    public boolean plus, minus;
 
     int temp = 0;
 
   public KeyManager(){
-    keys = new boolean[256];
+      keys = new boolean[530];
   }
 
   public void keyPressed(KeyEvent e) {
@@ -20,9 +21,13 @@ public class KeyManager implements KeyListener {
   public void keyReleased(KeyEvent e) {
    keys[e.getKeyCode()] = false;
   }
-  public void keyTyped(KeyEvent e) {}
+
+    public void keyTyped(KeyEvent e) {
+        keys[e.getKeyCode()] = true;
+    }
 
   public void update() {
+
     shift = keys[16];
     str = keys[17];
     up = keys[KeyEvent.VK_W];
@@ -36,6 +41,9 @@ public class KeyManager implements KeyListener {
     downRight = keys[KeyEvent.VK_C];
 //    if (!shift){temp++;
 //      System.out.println(temp);}
-//
+      plus = keys[KeyEvent.VK_ADD];
+      plus = keys[KeyEvent.VK_PLUS];
+      minus = keys[KeyEvent.VK_SUBTRACT];
+      minus = keys[KeyEvent.VK_MINUS];
   }
 }

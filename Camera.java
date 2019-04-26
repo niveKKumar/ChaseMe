@@ -13,8 +13,8 @@ public class Camera {
      }
 
     public void centerOnObject(Pointer pointer) {
-        clickXOffset = (int) pointer.getLocation().getX() - (GUI.GAMEPANEL_WIDTH / 2);
-        clickYOffset = (int) pointer.getLocation().getY() - (GUI.GAMEPANEL_HEIGHT / 2);
+        clickXOffset = (int) pointer.getLocation().getX() - (GamePanel.GAMEPANEL_WIDTH / 2);
+        clickYOffset = (int) pointer.getLocation().getY() - (GamePanel.GAMEPANEL_HEIGHT / 2);
 //        Edge Snapping
 //         if (clickXOffset < 0) {
 //             clickXOffset = 0;
@@ -44,8 +44,8 @@ public class Camera {
         xOffset += (targetX - xOffset) * 0.1;
         yOffset += (targetY - yOffset) * 0.1;
 
-        xOffset = Math.min(xSize * Tile.TILEWIDTH - GUI.GAMEPANEL_WIDTH, Math.max(0, xOffset));
-        yOffset = Math.min(ySize * Tile.TILEHEIGHT - GUI.GAMEPANEL_HEIGHT, Math.max(0, yOffset));
+        xOffset = Math.min(xSize * Tile.TILEWIDTH - GamePanel.GAMEPANEL_WIDTH, Math.max(0, xOffset));
+        yOffset = Math.min(ySize * Tile.TILEHEIGHT - GamePanel.GAMEPANEL_HEIGHT, Math.max(0, yOffset));
 
 //        if (xSize * Tile.TILEWIDTH < GUI.GAMEPANEL_WIDTH) {
 //            clickXOffset = xSize * Tile.TILEWIDTH / 2;
