@@ -6,6 +6,8 @@ import javax.swing.event.DocumentListener;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.util.ArrayList;
 
 public class EditorTileMenu extends JDialog {
@@ -27,6 +29,7 @@ public class EditorTileMenu extends JDialog {
     private Editor belongingEditor;
 
     private JFrame owner;
+    private int columns = 5;
 
     private boolean firstStart = true;
 
@@ -37,7 +40,6 @@ public class EditorTileMenu extends JDialog {
         selectedID = 22; // Wiese
         $$$setupUI$$$();
         setContentPane(contentPane);
-        setSize(500, 300);
         Dimension d = Toolkit.getDefaultToolkit().getScreenSize();
         int x = (d.width - getSize().width) / 2;
         int y = (d.height - getSize().height) / 2;
@@ -48,9 +50,10 @@ public class EditorTileMenu extends JDialog {
                 onOK();
             }
         });
+        pack();
         createTileSet();
         setVisible(false);
-//        pack();
+        setSize(500, 300);
     }
 
     private void onOK() {
@@ -95,14 +98,18 @@ public class EditorTileMenu extends JDialog {
         tileSet.add(pTileSet);
         selectedTileSet = tileSet.size() - 1;
     }
-     
+
     public TileSet getTileSet(int index) {
         return ((TileSet) tileSet.get(index));
     }
 
     public void createTileSetComponents() {
         // FIXME: 06.04.2019 Kann besser gelöst werden -> nur Scrollpane als Array, der Rest Local Done
+        int gap = 2;
         JPanel tilePanel = new JPanel();
+        columns = (int) Math.floor(center.getWidth() / EditorTileButton.size);
+        System.out.println(columns);
+        tilePanel.setLayout(new GridLayout(0, columns, gap, gap));
         //Hinzufuegen der TileEingabe auf das JPanel
         JTextField txtEingabe = new JTextField();
         txtEingabe.setSize(EditorTileButton.size, EditorTileButton.size);
@@ -138,14 +145,25 @@ public class EditorTileMenu extends JDialog {
         tilePanel.add(txtEingabe);
         //Hinzufuegen der Tiles auf das JPanel
         selectedTileSet = tileSet.size() - 1;
-        long t1 = System.currentTimeMillis();
-        EditorTileButton[] tileMenuButtons = new EditorTileButton[((TileSet) tileSet.get(selectedTileSet)).tileSet.length - 1];
+        TileSet current = ((TileSet) tileSet.get(selectedTileSet));
+        EditorTileButton[] tileMenuButtons = new EditorTileButton[current.tileSet.length - 1];
         for (int i = 0; i < tileMenuButtons.length; i++) {
-            tileMenuButtons[i] = new EditorTileButton(i, ((TileSet) tileSet.get(selectedTileSet)));
+            tileMenuButtons[i] = new EditorTileButton(i, current);
             // FIXME: 19.04.2019 Action Listener
-            tileMenuButtons[i].addActionListener(new ActionListener() {
+            tileMenuButtons[i].addMouseListener(new MouseListener() {
                 @Override
-                public void actionPerformed(ActionEvent e) {
+                public void mouseClicked(MouseEvent e) {
+
+                    if (e.getClickCount() == 2) {
+                        EditorTileButton source = ((EditorTileButton) e.getSource());
+                        selectedID = source.getId();
+                        ((EditorMap) belongingEditor.maps.get(belongingEditor.selectedMap)).setGraphicID(getSelectedID());
+                    }
+
+                }
+
+                @Override
+                public void mousePressed(MouseEvent e) {
                     EditorTileButton source = ((EditorTileButton) e.getSource());
                     selectedID = source.getId();
                     for (int i = 0; i < tileSet.size(); i++) {
@@ -155,18 +173,35 @@ public class EditorTileMenu extends JDialog {
                     }
                     selectedinLabel(selectedLabel, source.getIcon());
                 }
+
+
+                @Override
+                public void mouseReleased(MouseEvent e) {
+
+                }
+
+                @Override
+                public void mouseEntered(MouseEvent e) {
+                }
+
+                @Override
+                public void mouseExited(MouseEvent e) {
+
+                }
             });
+
             tilePanel.add(tileMenuButtons[i]);
         }
         // Tile Panel Groeße nach Tile Button
-        tilePanel.setLayout(new GridLayout(0, 3, 3, 3));
         // Erstellen des Scrollpanes und zuweisen des JPanels
 
         JScrollPane scrollPane = new JScrollPane();
-        scrollPane.getVerticalScrollBar().setUnitIncrement(16);
+        scrollPane.getVerticalScrollBar().setUnitIncrement(8);
+        scrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED);
         scrollPane.setOpaque(true);
         scrollPane.setViewportView(tilePanel);
         tsTabPane.addTab("Tile Set " + tileSet.size(), scrollPane);
+//        tsTabPane.setMinimumSize(new Dimension(columns * (EditorTileButton.size + gap), current.tileSet.length / columns * (EditorTileButton.size + gap)));
     }
 
     public void setSelectedID(int selectedID) {
@@ -174,7 +209,7 @@ public class EditorTileMenu extends JDialog {
     }
 
     /**
-     * Method generated by IntelliJ IDEA JFrame Designer
+     * Method generated by IntelliJ IDEA GUI Designer
      * >>> IMPORTANT!! <<<
      * DO NOT edit this method OR call it in your code!
      *
@@ -185,12 +220,8 @@ public class EditorTileMenu extends JDialog {
         contentPane.setLayout(new BorderLayout(0, 0));
         west = new JPanel();
         west.setLayout(new BorderLayout(0, 0));
-        west.setMaximumSize(new Dimension(300, 350));
         west.setMinimumSize(new Dimension(50, 50));
-        west.setPreferredSize(new Dimension(200, 250));
         contentPane.add(west, BorderLayout.WEST);
-        tsTabPane = new JTabbedPane();
-        west.add(tsTabPane, BorderLayout.CENTER);
         south = new JPanel();
         south.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
         contentPane.add(south, BorderLayout.SOUTH);
@@ -215,6 +246,8 @@ public class EditorTileMenu extends JDialog {
         center = new JPanel();
         center.setLayout(new BorderLayout(0, 0));
         contentPane.add(center, BorderLayout.CENTER);
+        tsTabPane = new JTabbedPane();
+        center.add(tsTabPane, BorderLayout.CENTER);
     }
 
     /**
@@ -239,7 +272,6 @@ public class EditorTileMenu extends JDialog {
         JMenuItem save = new JMenuItem("Speichern");
         save.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
-                Meldungen m = new Meldungen(owner, true, "Map");
                 belongingEditor.saveMap(Meldungen.setMapPath("Save"), true);
             }
         });

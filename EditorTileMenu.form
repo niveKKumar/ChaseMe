@@ -10,19 +10,10 @@
       <grid id="e3588" binding="west" layout-manager="BorderLayout" hgap="0" vgap="0">
         <constraints border-constraint="West"/>
         <properties>
-          <maximumSize width="300" height="350"/>
           <minimumSize width="50" height="50"/>
-          <preferredSize width="200" height="250"/>
         </properties>
         <border type="none"/>
-        <children>
-          <tabbedpane id="83913" binding="tsTabPane">
-            <constraints border-constraint="Center"/>
-            <properties/>
-            <border type="none"/>
-            <children/>
-          </tabbedpane>
-        </children>
+        <children/>
       </grid>
       <grid id="31bff" binding="south" layout-manager="FlowLayout" hgap="5" vgap="5" flow-align="1">
         <constraints border-constraint="South"/>
@@ -62,7 +53,14 @@
         <constraints border-constraint="Center"/>
         <properties/>
         <border type="none"/>
-        <children/>
+        <children>
+          <tabbedpane id="83913" binding="tsTabPane">
+            <constraints border-constraint="Center"/>
+            <properties/>
+            <border type="none"/>
+            <children/>
+          </tabbedpane>
+        </children>
       </grid>
     </children>
   </grid>

@@ -1,55 +1,41 @@
 import javax.swing.*;
-import javax.swing.plaf.basic.BasicInternalFrameUI;
 import java.awt.*;
-import java.beans.PropertyVetoException;
+import java.awt.event.MouseListener;
+import java.awt.event.MouseMotionListener;
+import java.util.LinkedList;
 
-public class GamePanel extends JInternalFrame {
+class GamePanel extends JPanel {
 
     /**
      * Viewer des Spiels
      */
-
-    public static int GAMEPANEL_WIDTH = 500;
-    public static int GAMEPANEL_HEIGHT = 500;
-
     private Camera camera;
     public Tile start;
     public Tile target;
-
-    private GUI gui;
-
-    private Level level;
-    private Editor editor;
+    private LinkedList renderList;
 
 
-    public GamePanel(JPanel display, GUI gui) {
-        super("GamePanel", true, true, true, true);
-        this.gui = gui;
-        camera = new Camera();
-        setName("GamePanel");
-
-//        System.out.println("GamePanels Groesse 1: " + getSize());
-//        System.out.println("GamePanels Bounds 1: " + getBounds());
+    public GamePanel(JPanel display, MouseListener mouseListener, MouseMotionListener mouseMotionListener, KeyManager keyManager) {
+//        super("GUI.GamePanel", true, true, true, true);
+        super(new BorderLayout());
+        setName("GUI.GamePanel");
+        renderList = new LinkedList();
         display.add(this, BorderLayout.CENTER);
-        GAMEPANEL_HEIGHT = display.getHeight();
-        GAMEPANEL_WIDTH = display.getWidth();
-        setSize(GAMEPANEL_WIDTH, GAMEPANEL_HEIGHT);
-//        System.out.println("GamePanels Groesse 2: " + getSize());
-//        System.out.println("GamePanels Bounds 2: " + getBounds());
 
-//        setFocusable(false);
+        addKeyListener(keyManager);
+        addMouseListener(mouseListener);
+        addMouseMotionListener(mouseMotionListener);
+
+        setFocusable(false);
         setBackground(Color.green);
-        addMouseListener(gui);
-        addMouseMotionListener(gui);
-        ((BasicInternalFrameUI) getUI()).setNorthPane(null);
+        setOpaque(false);
+//        ((BasicInternalFrameUI) getUI()).setNorthPane(null);
         setBorder(null);
-        try {
-            setMaximum(true);
-        } catch (PropertyVetoException e) {
-            e.printStackTrace();
-        }
-//        System.out.println("GamePanels Groesse 3: " + getSize());
-//        System.out.println("GamePanels Bounds 3: " + getBounds());
+//        try {
+//            setMaximum(false);
+//        } catch (PropertyVetoException e) {
+//            e.printStackTrace();
+//        }
         repaint();
         revalidate();
         setVisible(true);
@@ -59,25 +45,25 @@ public class GamePanel extends JInternalFrame {
         return camera;
     }
 
-    public GUI getGUI() {
-        return gui;
+    public void addtoRender(GUI gui) {
+        if (!renderList.contains(gui)) {
+            renderList.add(gui);
+        }
     }
 
-    public void setCamera(int pXSize, int pYSize) {
-        camera = new Camera(pXSize, pYSize);
-    }
-
-    @Override
-    protected void paintChildren(Graphics g) {
-        super.paintChildren(g);
-        Graphics2D g2d = (Graphics2D) g;
-        gui.render(g2d);
-    }
 
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
         Graphics2D g2d = (Graphics2D) g;
-        gui.render(g2d);
+        for (int i = 0; i < renderList.size(); i++) {
+            ((GUI) renderList.get(i)).render(g2d);
+        }
     }
+
+    public void setCamera(int pXSize, int pYSize, Point chapterOffset) {
+        camera = new Camera(pXSize, pYSize, (int) chapterOffset.getX(), (int) chapterOffset.getY());
+    }
+
+
 }

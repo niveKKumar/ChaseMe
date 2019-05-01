@@ -16,8 +16,8 @@ public class DisplayAnalytics{
 
     public DisplayAnalytics(GamePanel gp, MapBase pMap, PathFinder pPathFinder) {
         gamePanel = gp;
-    map = pMap;
-    pathFinder = pPathFinder;
+        map = pMap;
+        pathFinder = pPathFinder;
   }
   public void setMover(Mover pMover){
   mover = pMover;

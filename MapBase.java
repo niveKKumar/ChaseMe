@@ -4,7 +4,7 @@ import java.awt.*;
 import java.util.LinkedList;
 
 public class MapBase {
-    protected static GamePanel gamePanel;
+    protected GamePanel gamePanel;
     public Tile[][] mapTiles;
     public int mapSizeX;
     public int mapSizeY;
@@ -14,6 +14,7 @@ public class MapBase {
     protected String mapStatus;
     private int[] blockedID;
     private boolean active;
+    private boolean mapBorder = true;
 
     public MapBase(GamePanel gp, TileSet pTileSet, @Nullable String pStatus, @Nullable Point pChapterOffset) {
         gamePanel = gp;
@@ -71,7 +72,7 @@ public class MapBase {
     public void borderBlock() {
         //Oben:
         for (int i = 0; i < mapSizeX - 1; i++) {
-            mapTiles[0][i].setBlocked(true);
+            mapTiles[i][0].setBlocked(true);
         }
         //Unten:
         for (int i = 0; i < mapSizeX - 1; i++) {
@@ -114,9 +115,8 @@ public class MapBase {
     public void renderMap(Graphics2D g2d) {
         for (int zeile = 0; zeile < mapSizeY; zeile++) {
             for (int spalte = 0; spalte < mapSizeX; spalte++) {
-                mapTiles[zeile][spalte].renderTile(g2d, zeile * Tile.TILEWIDTH - gamePanel.getCamera().getXOffset() - chapterXOffset, spalte * Tile.TILEHEIGHT - gamePanel.getCamera().getYOffset() - chapterYOffset);
+                mapTiles[zeile][spalte].renderTile(g2d, chapterXOffset + zeile * Tile.TILEWIDTH - gamePanel.getCamera().getXOffset(), chapterYOffset + spalte * Tile.TILEHEIGHT - gamePanel.getCamera().getYOffset());
             }
-
         }
     }
 
@@ -204,5 +204,9 @@ public class MapBase {
     }
     public void setActive(boolean active) {
         this.active = active;
+    }
+
+    public Point getChapterOffset() {
+        return new Point(chapterXOffset, chapterYOffset);
     }
 }

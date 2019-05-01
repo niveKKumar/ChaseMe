@@ -1,12 +1,10 @@
 import javax.swing.*;
-import javax.swing.plaf.basic.BasicInternalFrameUI;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.beans.PropertyVetoException;
 import java.util.LinkedList;
 
-public class MenuUI extends JInternalFrame {
+public class MenuUI extends JFrame {
 
     public static int MENUUI_WIDTH = 500;
     public static int MENUUI_HEIGHT = 500;
@@ -16,30 +14,33 @@ public class MenuUI extends JInternalFrame {
     private MenuButton btSettings;
     private MenuButton btReturn;
     private MenuButton btInfo;
-    private ActionListener actionListener;
+    private static ActionListener actionListener;
     private GridBagConstraints gbc = new GridBagConstraints();
     private LinkedList<JPanel> addedMenus;
 
     public MenuUI(JPanel display, ActionListener act) {
-        super("MenuUI", true, true, true, true);
+//        super("MenuUI", true, true, false, true);
+        super("Menu");
+        setSize(300, 500);
         actionListener = act;
         addedMenus = new LinkedList<>();
         setName("MenuUI");
-        display.add(this, BorderLayout.CENTER);
-        setOpaque(false);
+//        display.add(this, BorderLayout.CENTER);
+        setFocusable(false);
+//        setOpaque(false);
         setBackground(null);
         setLayout(new BorderLayout());
         createMenuPane();
-        ((BasicInternalFrameUI) getUI()).setNorthPane(null);
-        setBorder(null);
-        setBorder(BorderFactory.createLineBorder(Color.black, 5));
+//        ((BasicInternalFrameUI) getUI()).setNorthPane(null);
+//        setBorder(null);
+//        setBorder(BorderFactory.createLineBorder(Color.black, 5));
         MENUUI_HEIGHT = getHeight();
         MENUUI_WIDTH = getWidth();
-        try {
-            setMaximum(true);
-        } catch (PropertyVetoException e) {
-            e.printStackTrace();
-        }
+//        try {
+//            setMaximum(false);
+//        } catch (PropertyVetoException e) {
+//            e.printStackTrace();
+//        }
         repaint();
         revalidate();
         setVisible(true);
@@ -94,6 +95,7 @@ public class MenuUI extends JInternalFrame {
                 btReturn.setVisible(false);
             }
         });
+        btReturn.setFocusable(false);
         btReturn.setAlignmentX(Component.LEFT_ALIGNMENT);
         btReturn.setVisible(false);
         gbc = new GridBagConstraints();
@@ -110,6 +112,7 @@ public class MenuUI extends JInternalFrame {
                 showButtonPane("Settings");
             }
         });
+        btSettings.setFocusable(false);
         btSettings.setAlignmentX(RIGHT_ALIGNMENT);
         gbc = new GridBagConstraints();
         gbc.anchor = GridBagConstraints.SOUTHEAST;
@@ -124,6 +127,7 @@ public class MenuUI extends JInternalFrame {
                 showButtonPane("Info");
             }
         });
+        btInfo.setFocusable(false);
         btInfo.setAlignmentX(LEFT_ALIGNMENT);
         gbc = new GridBagConstraints();
         gbc.anchor = GridBagConstraints.SOUTHWEST;
@@ -197,7 +201,7 @@ public class MenuUI extends JInternalFrame {
     }
 
 
-    class Menu extends JPanel {
+    public static class Menu extends JPanel {
 
         private String name;
 

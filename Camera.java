@@ -1,39 +1,45 @@
 public class Camera {
 
     private int xSize, ySize;
+    private int chapterOffsetX, chapterOffsetY;
     private int xOffset, yOffset;
     private int clickXOffset = 0, clickYOffset = 0;
 
      public Camera() {
      }
 
-    public Camera(int pXSize, int pYSize) {
+    public Camera(int pXSize, int pYSize, int chapterOffsetX, int chapterOffsetY) {
          xSize = pXSize;
          ySize = pYSize;
+        this.chapterOffsetX = chapterOffsetX;
+        this.chapterOffsetY = chapterOffsetY;
      }
 
     public void centerOnObject(Pointer pointer) {
-        clickXOffset = (int) pointer.getLocation().getX() - (GamePanel.GAMEPANEL_WIDTH / 2);
-        clickYOffset = (int) pointer.getLocation().getY() - (GamePanel.GAMEPANEL_HEIGHT / 2);
-//        Edge Snapping
-//         if (clickXOffset < 0) {
-//             clickXOffset = 0;
-//         } else {
-//             int maxLoc = xSize * Tile.TILEWIDTH - GUI.GAMEPANEL_WIDTH  ;
-//             if (clickXOffset > maxLoc) {
-//                 clickXOffset = maxLoc;
-//             } // end of if
-//         } // end of if-else
+//        int virtualSpace = this.virtualSpace;
 //
-//         if (clickYOffset < 0) {
-//             clickYOffset = 0;
-//         } else {
-//             int maxLoc = ySize * Tile.TILEHEIGHT - GUI.GAMEPANEL_HEIGHT ;
-//             if (clickYOffset > maxLoc) {
-//                 clickYOffset = maxLoc;
-//             } // end of if
-//         } // end of if-else
+//         if (clickXOffset <= GUI.GAMEPANEL_WIDTH/2) {
+//            virtualSpace = virtualSpace;
+//        } else {
+//            int maxLoc = xSize * Tile.TILEWIDTH - GUI.GAMEPANEL_WIDTH  ;
+//            if (clickXOffset >= maxLoc) {
+//                virtualSpace = - virtualSpace;
+//            } // end of if
+//        } // end of if-else
+//
+//        if (clickYOffset <= GUI.GAMEPANEL_WIDTH ) {
+//            virtualSpace = virtualSpace;
+//        } else {
+//            int maxLoc = ySize * Tile.TILEHEIGHT - GUI.GAMEPANEL_HEIGHT ;
+//            if (clickYOffset >= maxLoc) {
+//                virtualSpace = -virtualSpace;
+//            } // end of if
+//        } // end of if-else
 
+
+        clickXOffset = (int) pointer.getLocation().getX() - (GUI.GAMEPANEL_WIDTH / 2);
+        clickYOffset = (int) pointer.getLocation().getY() - (GUI.GAMEPANEL_HEIGHT / 2);
+//        Edge Snapping
 
          //https://gamedev.stackexchange.com/questions/138756/smooth-camera-movement-java
 
@@ -44,8 +50,8 @@ public class Camera {
         xOffset += (targetX - xOffset) * 0.1;
         yOffset += (targetY - yOffset) * 0.1;
 
-        xOffset = Math.min(xSize * Tile.TILEWIDTH - GamePanel.GAMEPANEL_WIDTH, Math.max(0, xOffset));
-        yOffset = Math.min(ySize * Tile.TILEHEIGHT - GamePanel.GAMEPANEL_HEIGHT, Math.max(0, yOffset));
+        xOffset = Math.min(chapterOffsetX + xSize * Tile.TILEWIDTH - GUI.GAMEPANEL_WIDTH, Math.max(0, xOffset));
+        yOffset = Math.min(chapterOffsetY + ySize * Tile.TILEHEIGHT - GUI.GAMEPANEL_HEIGHT, Math.max(0, yOffset));
 
 //        if (xSize * Tile.TILEWIDTH < GUI.GAMEPANEL_WIDTH) {
 //            clickXOffset = xSize * Tile.TILEWIDTH / 2;
@@ -83,11 +89,11 @@ public class Camera {
     }
 
     public int getClickXOffset() {
-        return xOffset;
+        return clickXOffset;
     }
 
     public int getClickYOffset() {
-        return yOffset;
+        return clickYOffset;
     }
 }
  

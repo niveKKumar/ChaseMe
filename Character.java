@@ -13,8 +13,6 @@ public class Character extends Mover {
         MOVER_WIDTH = sprites.getWidth();
         MOVER_HEIGHT = sprites.getHeight();
         img = sprites.getSpriteElement(0, 1);
-        gamePanel.getGUI().south.add(speechBubble = new JTextArea("Mover:"));
-        speechBubble.setVisible(false);
     }
 
     @Override
@@ -65,11 +63,18 @@ public class Character extends Mover {
     }
 
     public void saySomething(String text, boolean clear, int speakingSpeed) {
+        if (speechBubble == null) {
+            speechBubble = new JTextArea("Mover:");
+        } else {
+            speechBubble.setVisible(true);
+        }
+        JOptionPane optionPane = new JOptionPane("Mover:");
+        optionPane.add(speechBubble);
+
         if (clear) {
             speechBubble.setText("");
         }
         speaking = true;
-        speechBubble.setVisible(true);
         for (int i = 0; i < text.length(); i++) {
             speechBubble.append(String.valueOf(text.charAt(i)));
             try {
@@ -80,7 +85,6 @@ public class Character extends Mover {
         }
         speaking = false;
         speechBubble.setVisible(false);
-
     }
 
     public void setSpeed(int pSpeed) {

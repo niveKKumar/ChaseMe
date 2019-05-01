@@ -10,7 +10,7 @@ import java.awt.geom.Point2D;
 public class Level implements ActionListener {
 
     private GamePanel gamePanel;
-    private GUI gui;
+    public JTextArea levelAnzeige;
     
     public int level;
     public MapBase[] maps;
@@ -26,11 +26,15 @@ public class Level implements ActionListener {
     private int dialog;
     private boolean active = false;
     private GridBagConstraints gbc = new GridBagConstraints();
+    private KeyManager keyListener;
 
 
-    public Level(GamePanel gp) {
-        this.gamePanel = gp;
-        gui = gp.getGUI();
+    public Level(GamePanel gp, KeyManager pKeyListener) {
+        gamePanel = gp;
+        keyListener = pKeyListener;
+        levelAnzeige = new JTextArea("levelAnzeige");
+        levelAnzeige.setFocusable(false);
+        GUI.addToDebugPane(levelAnzeige);
         createLobby();
     }
 
@@ -98,7 +102,7 @@ public class Level implements ActionListener {
         createLevelObjects(1, 0/*,null*/);
         //Einlesung der Maps:
         maps[0] = new Map(gamePanel, "Content/Maps/menu.txt", "Border", new Point(0, 0));
-        gamePanel.setCamera(maps[0].mapSizeX, maps[0].getMapSizeY());
+        gamePanel.setCamera(maps[0].mapSizeX, maps[0].getMapSizeY(), maps[0].getChapterOffset());
 
         for (int i = 0; i < maps.length; i++) {
             analytics[i] = new DisplayAnalytics(gamePanel, maps[i], pathFinder);
@@ -120,7 +124,7 @@ public class Level implements ActionListener {
         // TODO: 14.04.2019 Abfrage von bestimmten Informationen (Mover Spawn Punkt) -> wird einfach abgefragt = ansonsten zu viel Aufwand
         createLevelObjects(pMaps.length, 0/*,moverCords*/);
         maps = pMaps;
-        gamePanel.setCamera(maps[0].getMapSizeX(), maps[0].getMapSizeY());
+        gamePanel.setCamera(maps[0].getMapSizeX(), maps[0].getMapSizeY(), maps[0].getChapterOffset());
         for (int i = 0; i < maps.length; i++) {
             analytics[i] = new DisplayAnalytics(gamePanel, maps[i], pathFinder);
         }
@@ -144,7 +148,7 @@ public class Level implements ActionListener {
         maps[0] = new Map(gamePanel, "Content/Maps/0 Base.txt", "All", new Point(0, 0));
         maps[1] = new Map(gamePanel, "Content/Maps/0A Items.txt", "Item", new Point(5, 0));
         maps[2] = new Map(gamePanel, "Content/Maps/0B Items.txt", "Item", new Point(10, 0));
-        gamePanel.setCamera(maps[0].getMapSizeX(), maps[0].getMapSizeY());
+        gamePanel.setCamera(maps[0].getMapSizeX(), maps[0].getMapSizeY(), maps[0].getChapterOffset());
         for (int i = 0; i < maps.length; i++) {
             analytics[i] = new DisplayAnalytics(gamePanel, maps[i], pathFinder);
         }
@@ -198,7 +202,6 @@ public class Level implements ActionListener {
     }
 
     public void renderLevel(Graphics2D g2d) {
-
         if (active && level != 0) {
             maps[0].renderMap(g2d);
             mover.draw(g2d);
@@ -210,28 +213,32 @@ public class Level implements ActionListener {
                 }
             }
 
-
-            for (int mapsAmount = 1; mapsAmount < maps.length; mapsAmount++) {
-                maps[mapsAmount].renderMap(g2d);
-                analytics[mapsAmount].renderAnalytics(g2d);
-            }
+//            for (int mapsAmount = 1; mapsAmount < maps.length; mapsAmount++) {
+//                maps[mapsAmount].renderMap(g2d);
+//                analytics[mapsAmount].renderAnalytics(g2d);
+//            }
         }
     }
 
     public void updateLevel() {
         if (active) {
-            if (gui.keyInputToMove().getX() != 0 || gui.keyInputToMove().getY() != 0) {
-                System.out.println("Level");
-                mover.setMove(gui.keyInputToMove());
+            if (GUI.keyInputToMove(keyListener).getX() != 0 || GUI.keyInputToMove(keyListener).getY() != 0) {
+                mover.setMove(GUI.keyInputToMove(keyListener));
                 gamePanel.getCamera().centerOnObject(mover);
                 pathFinder.resetPath();
-                gui.debugAnzeige.setText("Level: " + level + "\n" + "X:" + mover.moverOnMapTile().x + "Y:" + mover.moverOnMapTile().y
-                        + "\n" + "Steps:" + mover.getSteps()
-                        + "\n" + "X- Offset:" + gamePanel.getCamera().getXOffset() + "\n" + "Y- Offset:" + gamePanel.getCamera().getYOffset());
             } // end of if
+            try {
+                levelAnzeige.setText("Level: " + level + "\n" + "X:" + mover.moverOnMapTile().x + "Y:" + mover.moverOnMapTile().y
+                        + "\n" + "Steps:" + mover.getSteps()
+                        + "\n" + "X- Offset:" + gamePanel.getCamera().getXOffset() + "\n" + "Y- Offset:" + gamePanel.getCamera().getYOffset()
+                        + "\n" + "Camera Size:" + gamePanel.getCamera().getxSize() + "\n" + gamePanel.getCamera().getySize());
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
             Point2D from = pathFinder.getNextStep();
             Point2D to = pathFinder.getNextStep();
-            if (!mover.isSpeaking() && to != null && gui.keyInputToMove().getX() == 0 && gui.keyInputToMove().getY() == 0) {
+            if (!mover.isSpeaking() && to != null && GUI.keyInputToMove(keyListener).getX() == 0 && GUI.keyInputToMove(keyListener).getY() == 0) {
                 mover.setPathMove(from, to);
             } // end of if
 
@@ -241,6 +248,7 @@ public class Level implements ActionListener {
                     break;
                 case 1:
                     level1GameMechanic();
+
                     break;
 //            case 2 :
 //                level2GameMechanic();
@@ -260,7 +268,7 @@ public class Level implements ActionListener {
     }
 
     public void clear() {
-        gui.getGamePanel().removeAll();
+        gamePanel.removeAll();
         active = false;
     }
 

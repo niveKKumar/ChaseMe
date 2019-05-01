@@ -6,8 +6,8 @@ public class Map extends MapBase {
 
   private String[] mapText;
 
-    public Map(GamePanel gamePanel, TileSet pTileSet, String pMapPlanPath, String pStatus, Point pChapterOffset) {
-        super(gamePanel, pTileSet, pStatus, pChapterOffset);
+  public Map(GamePanel gp, TileSet pTileSet, String pMapPlanPath, String pStatus, Point pChapterOffset) {
+    super(gp, pTileSet, pStatus, pChapterOffset);
     mapText = readMap(pMapPlanPath);
     createMap();
     }

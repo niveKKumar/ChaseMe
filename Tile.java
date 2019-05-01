@@ -12,13 +12,13 @@ public class Tile extends JPanel implements Cloneable, Comparable{
   public Tile pathParent;
   public float costFromStart;
   protected float estimatedCostToGoal;
-  boolean pointed;
+  Insets borderInsets;
 
   public Tile(Image pTileImage)  {
     super();
     setOpaque(true);
-    pointed = false;
     tileImage = pTileImage;
+    borderInsets = new Insets(0, 0, 0, 0);
   }
 
   public void renderTile(Graphics2D g2d, int pXPos, int pYPos){
@@ -26,10 +26,37 @@ public class Tile extends JPanel implements Cloneable, Comparable{
     if (showImage) {
       g2d.drawImage(tileImage, this.getX(), this.getY(), TILEWIDTH, TILEHEIGHT, null);
     }
-      if (pointed) {
-          showImage(false);
-          setBorder(BorderFactory.createLineBorder(Color.black, 5));
-      }
+    paintBorder(g2d);
+  }
+
+  private void paintBorder(Graphics2D g2d) {
+    if (borderInsets.top > 0) {
+      int stroke = borderInsets.top;
+      g2d.setStroke(new BasicStroke(stroke));
+      g2d.drawLine(getX() + stroke / 2, getY() + stroke / 2, getX() + TILEWIDTH - stroke / 2, getY() + stroke / 2);
+    }
+
+    if (borderInsets.right > 0) {
+      int stroke = borderInsets.right;
+      g2d.setStroke(new BasicStroke(stroke));
+      g2d.drawLine(getX() + TILEWIDTH - stroke / 2, getY() + stroke / 2, getX() + TILEWIDTH - stroke / 2, getY() + TILEHEIGHT - stroke / 2);
+    }
+
+    if (borderInsets.bottom > 0) {
+      int stroke = borderInsets.bottom;
+      g2d.setStroke(new BasicStroke(stroke));
+      g2d.drawLine(getX() + stroke / 2, getY() + TILEHEIGHT - stroke / 2, getX() + TILEWIDTH - stroke / 2, getY() + TILEHEIGHT - stroke / 2);
+    }
+
+    if (borderInsets.left > 0) {
+      int stroke = borderInsets.left;
+      g2d.setStroke(new BasicStroke(stroke));
+      g2d.drawLine(getX() + stroke / 2, getY() + stroke / 2, getX() + stroke / 2, getY() + TILEHEIGHT - stroke / 2);
+    }
+  }
+
+  public void setBorderInsets(Insets insets) {
+    borderInsets = insets;
   }
 
   public void showImage(boolean b){
@@ -50,22 +77,6 @@ public class Tile extends JPanel implements Cloneable, Comparable{
     } catch(CloneNotSupportedException e) {
       return null;
     }
-  }
-
-  public boolean isPointed() {
-    return pointed;
-  }
-
-  public void setPointed() {
-    if (pointed) {
-      setBorder(BorderFactory.createLineBorder(Color.black, 5));
-        System.out.println("Ich ! Das  Tile auf den Koordinaten P(" + getX() + "|" + getY() + ") ist markiert worden");
-      pointed = false;
-    } else {
-      setBorder(null);
-      pointed = true;
-    }
-
   }
 
   public LinkedList getNeighbours(){
