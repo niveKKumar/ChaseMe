@@ -4,8 +4,8 @@ import java.awt.geom.Point2D;
 public class Runner extends Mover {
     private PathFinder pathfinder;
     private int border;
-    private int delay = 1;
-    private int speed;
+    private int delay = 20;
+    private double speed;
     int collisionduration = 0;
 
     public Runner(GamePanel gp, int xPos, int yPos, SpriteSheet pSpriteSheet, MapBase[] pMap) {
@@ -17,10 +17,15 @@ public class Runner extends Mover {
         pathfinder = new PathFinder(map, this, gamePanel);
     }
 
-    public void enemystraightrun(int pBorder, int pSpeed, int x, int y) {   //Gegner der nur gerade aus läuft (Delay = 1 - Kein Delay)
+    public void enemystraightrun(int pBorder, double pSpeed, int x, int y) {   //Gegner der nur gerade aus läuft (Delay = 1 - Kein Delay)
         border = pBorder;
         Point richtung = new Point (x,y);
         //Delay:
+        if (speed < 1) {
+            double higherDelay = 1 / speed;
+            delay = (int) Math.round(delay * higherDelay);
+            speed = 1;
+        }
         speed = pSpeed;
         if (!collisionCheck()) {
             delay++;

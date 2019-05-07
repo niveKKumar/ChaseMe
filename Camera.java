@@ -47,8 +47,8 @@ public class Camera {
         int targetX = clickXOffset + Character.MOVER_WIDTH / 2;
         int targetY = clickYOffset + Character.MOVER_HEIGHT / 2;
 
-        xOffset += (targetX - xOffset) * 0.1;
-        yOffset += (targetY - yOffset) * 0.1;
+        xOffset += (targetX - xOffset) * 0.1f;
+        yOffset += (targetY - yOffset) * 0.1f;
 
         xOffset = Math.min(chapterOffsetX + xSize * Tile.TILEWIDTH - GUI.GAMEPANEL_WIDTH, Math.max(0, xOffset));
         yOffset = Math.min(chapterOffsetY + ySize * Tile.TILEHEIGHT - GUI.GAMEPANEL_HEIGHT, Math.max(0, yOffset));
@@ -88,12 +88,20 @@ public class Camera {
         return ySize;
     }
 
+    public void setClickXOffset(int clickXOffset) {
+        this.clickXOffset = clickXOffset;
+    }
+
+    public double getClickYOffset() {
+        return clickYOffset;
+    }
+
     public int getClickXOffset() {
         return clickXOffset;
     }
 
-    public int getClickYOffset() {
-        return clickYOffset;
+    public void setClickYOffset(int clickYOffset) {
+        this.clickYOffset = clickYOffset;
     }
 }
  

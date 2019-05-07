@@ -7,6 +7,7 @@ public class GUI extends JFrame implements ActionListener, MouseListener, MouseM
     /**
      * Model + Controller des Spiels
      */
+    public static GUI gui;
     public static final int FRAME_WIDTH = 1080;
     public static final int FRAME_HEIGHT = 720;
 
@@ -23,7 +24,7 @@ public class GUI extends JFrame implements ActionListener, MouseListener, MouseM
     private GamePanel gamePanel;
     public MenuUI menuUI;
     private Editor editor;
-    private Level level;
+    private Game level;
 
     private Loop loop = new Loop();
     private Thread t = new Thread(loop);
@@ -36,6 +37,7 @@ public class GUI extends JFrame implements ActionListener, MouseListener, MouseM
 
     public GUI() {
         super();
+        gui = this;
         setName("GUI");
         this.setBackground(Color.white);
         setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
@@ -109,7 +111,6 @@ public class GUI extends JFrame implements ActionListener, MouseListener, MouseM
         cp.add(west, BorderLayout.WEST);
         cp.add(north, BorderLayout.NORTH);
 
-//        tempDebugPane = new JPanel(new GridLayout(0,1,5,5));
         tempDebugPane = new JPanel(new GridBagLayout());
         debugAnzeige.setFocusable(false);
         debugAnzeige.setBorder(BorderFactory.createLineBorder(Color.black));
@@ -121,7 +122,7 @@ public class GUI extends JFrame implements ActionListener, MouseListener, MouseM
         addToDebugPane(focuslb);
         west.add(tempDebugPane);
 
-        JButton btMenu = new JButton("Menu");
+        JButton btMenu = new JButton("MenuTab");
         btMenu.setFocusable(false);
         btMenu.addActionListener(new ActionListener() {
             @Override
@@ -163,18 +164,16 @@ public class GUI extends JFrame implements ActionListener, MouseListener, MouseM
     }
 
     private void createEditor() {
-        editor = new Editor(gamePanel,keyManager);
+        editor = new Editor(this, gamePanel, keyManager);
         level.setLevel(0);
         level.clear();
     }
 
     public void actionPerformed(ActionEvent evt) {
-        JButton temp = (JButton) evt.getSource();
-
-        if (level.level == 0) {
-            editor.actionPerformed(evt);
+        if (level != null && level.level != 0) {
+            level.actionPerformed(evt);
         }
-
+        JButton temp = (JButton) evt.getSource();
         switch (temp.getText()) {
             case "Exit":
                 System.exit(0);
@@ -206,28 +205,26 @@ public class GUI extends JFrame implements ActionListener, MouseListener, MouseM
                 } // end of for
                 break;
 
-            case "Level":
-                if (!menuUI.searchForPanel("LevelMenu")) {
-                    JPanel levelMenuPane = level.createLevelMenu();
-                    levelMenuPane.setName("LevelMenu");
-                    menuUI.addCustomPanel(levelMenuPane);
+            case "Game":
+                if (!menuUI.searchForPanel("Level")) {
+                    JPanel levelMenu = level.createLevelMenu();
+                    levelMenu.setName("Level");
+                    menuUI.addCustomPanel(levelMenu);
                 } else {
-                    menuUI.showButtonPane("LevelMenu");
+                    menuUI.showButtonPane("Level");
                 }
-
                 this.requestFocus();
                 break;
 
             case "Editor":
                 if (editor == null) {
                     createEditor();
-                    JPanel editorMenuPane = editor.createEditorMenu();
-                    editorMenuPane.setName("Editor");
-                    menuUI.addCustomPanel(editorMenuPane);
+                    JPanel editorMenu = editor.createEditorMenu();
+                    editorMenu.setName("Editor");
+                    menuUI.addCustomPanel(editorMenu);
                 } else {
                     menuUI.showButtonPane("Editor");
                 }
-
                 this.requestFocus();
                 break;
 
@@ -237,23 +234,34 @@ public class GUI extends JFrame implements ActionListener, MouseListener, MouseM
             case "TestButton":
 
                 break;
+
+
+            /** Editor Buttons:*/ // FIXME: 03.05.2019 Action Peformed in Editor ? (siehe V. 1.05.2019)
+            case "+":
+                System.out.println("Zoom rein");
+                editor.zoom(true);
+                break;
+
+            case "-":
+                System.out.println("Zoom raus");
+                editor.zoom(false);
+                break;
+            case "Tile MenuTab":
+                editor.createTileMenu();
+                break;
+
         }
         this.requestFocus();
     }
 
     private void createGameComponents() {
-        JPanel mainPane = new JPanel(new BorderLayout(), true);
-        JPanel gamePane = new JPanel(new BorderLayout(), true);
-        cp.add(gamePane);
-        gamePanel = new GamePanel(gamePane, this, this, keyManager);
+        gamePanel = new GamePanel(this, this, keyManager);
+        cp.add(gamePanel);
         gamePanel.addtoRender(this);
-        menuUI = new MenuUI(mainPane, this);
-        menuUI.setAlwaysOnTop(true);
-        menuUI.loadMainMenu(new String[]{"Level", "Restart", "GridLines", "Editor", "Exit", "TestButton"});
-//        gamePanel.toFront();
-        menuUI.toFront();
+        menuUI = new MenuUI(null, this);
+        menuUI.loadMainMenu(new String[]{"Game", "Restart", "GridLines", "Editor", "Exit", "TestButton"});
 
-        level = new Level(gamePanel, keyManager);
+        level = new Game(gamePanel, keyManager);
 
         t.start();
     }
@@ -267,11 +275,11 @@ public class GUI extends JFrame implements ActionListener, MouseListener, MouseM
             }
         } catch (Exception e) {
             e.printStackTrace();
-            System.out.println("Render Fehler ! \n Level/Editor ist möglicherweise noch gar nicht existent");
+            System.out.println("Render Fehler ! \n Game/Editor ist möglicherweise noch gar nicht existent");
         }
     }
-    
-    public Level getLevel() {
+
+    public Game getLevel() {
         return level;
     }
 
@@ -295,9 +303,6 @@ public class GUI extends JFrame implements ActionListener, MouseListener, MouseM
 
     public void update() {
         keyManager.update();
-        if (keyInputToMove(keyManager).getX() != 0 || keyInputToMove(keyManager).getY() != 0) {
-            this.requestFocus();
-        }
         if (level.level != 0) {
             level.updateLevel();
         }else { //Editor:
@@ -324,10 +329,15 @@ public class GUI extends JFrame implements ActionListener, MouseListener, MouseM
 //
 //        }
         //Debugging:
+        if (this.hasFocus() && !menuUI.isActive()) {
+            menuUI.setAlwaysOnTop(true);
+        } else {
+            menuUI.setAlwaysOnTop(false);
+        }
         try {
             if (FocusManager.getCurrentManager().getFocusOwner().getName() == null) {
-                System.out.println(FocusManager.getCurrentManager().getFocusOwner());
-                focuslb.setText("See in OutPrint");
+//                System.out.println(FocusManager.getCurrentManager().getFocusOwner());
+                focuslb.setText("See in OutPrint /*(Im Moment ausgeschaltet)*/");
             } else {
                 if (FocusManager.getCurrentManager().getFocusOwner().getName().equals("null.contentPane")) {
                     this.requestFocus();
@@ -346,6 +356,7 @@ public class GUI extends JFrame implements ActionListener, MouseListener, MouseM
         e.getSource();
         if (level.level != 0) {
             level.mouseClicked(e);
+            System.out.println("Level Clicked");
         } else {
             editor.mouseClicked(e);
         }
@@ -397,13 +408,12 @@ public class GUI extends JFrame implements ActionListener, MouseListener, MouseM
 
     @Override
     public void componentShown(ComponentEvent e) {
-
     }
 
     @Override
     public void componentHidden(ComponentEvent e) {
-
     }
+
 
     class Loop implements Runnable {
         long timestamp = 0;

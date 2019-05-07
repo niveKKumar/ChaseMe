@@ -1,36 +1,49 @@
 import javax.swing.*;
 import java.awt.*;
+import java.awt.image.BufferedImage;
 
 class EditorTileButton extends JButton {
     private int id;
-    private TileSet tileSet;
+    private BufferedImage img;
+    private String tileSetPath;
     public static int size = 50;
+
+
+    public EditorTileButton(int id, BufferedImage img) {
+        super();
+        this.id = id;
+        this.img = img;
+    }
 
     public EditorTileButton(int id, TileSet ts) {
         super();
-        tileSet = ts;
         this.id = id;
-        loadImage();
+        this.img = ts.tileSet[id].getTileImage();
+        tileSetPath = ts.getTileSetImagePath();
+        loadImage(img);
     }
 
-    public void loadImage() {
+    public void loadImage(BufferedImage img) {
         this.setBorder(null);
         try {
-            Image img = tileSet.tileSet[id].tileImage;
-            img = img.getScaledInstance(size, size, Image.SCALE_SMOOTH);
-            ImageIcon icon = new ImageIcon(img);
+            ImageIcon icon = new ImageIcon(img.getScaledInstance(size, size, Image.SCALE_SMOOTH));
             this.setIcon(icon);
         } catch (Exception e) {
             System.out.println("Fehler beim Laden von Bild");
         }
+
+
     }
 
-    public TileSet getTileSet() {
-        return tileSet;
+    public BufferedImage getImg() {
+        return img;
+    }
+
+    public String getTileSetPath() {
+        return tileSetPath;
     }
 
     public int getId() {
         return id;
     }
-
 }

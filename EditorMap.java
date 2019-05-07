@@ -3,6 +3,7 @@ import com.sun.istack.internal.Nullable;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseEvent;
+import java.awt.image.BufferedImage;
 import java.util.Random;
 
 public class EditorMap extends MapBase {
@@ -12,6 +13,7 @@ public class EditorMap extends MapBase {
     private boolean toIgnore;
     private Color color;
     private int strokeSize = 10;
+    private boolean showMapBorder = true;
 
     private JLabel test = new JLabel();
 
@@ -22,11 +24,8 @@ public class EditorMap extends MapBase {
         GUI.addToEast(test);
         editorAnzeige = new JTextArea("EditorAnzeige");
         toIgnore = false;
-        Random rand = new Random();
-        float r = rand.nextFloat();
-        float g = rand.nextFloat();
-        float b = rand.nextFloat();
-        color = new Color(r, g, b);
+        Random r = new Random();
+        color = new Color(r.nextFloat(), r.nextFloat(), r.nextFloat());
     }
 
 
@@ -44,7 +43,9 @@ public class EditorMap extends MapBase {
                 i++;
             }
         }
-        setMapBorder();
+        if (showMapBorder) {
+            setMapBorder(5);
+        }
     }
 
     public void createBlankMap() {
@@ -59,45 +60,54 @@ public class EditorMap extends MapBase {
                 i++;
             }
         }
+        if (showMapBorder) {
+            setMapBorder(5);
+        }
     }
 
-    public void setMapBorder() {
-        int stroke = 10;
+    public void setMapBorder(int stroke) {
         //Oben:
-        for (int i = 0; i < mapSizeX - 1; i++) {
+        for (int i = 1; i < mapSizeX; i++) {
             mapTiles[i][0].setBorderInsets(new Insets(stroke, 0, 0, 0));
-
         }
         //Unten:
-        for (int i = 0; i < mapSizeX - 1; i++) {
+        for (int i = 1; i < mapSizeX; i++) {
             mapTiles[i][mapSizeY - 1].setBorderInsets(new Insets(0, 0, stroke, 0));
 //            mapTiles[i][mapSizeY - 1].setDownBorder(true);
 
         }
         //Links:
-        for (int i = 0; i < mapSizeY - 1; i++) {
+        for (int i = 1; i < mapSizeY; i++) {
             mapTiles[0][i].setBorderInsets(new Insets(0, stroke, 0, 0));
 //            mapTiles[0][i].setLeftBorder(true);
 
         }
         //Rechts:
-        for (int i = 0; i < mapSizeY - 1; i++) {
-            mapTiles[mapSizeY - 1][i].setBorderInsets(new Insets(0, 0, 0, stroke));
+        for (int i = 1; i < mapSizeY; i++) {
+            mapTiles[mapSizeX - 1][i].setBorderInsets(new Insets(0, 0, 0, stroke));
 //            mapTiles[mapSizeX - 1][i].setRightBorder(true);
         }
+        mapTiles[0][0].setBorderInsets(new Insets(stroke, stroke, 0, 0));
+        mapTiles[mapSizeX - 1][0].setBorderInsets(new Insets(stroke, 0, 0, stroke));
+        mapTiles[0][mapSizeY - 1].setBorderInsets(new Insets(0, stroke, stroke, 0));
+        mapTiles[mapSizeX - 1][mapSizeY - 1].setBorderInsets(new Insets(0, 0, stroke, stroke));
     }
 
     @Override
     public void renderMap(Graphics2D g2d) {
         g2d.setColor(color);
         g2d.setStroke(new BasicStroke(strokeSize));
-        super.renderMap(g2d);
+        for (int zeile = 0; zeile < mapSizeY; zeile++) {
+            for (int spalte = 0; spalte < mapSizeX; spalte++) {
+                mapTiles[zeile][spalte].renderTile(g2d, chapterXOffset + zeile * Tile.TILEWIDTH - gamePanel.getCamera().getClickXOffset(), chapterYOffset + spalte * Tile.TILEHEIGHT - gamePanel.getCamera().getYOffset());
+            }
+        }
 
     }
 
     private void setMapTile(int xIndex, int yIndex, TileSet ts) {
         if (!toIgnore) {
-            if (!tileSet.getTileSetImagePath().equals(ts.getTileSetImagePath())) {
+            if (graphicID != 9999 /*Ausnahme*/ && !tileSet.getTileSetImagePath().equals(ts.getTileSetImagePath())) {
                 Meldungen meld = new Meldungen(null, true, "null");
                 meld.unSimilarTS(this, ts);
                 tileSet = meld.selectedTS;
@@ -108,7 +118,13 @@ public class EditorMap extends MapBase {
         }
 
         if (xIndex <= mapSizeX && yIndex <= mapSizeY) {
-            mapTiles[xIndex][yIndex] = tileSet.tileSet[graphicID];
+            Insets tempInsets = mapTiles[xIndex][yIndex].getBorderInsets();
+            if (graphicID == 9999) {
+                mapTiles[xIndex][yIndex] = new Tile(new BufferedImage(Tile.TILEWIDTH, Tile.TILEHEIGHT, BufferedImage.TYPE_4BYTE_ABGR));
+            } else {
+                mapTiles[xIndex][yIndex] = tileSet.tileSet[graphicID];
+            }
+            mapTiles[xIndex][yIndex].setBorderInsets(tempInsets);
             mapTiles[xIndex][yIndex].setID(graphicID);
         } else {
             new JOptionPane("Klick ist außerhalb der Map: " + xIndex + " || " + yIndex);
@@ -159,7 +175,11 @@ public class EditorMap extends MapBase {
     public void reloadMap(TileSet set) {
         for (int zeile = 0; zeile < mapTiles.length; zeile++) {
             for (int spalte = 0; spalte < mapTiles[zeile].length; spalte++) {
-                mapTiles[zeile][spalte] = set.tileSet[mapTiles[zeile][spalte].id].clone();
+                if (mapTiles[zeile][spalte].id == 9999) {
+                    mapTiles[zeile][spalte] = new Tile(new BufferedImage(Tile.TILEWIDTH, Tile.TILEHEIGHT, BufferedImage.TYPE_4BYTE_ABGR));
+                } else {
+                    mapTiles[zeile][spalte] = set.tileSet[mapTiles[zeile][spalte].id].clone();
+                }
             }
         }
     }
@@ -176,6 +196,15 @@ public class EditorMap extends MapBase {
         this.toIgnore = toIgnore;
     }
 
+    public void setShowMapBorder(boolean showMapBorder) {
+        this.showMapBorder = showMapBorder;
+        if (this.showMapBorder) {
+            setMapBorder(5);
+        }
+        {
+            setMapBorder(0);
+        }
+    }
 
     public void setGraphicID(int graphicID) {
         this.graphicID = graphicID;

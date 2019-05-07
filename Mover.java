@@ -1,6 +1,7 @@
 import java.awt.*;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
+import java.util.LinkedList;
 
 public class Mover extends Pointer {
     public static int MOVER_WIDTH, MOVER_HEIGHT;
@@ -25,8 +26,8 @@ public class Mover extends Pointer {
     }
     @Override
     public void setMove(Point pMove){
-        int oldXPos = xPos;
-        int oldYPos = yPos;
+        double oldXPos = xPos;
+        double oldYPos = yPos;
 
         super.setMove(pMove);
 
@@ -48,7 +49,6 @@ public class Mover extends Pointer {
     }
 
     public void setPathMove(Point2D from, Point2D to) {
-        
             getAngle(from, to);
             moveSeqSleep++;
             if (moveSeqSleep == 5) {
@@ -72,10 +72,6 @@ public class Mover extends Pointer {
 
     }
 
-    public Point getLocation(){
-        return new Point(xPos,yPos);
-    }
-
     public void setCurrentImage(int pXMove, int pYMove, int pMoveSeq) {
         moveSeq = pMoveSeq;
         if (pXMove == 0 || pYMove == 0) img = sprites.getSpriteElement(0,moveSeq);  //nix = gerade aus
@@ -85,8 +81,10 @@ public class Mover extends Pointer {
         if (pYMove == 1) img = sprites.getSpriteElement(0,moveSeq);   //unten
     }
 
+    // FIXME: 07.05.2019 MoverOnMapTile und collsiionCheck zusammen integrieren und vereinfachen: MoverOnMapTIle gibt TileIDs zurück
+    //                                                                                            CollisionCheck guckt ob diese IDs geblockt sind
+
     protected boolean collisionCheck(){
-        moverOnMapTile();
         int hitBoxCenter = 3;
         /*Up*/
         checkPoint[0].setLocation(xPos + Character.MOVER_WIDTH / 2, yPos + hitBoxCenter);
@@ -97,23 +95,27 @@ public class Mover extends Pointer {
         /*Right*/
         checkPoint[3].setLocation(xPos + Character.MOVER_WIDTH - hitBoxCenter, yPos + Character.MOVER_HEIGHT / 2);
         for (int i = 0;i < map.length ;i++ ) {
-            Tile[][] temp = new Tile[map.length][checkPoint.length];
+
             for (int j = 0; j < checkPoint.length /*(4 CP)*/; j++) {
                 map[i].checkActive(checkPoint[j]);
-                System.out.println("Check checkpoint" + j);
+//                System.out.println("Check checkpoint" + j);
                 if (map[i].isActive()) {
-                    temp[i][j] = map[i].mapTiles[(int) (checkPoint[j].getX() - map[i].chapterXOffset) / Tile.TILEWIDTH][(int) (checkPoint[j].getY() - map[i].chapterYOffset) / Tile.TILEHEIGHT];
-                    if (temp[i][j].isBlocked()) {
+                    Tile temp = map[i].mapTiles[(int) (checkPoint[j].getX() - map[i].chapterXOffset) / Tile.TILEWIDTH][(int) (checkPoint[j].getY() - map[i].chapterYOffset) / Tile.TILEHEIGHT];
+                    if (temp.isBlocked()) {
                         System.out.println("block on CP: " + j);
                         return true;
                     }
                 }
             }
+
         }
-        System.out.println("no block");
         return false;
     }
 
+    public LinkedList<Integer> moverOnTiles() {
+        LinkedList<Integer> tileIDs = new LinkedList<>();
+        return tileIDs;
+    }
     public Point moverOnMapTile(){
         Point temp = new Point();
         for (int i = 0; i < map.length ; i++) {
@@ -123,13 +125,10 @@ public class Mover extends Pointer {
                 }
             }
             for (int x = 0; x < map[i].getMapSizeX(); x++) {
-//                int right = this.getLocation().x + width;
-//                System.out.println(right);
                 if (this.getLocation().x + Character.MOVER_WIDTH / 2 >= Tile.TILEWIDTH * x && this.getLocation().x + Character.MOVER_WIDTH / 2 <= Tile.TILEWIDTH * (x + 1)) {
                     temp.x = x + 1;// weil bei 0
                 }
             }
-//            System.out.println("Map:"+i+"Y:"+temp.y+"X:"+temp.x);
         }
 
         return temp;

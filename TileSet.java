@@ -4,15 +4,18 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.util.LinkedList;
 
 
 public class TileSet{
-  private String tileSetImagePath;
+    private String tileSetImagePath; /*fungiert auch als Name*/
+    private String name;
   private int numberOfTilesX, numberOfTilesY;
     private BufferedImage tileSetImage;
   public Tile[] tileSet;
     private int width = Tile.TILEWIDTH, height = Tile.TILEHEIGHT;
   private int border;
+    private LinkedList<Integer> blockedTiles = new LinkedList();
 
     public TileSet(String pTileSetImagePath) {
         /**
@@ -23,13 +26,18 @@ public class TileSet{
             if (tileSetImagePath.contains("\\")) {
                 tileSetImagePath = tileSetImagePath.replaceAll("\\\\", "/");
             }
+
             String[] temp;
             temp = tileSetImagePath.split("/");
-            String filename = temp[temp.length - 1];
+            String filename = temp[temp.length - 1]; // Das letze Paket vom Path
             String[] filenameSplit = null;
-            filename = filename.replace(".png", "");
-            int tillCharacter = filename.indexOf(" -");
-            filename = filename.substring(0, tillCharacter);
+            filename = filename.replace(".png", ""); //DateiZ
+            temp = filename.split(" -");
+            System.out.println("Endpfad:" + filename);
+            filename = temp[0];
+            System.out.println("AnfagsTeil (Daten):" + filename);
+            name = temp[1];
+            System.out.println("Name:" + name);
             filenameSplit = filename.split("x");
 
             numberOfTilesX = Integer.parseInt(filenameSplit[0]);
@@ -63,7 +71,8 @@ public class TileSet{
         width = tileSetImage.getWidth() / numberOfTilesX - border;
         height = tileSetImage.getHeight() / numberOfTilesY - border;
     } catch (IOException e) {
-      e.printStackTrace();
+        e.printStackTrace();
+        System.out.println("On the Path : " + tileSetImagePath);
     }
     int i = 0;
       for(int y = 0; y < numberOfTilesY; y++) {
@@ -75,6 +84,10 @@ public class TileSet{
     }
   }
 
+    public LinkedList<Integer> getBlockedTiles() {
+        return blockedTiles;
+    }
+
     public BufferedImage getTileSetImage() {
         return tileSetImage;
     }
@@ -82,5 +95,37 @@ public class TileSet{
     public String getTileSetImagePath() {
     return tileSetImagePath;
   }
+
+    public void setBlockedTiles(Integer blockedID, boolean umkehren) {
+        if (umkehren == false) {
+            if (!blockedTiles.contains(blockedID)) {
+                this.blockedTiles.add(blockedID);
+            }
+        } else {
+            // TODO: 07.05.2019 !!!!!!!
+            /* Pseudo-Code: Alle IDs die NICHT in der jetzigen Liste (blocked Tiles)
+                vorhanden ist hinzufügen und alle geblockten Tiles entfernen*/
+        }
+    }
+
+    public void setBlockedTiles(Integer[] blockedIDArray, boolean umkehren) {
+        if (umkehren == false) {
+            for (int i = 0; i < blockedIDArray.length; i++) {
+                setBlockedTiles(blockedIDArray[i], umkehren);
+            }
+        } else {
+            /* Pseudo-Code: Alle IDs die NICHT in der jetzigen Liste (blocked Tiles)
+                vorhanden ist hinzufügen und alle geblockten Tiles entfernen*/
+
+        }
+    }
+
+    public void automaticBlockedTiles() {
+        switch (tileSetImagePath) {
+            case "":
+                break;
+
+        }
+    }
 }
 

@@ -39,9 +39,11 @@ public class Editor {
     private JTextArea editorAnzeige;
     private JTextArea customNot;
     private JLabel warning;
+    private Frame owner;
 
-    public Editor(GamePanel gp, KeyManager pKeyListener) {
+    public Editor(Frame owner, GamePanel gp, KeyManager pKeyListener) {
         gamePanel = gp;
+        this.owner = owner;
         keyListener = pKeyListener;
         editorAnzeige = new JTextArea();
         customNot = new JTextArea();
@@ -52,9 +54,12 @@ public class Editor {
         warning.setForeground(Color.WHITE);
         warning.setFont(warning.getFont().deriveFont(Font.BOLD, 5));
         GUI.addToEast(warning);
-
+        // TODO: 04.05.2019 Langes Laden !!
+        System.out.println("Editor : Create MenuTab");
         createMenu();
+        System.out.println("Editor : Create TileMenu");
         createTileMenu();
+        System.out.println("Editor : Finished");
 
     }
 
@@ -62,10 +67,11 @@ public class Editor {
      * Erstellung von Objekten:
      */
 //
-    public MenuUI.Menu createEditorMenu() {
-        MenuUI.Menu menu = new MenuUI.Menu("Editor", new String[]{"+", "-", "Tile Auswaehlen"});
-        return menu;
+    public MenuUI.MenuTab createEditorMenu() {
+        MenuUI.MenuTab menuTab = new MenuUI.MenuTab(new String[]{"+", "-", "Tile MenuTab"});
+        return menuTab;
     }
+
 
 //    public JPanel oldWaycreateEditorMenu() {
 //        GridBagConstraints gbc = new GridBagConstraints();
@@ -178,11 +184,11 @@ public class Editor {
 
             }
         });
-        btSimulate = new JButton("Simulate your Level");
+        btSimulate = new JButton("Simulate your Game");
         btSimulate.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                Level tempGame = new Level(gamePanel, keyListener);
+                Game tempGame = new Game(gamePanel, keyListener);
                 MapBase[] temp = new Map[maps.size()];
                 for (int i = 0; i < maps.size(); i++) {
                     temp[i] = ((EditorMap) maps.get(i));
@@ -237,7 +243,9 @@ public class Editor {
 
     public void createTileMenu() {
         if (tileMenu == null) {
-            tileMenu = new EditorTileMenu(null, false, this);
+            System.out.println("Editor : Create TileMenu");
+            tileMenu = new EditorTileMenu(owner, false, this);
+            System.out.println("Editor : Create Standard TS");
             TileSet tempTS = new TileSet("Content/Graphics/tileSets/12x12x3 - tileSet.png", 12, 12, 3);
             //On release:
 //            Meldungen m = new Meldungen(JFrame,true,"Map");
@@ -245,11 +253,11 @@ public class Editor {
             cameraPoint = new Pointer();
             createEditorMap(50, 50, tempTS, null);
             cameraPoint.setSpeed(15);
+            System.out.println("Editor : Finished");
         } else {
             tileMenu.setVisible(true);
             ((EditorMap) maps.get(selectedMap)).setGraphicID(tileMenu.getSelectedID());
         } // Damit kein erneutes Starten immer entsteht
-
     }
 
     public void addRecently(int id, TileSet ts) {
@@ -291,6 +299,9 @@ public class Editor {
             zoom(false);
             zoomFactor = before;
         }
+        if (tileMenu.isVisible()) {
+
+        }
     }
 
     private void debugPane(int maxBorderX, int maxBorderY) {
@@ -304,8 +315,8 @@ public class Editor {
                 + "\n Current CameraPointer -"
                 + "\n X-Pos: " + cameraPoint.getLocation().getX() + " maxXPos: " + (maxBorderX - GUI.GAMEPANEL_WIDTH / 2)
                 + "\n Y-Pos: " + cameraPoint.getLocation().getY() + " maxYPos: " + (maxBorderY - GUI.GAMEPANEL_HEIGHT / 2)
-                + "\n X-Offset:" + gamePanel.getCamera().getClickXOffset() + " max : " + (maxBorderX - GUI.GAMEPANEL_WIDTH)
-                + "\n Y- Offset:" + gamePanel.getCamera().getClickYOffset() + " max : " + (maxBorderY - GUI.GAMEPANEL_HEIGHT)
+                + "\n X-Offset:" + gamePanel.getCamera().getXOffset() + " max : " + (maxBorderX - GUI.GAMEPANEL_WIDTH)
+                + "\n Y- Offset:" + gamePanel.getCamera().getYOffset() + " max : " + (maxBorderY - GUI.GAMEPANEL_HEIGHT)
         );
 
         String[] length = customNot.getText().split("\n");
@@ -322,7 +333,7 @@ public class Editor {
          * - false =  Position des Pointers ist groeßer (no block)
          *
          */
-        int bounce = 20;
+        double bounce = 1;
 //        leftBorder = pointer.getLocation().getX() < GUI.GAMEPANEL_WIDTH / 2;
 //        rightBorder = pointer.getLocation().getX() > (((EditorMap) maps.get(selectedMap)).getMapSizeX()) * Tile.TILEWIDTH - GUI.GAMEPANEL_WIDTH / 2;
 //        upBorder = pointer.getLocation().getY() < 0 + GUI.GAMEPANEL_HEIGHT / 2;
@@ -340,6 +351,7 @@ public class Editor {
 
         debugPane(maxxBorder, maxyBorder);
         if (leftBorder || rightBorder || upBorder || downBorder) {
+            Camera cam = gamePanel.getCamera();
             if (leftBorder) {
                 customNot.append("Left Bounce \n");
                 pointer.setXPos((int) pointer.getLocation().getX() + bounce);
@@ -381,7 +393,7 @@ public class Editor {
                     EditorMap m = (EditorMap) maps.get(selectedMap);
                     tileMenu.setSelectedID(temp.getId());
                     m.setGraphicID(temp.getId());
-                    m.setTileSet(temp.getTileSet());
+                    m.setTileSet(new TileSet(temp.getTileSetPath()));
                     tileMenu.selectedinLabel(idAnzeige, null);
                 }
 
@@ -420,17 +432,21 @@ public class Editor {
             out.write(m.getMapSizeX() + ";" + m.getMapSizeX());
             out.newLine();
 
+            System.out.println("Saving Map");
             for (int zeile = 0; zeile < m.mapTiles.length; zeile++) {
-                for (int spalte = 0; spalte < m.mapTiles[zeile].length; spalte++) {
-
-                    out.write(m.mapTiles[zeile][spalte].getID() + ";");
+                String line = "";
+                for (int spalte = 0; spalte < m.mapTiles[zeile].length - 1; spalte++) {
+                    line = line + m.mapTiles[zeile][spalte].getID() + ";";
                 }
+                line = line + m.mapTiles[zeile][m.mapTiles[zeile].length - 1].getID();
+                out.write(line);
                 out.newLine();
             }
             if (notification) {
                 JOptionPane.showMessageDialog(null, "Daten erfolgreich gespeichert.");
             }
         } catch (Exception e) {
+            e.printStackTrace();
             if (notification) {
                 JOptionPane.showMessageDialog(null, "Daten nicht gespeichert.", "", JOptionPane.ERROR_MESSAGE);
             }
@@ -446,7 +462,7 @@ public class Editor {
 
     public void loadMap() {
         Meldungen m = new Meldungen(null, true, "null");
-        File f = Meldungen.setMapPath("Open");//Der Filechooeser liefert die Pfadangabe zu dem selektierten Speicherort.
+        File f = Meldungen.getFileAt("Open");//Der Filechooeser liefert die Pfadangabe zu dem selektierten Speicherort.
         String path = f.getPath();
         Map mapTemp = new Map(gamePanel, path, "null", new Point(0, 0));
         //Übertragung der Map = lesen muss nicht extra für EditorMap implementier werden
@@ -540,6 +556,10 @@ public class Editor {
             }
         }
 
+        gamePanel.getCamera().centerOnObject(cameraPoint);
+        cameraPoint.setCamera(gamePanel.getCamera());
+        gamePanel.repaint();
+
     }
 
     public void removeMap(int index) {
@@ -551,31 +571,6 @@ public class Editor {
             mapSelectedBox.removeAllItems();
         }
         createCheckbox();
-    }
-
-    public void actionPerformed(ActionEvent e) {
-        JButton temp = (JButton) e.getSource();
-        switch (temp.getText()) {
-            case "+":
-                System.out.println("Zoom rein");
-                zoom(true);
-                gamePanel.getCamera().centerOnObject(cameraPoint);
-                cameraPoint.setCamera(gamePanel.getCamera());
-                gamePanel.repaint();
-                break;
-
-            case "-":
-                System.out.println("Zoom raus");
-                zoom(false);
-                gamePanel.getCamera().centerOnObject(cameraPoint);
-                cameraPoint.setCamera(gamePanel.getCamera());
-                gamePanel.repaint();
-                break;
-            case "Tile Auswaehlen":
-                createTileMenu();
-                break;
-        }
-
     }
 
     public void mouseClicked(MouseEvent e) {

@@ -35,7 +35,7 @@ public class Meldungen extends JDialog implements ActionListener {
         int x = (d.width - getSize().width) / 2;
         int y = (d.height - getSize().height) / 2;
         setLocation(x, y);
-
+        setAlwaysOnTop(true);
         buttonOK.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 onOK();
@@ -70,15 +70,15 @@ public class Meldungen extends JDialog implements ActionListener {
                 setVisible(false);
                 break;
             case "TileSet":
-                setMapPath("TileSet");
+                getFilesAt("TileSet");
                 break;
             case "Path":
                 break;
         }
     }
 
-    public static File setMapPath(String openOrSaveOrTileSet) {             //Methode des Filechosers; offnet einen Speicher-Dialog
-        if (openOrSaveOrTileSet.equals("Open")) {
+    public static File getFileAt(String openOrSave) {             //Methode des Filechosers; offnet einen Speicher-Dialog
+        if (openOrSave.equals("Open")) {
             fileChooser.setCurrentDirectory(new File("Content/maps"));
             String extension = ".txt";
             setFileFilter(extension);
@@ -86,7 +86,7 @@ public class Meldungen extends JDialog implements ActionListener {
                 return fileChooser.getSelectedFile();
             }
         }
-        if (openOrSaveOrTileSet.equals("Save")) {
+        if (openOrSave.equals("Save")) {
             fileChooser.setCurrentDirectory(new File("Content/maps"));
             String extension = ".txt";
             setFileFilter(extension);
@@ -99,18 +99,22 @@ public class Meldungen extends JDialog implements ActionListener {
                 return saveFile;
             }
         }
+
+        JOptionPane.showMessageDialog(owner, "Keine Datei ausgewählt.", "", JOptionPane.WARNING_MESSAGE);
+        return null;
+    }
+
+    public static File[] getFilesAt(String openOrSaveOrTileSet) {             //Methode des Filechosers; offnet einen Speicher-Dialog
         if (openOrSaveOrTileSet.equals("TileSet")) {
             fileChooser.setCurrentDirectory(new File("Content/graphics/tileSets"));
             String extension = ".png";
+            fileChooser.setMultiSelectionEnabled(true);
             setFileFilter(extension);
             if (fileChooser.showOpenDialog(owner) == JFileChooser.APPROVE_OPTION) {  //Wenn der Ok-Button gedrueckt wird...
-                File f = fileChooser.getSelectedFile();
-                return f;
+                return fileChooser.getSelectedFiles();
             }
         }
-        JOptionPane.showMessageDialog(owner, "Keine Datei ausgewählt.", "", JOptionPane.WARNING_MESSAGE);
         return null;
-
     }
 
     private static void setFileFilter(String extension) {

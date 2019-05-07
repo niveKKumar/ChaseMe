@@ -1,7 +1,7 @@
 import java.awt.*;
 
 class Pointer {
-    protected int xPos, yPos;
+    protected double xPos, yPos;
     protected int speed = 10;
     /**
      * Objekt was sich bewegen kann
@@ -41,8 +41,8 @@ class Pointer {
     public void checkBorder(int mapSizeX, int mapSizeY) {
         this.mapSizeX = mapSizeX;
         this.mapSizeY = mapSizeY;
-        int oldXPos = xPos;
-        int oldYPos = yPos;
+        double oldXPos = xPos;
+        double oldYPos = yPos;
 
         boolean leftBorder;
         boolean rightBorder;
@@ -61,7 +61,7 @@ class Pointer {
 
 
     public Point getLocation() {
-        return new Point(xPos, yPos);
+        return new Point((int) xPos, (int) yPos);
     }
 
     public void setLocation(Point pKords) {
@@ -89,11 +89,11 @@ class Pointer {
         this.speed = speed;
     }
 
-    public void setXPos(int xPos) {
+    public void setXPos(double xPos) {
         this.xPos = xPos;
     }
 
-    public void setYPos(int yPos) {
+    public void setYPos(double yPos) {
         this.yPos = yPos;
     }
 }

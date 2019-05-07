@@ -12,9 +12,7 @@ public class MapBase {
     protected int graphicID = 22;
     protected int chapterXOffset, chapterYOffset;
     protected String mapStatus;
-    private int[] blockedID;
     private boolean active;
-    private boolean mapBorder = true;
 
     public MapBase(GamePanel gp, TileSet pTileSet, @Nullable String pStatus, @Nullable Point pChapterOffset) {
         gamePanel = gp;
@@ -89,17 +87,12 @@ public class MapBase {
     }
 
     public void itemBlock() {
-        LinkedList<Integer> blockedIDs = new LinkedList<Integer>();
-        blockedID = new int[]{01, 06, 12, 14, 24, 25, 42, 58, 94, 115, 116, 117, 127, 129, 139, 140, 141, 178, 179, 195};
-
-        for (int i = 0; i < blockedID.length; i++) {
-            blockedIDs.add(blockedID[i]);
-        }
+        LinkedList<Integer> blockedIDs = tileSet.getBlockedTiles();
 
         for (int zeile = 0; zeile < mapSizeX; zeile++) {
             for (int spalte = 0; spalte < mapSizeY; spalte++) {
                 for (int i = 0; i < blockedIDs.size(); i++) {
-                    if (mapTiles[zeile][spalte].getID() == blockedIDs.get(i)) {
+                    if (blockedIDs.get(i) == mapTiles[zeile][spalte].getID()) {
                         mapTiles[zeile][spalte].setBlocked(true);
                     }
                 }
@@ -194,7 +187,6 @@ public class MapBase {
     }
 
     public void checkActive(Point pLocation) {
-        //                System.out.println("false");
         active = !(pLocation.getLocation().getX() < chapterXOffset * Tile.TILEWIDTH) && !(pLocation.getY() < chapterYOffset * Tile.TILEHEIGHT) &&
                 !(pLocation.getLocation().getX() > mapSizeX * Tile.TILEWIDTH) && !(pLocation.getY() > mapSizeY * Tile.TILEHEIGHT);
     }
@@ -209,4 +201,5 @@ public class MapBase {
     public Point getChapterOffset() {
         return new Point(chapterXOffset, chapterYOffset);
     }
+
 }

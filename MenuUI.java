@@ -20,7 +20,7 @@ public class MenuUI extends JFrame {
 
     public MenuUI(JPanel display, ActionListener act) {
 //        super("MenuUI", true, true, false, true);
-        super("Menu");
+        super("MenuTab");
         setSize(300, 500);
         actionListener = act;
         addedMenus = new LinkedList<>();
@@ -148,14 +148,14 @@ public class MenuUI extends JFrame {
     }
 
     public void loadMainMenu(String[] mainMenuBTNames) {
-        Menu mainM = new Menu("MainMenu", mainMenuBTNames);
+        MenuTab mainM = new MenuTab("MainMenu", mainMenuBTNames);
         addCustomMenu(mainM);
         btReturn.setVisible(false);
         btSettings.setVisible(true);
         btInfo.setVisible(true);
     }
 
-    public void addCustomMenu(Menu customButtonPane) {
+    public void addCustomMenu(MenuTab customButtonPane) {
         addCustomPanel(customButtonPane);
     }
 
@@ -201,13 +201,16 @@ public class MenuUI extends JFrame {
     }
 
 
-    public static class Menu extends JPanel {
+    public static class MenuTab extends JPanel {
 
-        private String name;
-
-        public Menu(String pName, String[] btNames) {
+        public MenuTab(String[] btNames) {
             super(new FlowLayout(FlowLayout.CENTER));
-            name = pName;
+            createButtons(btNames);
+        }
+
+        public MenuTab(String pName, String[] btNames) {
+            super(new FlowLayout(FlowLayout.CENTER));
+            setName(pName);
             createButtons(btNames);
         }
 
@@ -228,8 +231,8 @@ public class MenuUI extends JFrame {
 
         }
 
-        public String getName() {
-            return name;
-        }
+//        public String getName() {
+//            return name;
+//        }
     }
 }

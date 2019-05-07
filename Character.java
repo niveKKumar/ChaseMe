@@ -13,6 +13,9 @@ public class Character extends Mover {
         MOVER_WIDTH = sprites.getWidth();
         MOVER_HEIGHT = sprites.getHeight();
         img = sprites.getSpriteElement(0, 1);
+        if (gamePanel.getCamera() != null) {
+            gamePanel.getCamera().centerOnObject(this);
+        }
     }
 
     @Override
@@ -36,6 +39,7 @@ public class Character extends Mover {
         if (moverOnMapTile().getLocation().getY() == yPos) {
             y = true;
         }
+        System.out.println("X: " + moverOnMapTile().getLocation().getX() + "is" + x + " Y:" + moverOnMapTile().getLocation().getY() + "is" + y);
         return x && y;
     }
 
@@ -62,14 +66,15 @@ public class Character extends Mover {
         return false;
     }
 
-    public void saySomething(String text, boolean clear, int speakingSpeed) {
+    public void saySomething(String text, boolean clear, int speakingSpeed, JPanel speakingPanel) {
+        //temp:
+        speakingPanel = GUI.east;
         if (speechBubble == null) {
             speechBubble = new JTextArea("Mover:");
+            speakingPanel.add(speechBubble);
         } else {
             speechBubble.setVisible(true);
         }
-        JOptionPane optionPane = new JOptionPane("Mover:");
-        optionPane.add(speechBubble);
 
         if (clear) {
             speechBubble.setText("");
@@ -84,7 +89,6 @@ public class Character extends Mover {
             }
         }
         speaking = false;
-        speechBubble.setVisible(false);
     }
 
     public void setSpeed(int pSpeed) {

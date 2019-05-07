@@ -1,20 +1,21 @@
 import javax.swing.*;
 import java.awt.*;
+import java.awt.image.BufferedImage;
 import java.util.LinkedList;
 
 public class Tile extends JPanel implements Cloneable, Comparable{
   protected boolean blocked = false;
   public static int TILEWIDTH = 64, TILEHEIGHT = 64;
-  public Image tileImage;
+    public BufferedImage tileImage;
   protected LinkedList neighbours;
   protected boolean showImage = true;
   protected int id;
   public Tile pathParent;
   public float costFromStart;
   protected float estimatedCostToGoal;
-  Insets borderInsets;
+    protected Insets borderInsets;
 
-  public Tile(Image pTileImage)  {
+    public Tile(BufferedImage pTileImage) {
     super();
     setOpaque(true);
     tileImage = pTileImage;
@@ -79,10 +80,12 @@ public class Tile extends JPanel implements Cloneable, Comparable{
     }
   }
 
+    public Insets getBorderInsets() {
+        return borderInsets;
+    }
   public LinkedList getNeighbours(){
       return neighbours;
   }
-
   public void setNeighbours(LinkedList pNeighbours){
     neighbours = pNeighbours;
   }
@@ -101,9 +104,10 @@ public class Tile extends JPanel implements Cloneable, Comparable{
   public void setID(int pID) {
     id = pID;
   }
-  public void setTileImage(Image pTileImage) {
-    tileImage = pTileImage;
-  }
+
+    public void setPathParent(Tile pTile) {
+        pathParent = pTile;
+    }
 
     public Tile getPathParent() {
         return pathParent;
@@ -120,8 +124,8 @@ public class Tile extends JPanel implements Cloneable, Comparable{
     return cost;
   }
 
-    public void setPathParent(Tile pTile) {
-        pathParent = pTile;
+    public BufferedImage getTileImage() {
+        return tileImage;
     }
 
   public int getID() {
@@ -134,8 +138,8 @@ public class Tile extends JPanel implements Cloneable, Comparable{
       return (v > 0) ? 1 : (v < 0) ? -1 : 0;
   }
 
-    public Image getTileImage() {
-        return tileImage;
+    public void setTileImage(BufferedImage pTileImage) {
+        tileImage = pTileImage;
     }
 
   public static void setTILEWIDTH(int TILEWIDTH) {
