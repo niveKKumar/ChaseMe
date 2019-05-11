@@ -16,16 +16,17 @@ public class SpriteSheet{
       //Create Sprites:
     try {
         image = ImageIO.read(new File(pSpriteSheetPath));
-        width = image.getWidth() / pDirections;
-        height = image.getHeight() / pMoves;
+        width = image.getWidth() / pMoves;
+//       //System.out.println("Width:"+ width);
+        height = image.getHeight() / pDirections;
+//       //System.out.println("Width:"+ height);
     } catch(IOException e) {
-    e.printStackTrace();
         System.out.println("LADEFEHLER SPRITESHEET");
         return;
     } // end of try
   for ( int direction = 0;direction<pDirections ;direction++ ) {
     for ( int move=0;move<pMoves ;move++ ) {
-        sprites[direction][move] = image.getSubimage(move * Tile.TILEWIDTH, direction * Tile.TILEHEIGHT, Tile.TILEWIDTH, Tile.TILEHEIGHT);
+        sprites[direction][move] = image.getSubimage(move * width, direction * height, width, height);
     } // end of for
   } // end of for
   }

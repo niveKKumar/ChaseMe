@@ -53,7 +53,6 @@ public class MapBase {
 
     public void setBorderOrItemsBlocked() {
         if (mapStatus.equals("null")) {
-            System.out.println("No Blocking");
         }
         if (mapStatus.equals("Item")) {
             itemBlock();
@@ -78,7 +77,7 @@ public class MapBase {
         }
         //Links:
         for (int i = 0; i < mapSizeY - 1; i++) {
-            mapTiles[i][0].setBlocked(true);
+            mapTiles[0][i].setBlocked(true);
         }
         //Rechts:
         for (int i = 0; i < mapSizeY - 1; i++) {
@@ -101,7 +100,7 @@ public class MapBase {
     }
 
     public boolean isActiveInPosition(Point position) {
-        active = position.getX() <= (getMapSizeX()) && position.getY() <= (getMapSizeY());
+        active = position.getX() < (getMapSizeX() * Tile.TILEWIDTH) && position.getY() < (getMapSizeY() * Tile.TILEHEIGHT) && position.getX() >= 0 && position.getY() >= 0;
         return active;
     }
 
@@ -186,14 +185,11 @@ public class MapBase {
         chapterYOffset = pChapterOffset * Tile.TILEHEIGHT;
     }
 
-    public void checkActive(Point pLocation) {
-        active = !(pLocation.getLocation().getX() < chapterXOffset * Tile.TILEWIDTH) && !(pLocation.getY() < chapterYOffset * Tile.TILEHEIGHT) &&
-                !(pLocation.getLocation().getX() > mapSizeX * Tile.TILEWIDTH) && !(pLocation.getY() > mapSizeY * Tile.TILEHEIGHT);
-    }
 
     public boolean isActive() {
         return active;
     }
+
     public void setActive(boolean active) {
         this.active = active;
     }

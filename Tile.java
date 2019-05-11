@@ -1,12 +1,13 @@
 import javax.swing.*;
 import java.awt.*;
+import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
 import java.util.LinkedList;
 
 public class Tile extends JPanel implements Cloneable, Comparable{
   protected boolean blocked = false;
   public static int TILEWIDTH = 64, TILEHEIGHT = 64;
-    public BufferedImage tileImage;
+  public BufferedImage tileImage;
   protected LinkedList neighbours;
   protected boolean showImage = true;
   protected int id;
@@ -23,11 +24,13 @@ public class Tile extends JPanel implements Cloneable, Comparable{
   }
 
   public void renderTile(Graphics2D g2d, int pXPos, int pYPos){
+    AffineTransform oldTransform = g2d.getTransform();
     this.setLocation(pXPos, pYPos);
     if (showImage) {
       g2d.drawImage(tileImage, this.getX(), this.getY(), TILEWIDTH, TILEHEIGHT, null);
     }
     paintBorder(g2d);
+    g2d.setTransform(oldTransform);
   }
 
   private void paintBorder(Graphics2D g2d) {

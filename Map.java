@@ -16,9 +16,9 @@ public class Map extends MapBase {
     public Map(GamePanel gp, String pMapPlanPath, String pStatus, Point pChapterOffset) {
         super(gp, null, pStatus, pChapterOffset);
         mapText = readMap(pMapPlanPath);
-        System.out.println("Konnte Pfad lesen ! " + mapText[0]);
+        //System.out.println("Konnte Pfad lesen ! " + mapText[0]);
         tileSet = new TileSet(mapText[0]);
-        System.out.println("tileSet auch geladen! " + tileSet.tileSet.length);
+        //System.out.println("tileSet auch geladen! " + tileSet.tileSet.length);
         createMap();
     }
 

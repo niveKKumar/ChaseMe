@@ -5,7 +5,7 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.text.SimpleDateFormat;
-import java.util.Calendar;
+import java.util.Date;
 import java.util.LinkedList;
 
 public class Editor {
@@ -55,11 +55,11 @@ public class Editor {
         warning.setFont(warning.getFont().deriveFont(Font.BOLD, 5));
         GUI.addToEast(warning);
         // TODO: 04.05.2019 Langes Laden !!
-        System.out.println("Editor : Create MenuTab");
+        //System.out.println("Editor : Create MenuTab");
         createMenu();
-        System.out.println("Editor : Create TileMenu");
+        //System.out.println("Editor : Create TileMenu");
         createTileMenu();
-        System.out.println("Editor : Finished");
+        //System.out.println("Editor : Finished");
 
     }
 
@@ -126,7 +126,7 @@ public class Editor {
                     ((JCheckBox) mapCheck.get(selectedMap)).setSelected(true);
 
                     if (cameraPoint != null) {
-                        System.out.println("CameraPoint is moved to middle of Map No: " + selectedMap);
+                        //System.out.println("CameraPoint is moved to middle of Map No: " + selectedMap);
                         EditorMap currentMap = ((EditorMap) maps.get(selectedMap));
                         cameraPoint.setLocation((int) (currentMap.getMapSizeX() + currentMap.getChapterOffset().getX()) / 2, (int) (currentMap.getMapSizeY() + currentMap.getChapterOffset().getY()) / 2);
                     }
@@ -159,7 +159,7 @@ public class Editor {
         });
         mapSelectActionsPanel.add(btChapterOffset);
 
-        autosaver = new Timer(45000, new ActionListener() {
+        autosaver = new Timer(30000, new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 autoSaveMap();
@@ -236,16 +236,16 @@ public class Editor {
         for (int i = 0; i < checkMapBoxes().size() ; i++) {
             int enabledIndex = checkMapBoxes().get(i);
             ( (EditorMap) maps.get(enabledIndex)).renderMap(g2d);
-            //            System.out.println("Aktivierte Map mit dem Index:"+ enabledIndex +"\n");
+            //           //System.out.println("Aktivierte Map mit dem Index:"+ enabledIndex +"\n");
         }
     }
 
 
     public void createTileMenu() {
         if (tileMenu == null) {
-            System.out.println("Editor : Create TileMenu");
+            //System.out.println("Editor : Create TileMenu");
             tileMenu = new EditorTileMenu(owner, false, this);
-            System.out.println("Editor : Create Standard TS");
+            //System.out.println("Editor : Create Standard TS");
             TileSet tempTS = new TileSet("Content/Graphics/tileSets/12x12x3 - tileSet.png", 12, 12, 3);
             //On release:
 //            Meldungen m = new Meldungen(JFrame,true,"Map");
@@ -253,7 +253,7 @@ public class Editor {
             cameraPoint = new Pointer();
             createEditorMap(50, 50, tempTS, null);
             cameraPoint.setSpeed(15);
-            System.out.println("Editor : Finished");
+            //System.out.println("Editor : Finished");
         } else {
             tileMenu.setVisible(true);
             ((EditorMap) maps.get(selectedMap)).setGraphicID(tileMenu.getSelectedID());
@@ -278,7 +278,7 @@ public class Editor {
                 warning.setVisible(false);
             }
         } catch (Exception e) {
-            e.printStackTrace();
+//            e.printStackTrace();
             System.out.println("Selected Map is not in the Maps list ! " +
                     "\n The Map has a size of " + maps.size() + "and the selected Map is " + selectedMap);
         }
@@ -389,7 +389,7 @@ public class Editor {
             temp.addMouseListener(new MouseListener() {
                 @Override
                 public void mouseClicked(MouseEvent e) {
-//                    System.out.println(temp.getId()+"meine ID beim klicken  ");
+//                   //System.out.println(temp.getId()+"meine ID beim klicken  ");
                     EditorMap m = (EditorMap) maps.get(selectedMap);
                     tileMenu.setSelectedID(temp.getId());
                     m.setGraphicID(temp.getId());
@@ -432,7 +432,7 @@ public class Editor {
             out.write(m.getMapSizeX() + ";" + m.getMapSizeX());
             out.newLine();
 
-            System.out.println("Saving Map");
+            //System.out.println("Saving Map");
             for (int zeile = 0; zeile < m.mapTiles.length; zeile++) {
                 String line = "";
                 for (int spalte = 0; spalte < m.mapTiles[zeile].length - 1; spalte++) {
@@ -454,7 +454,7 @@ public class Editor {
     }
 
     public void autoSaveMap() {
-        String timeStamp = new SimpleDateFormat("MM:dd_HH_mm").format(Calendar.getInstance().getTime());
+        String timeStamp = new SimpleDateFormat("MM-DD HHmmss").format(new Date());
         File output = new File("Content/Maps/autosave/" + timeStamp + "_AUTOSAVE.txt");
         saveMap(output, false);
 
@@ -563,7 +563,7 @@ public class Editor {
     }
 
     public void removeMap(int index) {
-        System.out.println("Index:" + index);
+        //System.out.println("Index:" + index);
         maps.remove(index);
         mapCheck.remove(index);
         if (maps.isEmpty()) {
@@ -580,9 +580,14 @@ public class Editor {
             m.setTileRect(e, ts);
         } else {
             m.setClick(0);
-            m.setTile(e, ts);
         }
-
+        if (keyListener.str) {
+            Tile clicked = m.mapTiles[(int) m.getTileID(e).getX()][(int) m.getTileID(e).getY()];
+            m.setGraphicID(clicked.getID());
+            addRecently(m.getGraphicID(), m.getTileSet());
+            editorAnzeige.setText("Copied");
+        }
+        m.setTile(e, ts);
         keyListener.update();
         gamePanel.repaint();
     }
@@ -591,6 +596,7 @@ public class Editor {
         EditorMap m = (EditorMap) maps.get(selectedMap);
         TileSet ts = tileMenu.getTileSet(tileMenu.getSelectedTileSetIndex());
         m.setTile(e, ts);
+        System.out.println("Dragged");
         gamePanel.repaint();
     }
 

@@ -31,9 +31,6 @@ class Pointer {
         speed = Math.round(speed);
         xPos += pMove.getX() * speed;
         yPos += pMove.getY() * speed;
-        if (camera != null) {
-            camera.centerOnObject(this);
-        }
     }
 
     // FIXME: 14.04.2019 Richtige Implenmentierung nur wo ?

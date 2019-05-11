@@ -66,7 +66,7 @@ public class Meldungen extends JDialog implements ActionListener {
                 mapGroesseAbfrage();
                 break;
             case "null":
-                System.out.println("Nur Fenster erstellen :)");
+                //System.out.println("Nur Fenster erstellen :)");
                 setVisible(false);
                 break;
             case "TileSet":
@@ -93,7 +93,7 @@ public class Meldungen extends JDialog implements ActionListener {
             if (fileChooser.showSaveDialog(owner) == JFileChooser.APPROVE_OPTION) {  //Wenn der Ok-Button gedrueckt wird...
                 File saveFile = fileChooser.getSelectedFile();
                 if (!saveFile.getName().contains(extension)) {
-                    System.out.println("Datei Ende entspricht nicht der angegebenen Extension");
+                    //System.out.println("Datei Ende entspricht nicht der angegebenen Extension");
                     saveFile = new File(saveFile.getPath() + extension);
                 }
                 return saveFile;
@@ -154,7 +154,7 @@ public class Meldungen extends JDialog implements ActionListener {
     // Manuelles TileSet (wird von TileSet beim fehlschlagen aufgerufen):
     public void tileSetAbfrage(String pPath) {
         // Manuelles laden:
-        System.out.println("Automatisch ging nicht");
+        //System.out.println("Automatisch ging nicht");
         createComponents(3, "Bitte nähere Angaben zu den Tiles (Tiles pro Länge und Breite + Abstand zwischen Tiles); ");
         eingabe[0].setText("Breite");
         eingabe[1].setText("Höhe");
@@ -319,7 +319,7 @@ public class Meldungen extends JDialog implements ActionListener {
     }
 
     private void onCancel() {
-        System.out.println("Don´t do anything new because canceled");
+        //System.out.println("Don´t do anything new because canceled");
         dispose();
     }
 

@@ -3,6 +3,7 @@ import com.sun.istack.internal.Nullable;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseEvent;
+import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
 import java.util.Random;
 
@@ -95,6 +96,7 @@ public class EditorMap extends MapBase {
 
     @Override
     public void renderMap(Graphics2D g2d) {
+        AffineTransform oldTransform = g2d.getTransform();
         g2d.setColor(color);
         g2d.setStroke(new BasicStroke(strokeSize));
         for (int zeile = 0; zeile < mapSizeY; zeile++) {
@@ -102,6 +104,7 @@ public class EditorMap extends MapBase {
                 mapTiles[zeile][spalte].renderTile(g2d, chapterXOffset + zeile * Tile.TILEWIDTH - gamePanel.getCamera().getClickXOffset(), chapterYOffset + spalte * Tile.TILEHEIGHT - gamePanel.getCamera().getYOffset());
             }
         }
+        g2d.setTransform(oldTransform);
 
     }
 
@@ -118,7 +121,8 @@ public class EditorMap extends MapBase {
         }
 
         if (xIndex <= mapSizeX && yIndex <= mapSizeY) {
-            Insets tempInsets = mapTiles[xIndex][yIndex].getBorderInsets();
+            Insets tempInsets = null;
+            tempInsets = mapTiles[xIndex][yIndex].getBorderInsets();
             if (graphicID == 9999) {
                 mapTiles[xIndex][yIndex] = new Tile(new BufferedImage(Tile.TILEWIDTH, Tile.TILEHEIGHT, BufferedImage.TYPE_4BYTE_ABGR));
             } else {
@@ -129,26 +133,34 @@ public class EditorMap extends MapBase {
         } else {
             new JOptionPane("Klick ist außerhalb der Map: " + xIndex + " || " + yIndex);
         }
-        test.setText("Set Map Tile on " + xIndex + " || " + yIndex);
+        mapTiles[xIndex][yIndex].revalidate();
+        System.out.println("Set Map Tile on " + xIndex + " || " + yIndex);
+
     }
 
+    public Point getTileID(MouseEvent e) {
+        int x = Math.round(e.getX() + gamePanel.getCamera().getClickXOffset() - chapterXOffset) / Tile.TILEWIDTH;
+        int y = (int) Math.round(e.getY() + gamePanel.getCamera().getClickYOffset() - chapterYOffset) / Tile.TILEHEIGHT;
+        return new Point(x, y);
+    }
     public void setTile(MouseEvent e, TileSet ts) {
-        int x = (e.getX() + gamePanel.getCamera().getXOffset() - chapterXOffset) / Tile.TILEWIDTH;
-        int y = (e.getY() + gamePanel.getCamera().getYOffset() - chapterYOffset) / Tile.TILEHEIGHT;
+        int x = Math.round(e.getX() + gamePanel.getCamera().getClickXOffset() - chapterXOffset) / Tile.TILEWIDTH;
+        int y = (int) Math.round(e.getY() + gamePanel.getCamera().getClickYOffset() - chapterYOffset) / Tile.TILEHEIGHT;
+        System.out.println("X :" + x + " | " + y);
         setMapTile(x, y, ts);
     }
 
     public void setTileRect(MouseEvent e, TileSet ts) {
-        System.out.println("Klick ist beim Aufruf" + click);
+//       //System.out.println("Klick ist beim Aufruf" + click);
         click++;
         if (click == 1) {
-            firstX = (Math.round(e.getX() + gamePanel.getCamera().getXOffset() - chapterXOffset) / Tile.TILEWIDTH);
-            firstY = (Math.round(e.getY() + gamePanel.getCamera().getYOffset() - chapterYOffset) / Tile.TILEHEIGHT);
+            firstX = Math.round(Math.round(e.getX() + gamePanel.getCamera().getClickXOffset() - chapterXOffset) / Tile.TILEWIDTH);
+            firstY = Math.round(Math.round(e.getY() + gamePanel.getCamera().getClickYOffset() - chapterYOffset) / Tile.TILEHEIGHT);
             editorAnzeige.setText("Fläche zeichnen :" + "\n" + " erster Klick");
         }
         if (click == 2) {
-            secondX = Math.round(e.getX() + gamePanel.getCamera().getXOffset() - chapterXOffset) / Tile.TILEWIDTH;
-            secondY = Math.round(e.getY() + gamePanel.getCamera().getYOffset() - chapterYOffset) / Tile.TILEHEIGHT;
+            secondX = Math.round(e.getX() + gamePanel.getCamera().getClickXOffset() - chapterXOffset) / Tile.TILEWIDTH;
+            secondY = (int) Math.round(e.getY() + gamePanel.getCamera().getClickYOffset() - chapterYOffset) / Tile.TILEHEIGHT;
             editorAnzeige.setText("");
 
             if (firstX > secondX) {

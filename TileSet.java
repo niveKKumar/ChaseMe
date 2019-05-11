@@ -33,11 +33,11 @@ public class TileSet{
             String[] filenameSplit = null;
             filename = filename.replace(".png", ""); //DateiZ
             temp = filename.split(" -");
-            System.out.println("Endpfad:" + filename);
+            //System.out.println("Endpfad:" + filename);
             filename = temp[0];
-            System.out.println("AnfagsTeil (Daten):" + filename);
+            //System.out.println("AnfagsTeil (Daten):" + filename);
             name = temp[1];
-            System.out.println("Name:" + name);
+            //System.out.println("Name:" + name);
             filenameSplit = filename.split("x");
 
             numberOfTilesX = Integer.parseInt(filenameSplit[0]);

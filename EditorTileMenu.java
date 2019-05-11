@@ -62,23 +62,23 @@ public class EditorTileMenu extends JDialog {
     public void createTileSet() {
         //Standard TileSet:
         if (firstStart) {
-            System.out.println("Editor : Create inside TileMenu Standard TS");
+            //System.out.println("Editor : Create inside TileMenu Standard TS");
             tileSet.add(new TileSet("Content/Graphics/tileSets/12x12x3 - tileSet.png", 12, 12, 3)); // Standard Tile Set)
             selectedTileSet = tileSet.size() - 1;
-            System.out.println("Editor : Create inside TileMenu new TileTab");
+            //System.out.println("Editor : Create inside TileMenu new TileTab");
             new EditorTileTab(tsTabPane, ((TileSet) tileSet.get(selectedTileSet)), Integer.toString(tileSet.size()), false);
-            System.out.println("Editor : Create inside TileMenu Finished");
+            //System.out.println("Editor : Create inside TileMenu Finished");
             firstStart = false;
         } else {
             Meldungen meldung = new Meldungen(owner, true, "null");
             File[] f = Meldungen.getFilesAt("TileSet");
             for (int i = 0; i < f.length; i++) {
-                System.out.println("Create TileSet from File : " + i);
+                //System.out.println("Create TileSet from File : " + i);
                 tileSet.add(new TileSet(f[i].getPath()));
                 selectedTileSet = tileSet.size() - 1;
                 new EditorTileTab(tsTabPane, ((TileSet) tileSet.get(selectedTileSet)), Integer.toString(tileSet.size()), true);
             }
-            System.out.println("Finished");
+            //System.out.println("Finished");
         }
     }
 
@@ -252,18 +252,18 @@ public class EditorTileMenu extends JDialog {
         }
 
         public void filterImages() {
-            System.out.println("Filter Images");
+            //System.out.println("Filter Images");
             for (int i = 0; i < tiles.length; i++) {
-                System.out.println("Check if Img is Empty " + i);
+                //System.out.println("Check if Img is Empty " + i);
                 if (!isImageEmpty(tiles[i].getImg())) {
                     filterIDs.add(i);
-                    System.out.println("Filtered IDs: " + i);
+                    //System.out.println("Filtered IDs: " + i);
                 }
             }
         }
 
         public void showFilter(JPanel display, boolean b) {
-            System.out.println("Show Filter : " + b);
+            //System.out.println("Show Filter : " + b);
             if (b != filter) {
                 display.removeAll();
                 //Adding custom Buttons:
@@ -361,17 +361,17 @@ public class EditorTileMenu extends JDialog {
 
         public void createTileSetComponents(JTabbedPane tabbedPane, boolean filter) {
             int gap = 2;
-            System.out.println("Editor : Create inside TileMenuTab tilePanel");
+            //System.out.println("Editor : Create inside TileMenuTab tilePanel");
             tilePanel = new JPanel();
             // Dynamisches tilePanel GridLayout
             tilePanel.setLayout(new GridLayout(0, columns, gap, gap));
             //Hinzufuegen der Tiles auf das JPanel
 
-            System.out.println("Editor : Start inside TileMenuTab TileButtons");
+            //System.out.println("Editor : Start inside TileMenuTab TileButtons");
 
             createTileButtons(tabTileSet, tilePanel, filter);
 
-            System.out.println("Editor : Finished inside TileMenuTab TileButtons");
+            //System.out.println("Editor : Finished inside TileMenuTab TileButtons");
 
             // Erstellen des Scrollpanes und zuweisen des JPanels
             JScrollPane scrollPane = new JScrollPane();
@@ -379,7 +379,7 @@ public class EditorTileMenu extends JDialog {
             scrollPane.addComponentListener(new ComponentListener() {
                 @Override
                 public void componentResized(ComponentEvent e) {
-//                    System.out.println("Changed TilePanel Size");
+//                   //System.out.println("Changed TilePanel Size");
                     columns = (int) Math.floor(tabbedPane.getWidth() / (EditorTileButton.size + gap));
                     tilePanel.setLayout(new GridLayout(0, columns, gap, gap));
                     tilePanel.revalidate();
@@ -403,7 +403,7 @@ public class EditorTileMenu extends JDialog {
             scrollPane.setOpaque(true);
             scrollPane.setViewportView(tilePanel);
             tabbedPane.addTab("Tile Set " + name, scrollPane);
-            System.out.println("Editor : Fnished inside TileMenuTab");
+            //System.out.println("Editor : Fnished inside TileMenuTab");
         }
 
         public void createTileButtons(TileSet current, JPanel display, boolean pFilter) {

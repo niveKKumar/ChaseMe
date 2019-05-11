@@ -1,12 +1,12 @@
 import java.awt.*;
 import java.awt.geom.Point2D;
+import java.util.LinkedList;
 
 public class Runner extends Mover {
     private PathFinder pathfinder;
-    private int border;
-    private int delay = 20;
     private double speed;
     int collisionduration = 0;
+    private double delay = 1;
 
     public Runner(GamePanel gp, int xPos, int yPos, SpriteSheet pSpriteSheet, MapBase[] pMap) {
         super(gp, xPos, yPos, pMap);
@@ -17,20 +17,20 @@ public class Runner extends Mover {
         pathfinder = new PathFinder(map, this, gamePanel);
     }
 
-    public void enemystraightrun(int pBorder, double pSpeed, int x, int y) {   //Gegner der nur gerade aus läuft (Delay = 1 - Kein Delay)
-        border = pBorder;
+    public void enemystraightrun(Point pBorder, double pSpeed, int x, int y) {   //Gegner der nur gerade aus läuft (Delay = 1 - Kein Delay)
+        speed = pSpeed;
         Point richtung = new Point (x,y);
+        Point borderTileID = pBorder;
+        double delaysteps = 1;
         //Delay:
         if (speed < 1) {
-            double higherDelay = 1 / speed;
-            delay = (int) Math.round(delay * higherDelay);
+            delaysteps = speed;
             speed = 1;
         }
-        speed = pSpeed;
-        if (!collisionCheck()) {
-            delay++;
+
+        if (!collisionCheck() && !isTileABorder(pBorder)) {
             if (delay < speed) {
-                delay++;
+                delay += delaysteps;
             } else {
                 this.setMove(richtung);
                 delay = 0;
@@ -39,7 +39,7 @@ public class Runner extends Mover {
             }else{
             collisionduration++;
             if (collisionduration > 5){
-                System.out.println("ich laufe gegen wand");
+                //System.out.println("ich laufe gegen wand");
             }
         }
         }
@@ -50,14 +50,14 @@ public class Runner extends Mover {
         Tile target = map[0].mapTiles[(int)((character.getLocation().getX() + Tile.TILEWIDTH/2) /  Tile.TILEWIDTH)][(int)((character.getLocation().getY() + Tile.TILEHEIGHT) / Tile.TILEHEIGHT)];
         pathfinder.searchPath(start,target);
         Point2D from = pathfinder.getNextStep();
-//        System.out.println(from);
+//       //System.out.println(from);
         Point2D to = pathfinder.getNextStep();
-//        System.out.println(to);
+//       //System.out.println(to);
         if(to!=null ){
             from =pathfinder.getNextStep();
-//            System.out.println(from);
+//           //System.out.println(from);
             to = pathfinder.getNextStep();
-//            System.out.println(to);
+//           //System.out.println(to);
             pathfinder.searchPath(start,target);
 
             try {
@@ -66,8 +66,17 @@ public class Runner extends Mover {
                 System.out.println("Game Over");
             }
         }else {
-            System.out.println("Game Over");
+            //System.out.println("Game Over");
         } // end of if-else
     }
 
+    public boolean isTileABorder(Point pBorder) {
+        LinkedList temp = moverIsOnTileID();
+        for (int i = 0; i < temp.size(); i++) {
+            if (temp.get(i).equals(pBorder)) {
+                return true;
+            }
+        }
+        return false;
+    }
 }

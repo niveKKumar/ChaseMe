@@ -16,7 +16,7 @@ public class KeyManager implements KeyListener {
 
   public void keyPressed(KeyEvent e) {
     keys[e.getKeyCode()] = true;
-//    System.out.println(KeyboardFocusManager.getCurrentKeyboardFocusManager().getFocusOwner());
+//   //System.out.println(KeyboardFocusManager.getCurrentKeyboardFocusManager().getFocusOwner());
   }
   public void keyReleased(KeyEvent e) {
    keys[e.getKeyCode()] = false;
@@ -40,7 +40,7 @@ public class KeyManager implements KeyListener {
     downLeft = keys[KeyEvent.VK_Y];
     downRight = keys[KeyEvent.VK_C];
 //    if (!shift){temp++;
-//      System.out.println(temp);}
+//     //System.out.println(temp);}
       plus = keys[KeyEvent.VK_ADD];
       plus = keys[KeyEvent.VK_PLUS];
       minus = keys[KeyEvent.VK_SUBTRACT];

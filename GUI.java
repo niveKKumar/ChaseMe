@@ -18,7 +18,7 @@ public class GUI extends JFrame implements ActionListener, MouseListener, MouseM
     public static JPanel tempDebugPane;
     private static GridBagConstraints gbc = new GridBagConstraints();
     public JPanel west = new JPanel(new FlowLayout());
-    private JPanel south = new JPanel(new FlowLayout());
+    public static JPanel south = new JPanel(new FlowLayout());
     private KeyManager keyManager;
     public JTextArea debugAnzeige = new JTextArea();
     private GamePanel gamePanel;
@@ -165,12 +165,11 @@ public class GUI extends JFrame implements ActionListener, MouseListener, MouseM
 
     private void createEditor() {
         editor = new Editor(this, gamePanel, keyManager);
-        level.setLevel(0);
         level.clear();
     }
 
     public void actionPerformed(ActionEvent evt) {
-        if (level != null && level.level != 0) {
+        if (level.isActive()) {
             level.actionPerformed(evt);
         }
         JButton temp = (JButton) evt.getSource();
@@ -181,28 +180,16 @@ public class GUI extends JFrame implements ActionListener, MouseListener, MouseM
                 break;
             case "GridLines":
                 for (int i = 0; i < level.analytics.length; i++) {
-                    if (level.analytics[i].showGridLines == true) {
-                        level.analytics[i].showGridLines = false;
-                        level.analytics[i].showGridLines = false;
-                        level.analytics[i].showTileIndices = false;
-                        level.analytics[i].showStartTarget = false;
-                        level.analytics[i].displayBlockedTiles = false;
-                        level.analytics[i].displayPath = false;
-                        level.analytics[i].displayPathTiles = false;
-                        level.analytics[i].moverHitbox = false;
+                    if (level.analytics[i].active == true) {
+                        level.analytics[i].setActive(false);
                         this.requestFocus();
                     } else {
-                        level.analytics[i].showGridLines = true;
-                        level.analytics[i].showTileIndices = true;
-                        level.analytics[i].showStartTarget = true;
-                        level.analytics[i].displayBlockedTiles = true;
-                        level.analytics[i].displayPath = true;
-                        level.analytics[i].displayPathTiles = true;
                         level.analytics[i].setMover(level.mover);
-                        level.analytics[i].moverHitbox = true;
+                        level.analytics[i].setActive(true);
                         this.requestFocus();
                     } // end of if-else
                 } // end of for
+                //System.out.println(level.analytics[0].active );
                 break;
 
             case "Game":
@@ -229,21 +216,46 @@ public class GUI extends JFrame implements ActionListener, MouseListener, MouseM
                 break;
 
             case "Neustart":
-                System.out.println("Spawn to CP");
+                //System.out.println("Spawn to cPoints");
                 break;
             case "TestButton":
 
                 break;
 
-
+            /**Level*/
+            case "1":
+                menuUI.showMenu();
+                level.createlevel1();
+                menuUI.showButtonPane("MainMenu");
+                break;
+            case "2":
+                menuUI.showMenu();
+                level.createlevel2();
+                menuUI.showButtonPane("MainMenu");
+                break;
+            case "3":
+                menuUI.showMenu();
+                level.createlevel3();
+                menuUI.showButtonPane("MainMenu");
+                break;
+            case "4":
+                menuUI.showMenu();
+                level.createlevel4();
+                menuUI.showButtonPane("MainMenu");
+                break;
+            case "5":
+                menuUI.showMenu();
+                level.createlevel5();
+                menuUI.showButtonPane("MainMenu");
+                break;
             /** Editor Buttons:*/ // FIXME: 03.05.2019 Action Peformed in Editor ? (siehe V. 1.05.2019)
             case "+":
-                System.out.println("Zoom rein");
+                //System.out.println("Zoom rein");
                 editor.zoom(true);
                 break;
 
             case "-":
-                System.out.println("Zoom raus");
+                //System.out.println("Zoom raus");
                 editor.zoom(false);
                 break;
             case "Tile MenuTab":
@@ -255,7 +267,7 @@ public class GUI extends JFrame implements ActionListener, MouseListener, MouseM
     }
 
     private void createGameComponents() {
-        gamePanel = new GamePanel(this, this, keyManager);
+        gamePanel = new GamePanel(cp, this, this, keyManager);
         cp.add(gamePanel);
         gamePanel.addtoRender(this);
         menuUI = new MenuUI(null, this);
@@ -303,7 +315,7 @@ public class GUI extends JFrame implements ActionListener, MouseListener, MouseM
 
     public void update() {
         keyManager.update();
-        if (level.level != 0) {
+        if (level.isActive()) {
             level.updateLevel();
         }else { //Editor:
             editor.update();
@@ -336,7 +348,7 @@ public class GUI extends JFrame implements ActionListener, MouseListener, MouseM
         }
         try {
             if (FocusManager.getCurrentManager().getFocusOwner().getName() == null) {
-//                System.out.println(FocusManager.getCurrentManager().getFocusOwner());
+//               //System.out.println(FocusManager.getCurrentManager().getFocusOwner());
                 focuslb.setText("See in OutPrint /*(Im Moment ausgeschaltet)*/");
             } else {
                 if (FocusManager.getCurrentManager().getFocusOwner().getName().equals("null.contentPane")) {
@@ -354,9 +366,9 @@ public class GUI extends JFrame implements ActionListener, MouseListener, MouseM
     @Override
     public void mouseClicked(MouseEvent e) {
         e.getSource();
-        if (level.level != 0) {
+        if (level.isActive()) {
             level.mouseClicked(e);
-            System.out.println("Level Clicked");
+            //System.out.println("Level Clicked");
         } else {
             editor.mouseClicked(e);
         }
@@ -384,9 +396,10 @@ public class GUI extends JFrame implements ActionListener, MouseListener, MouseM
 
     @Override
     public void mouseDragged(MouseEvent e) {
-        if (level.level == 0) {
+        if (!level.isActive()) {
             editor.mouseDragged(e);
         }
+        System.out.println("Dragged");
     }
 
     @Override
@@ -398,7 +411,7 @@ public class GUI extends JFrame implements ActionListener, MouseListener, MouseM
     @Override
     public void componentResized(ComponentEvent e) {
         menuUI.setSize(getSize());
-        System.out.println("Groesse vom GUI.GamePanel hat sich geändert " + getSize());
+        //System.out.println("Groesse vom GUI.GamePanel hat sich geändert " + getSize());
     }
 
     @Override
@@ -426,7 +439,7 @@ public class GUI extends JFrame implements ActionListener, MouseListener, MouseM
                 timestamp = System.currentTimeMillis();
 
                 if ((timestamp - oldTimestamp) > maxLoopTime) {
-                    System.out.println("Zu langsam");
+                    //System.out.println("Zu langsam");
                     continue;
                 }
 
