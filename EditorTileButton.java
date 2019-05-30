@@ -6,7 +6,7 @@ class EditorTileButton extends JButton {
     private int id;
     private BufferedImage img;
     private String tileSetPath;
-    public static int size = 50;
+    public static int SIZE = 50;
 
 
     public EditorTileButton(int id, BufferedImage img) {
@@ -23,10 +23,15 @@ class EditorTileButton extends JButton {
         loadImage(img);
     }
 
+    public static void setTileButtonSize(int size) {
+        SIZE = size;
+
+    }
+
     public void loadImage(BufferedImage img) {
         this.setBorder(null);
         try {
-            ImageIcon icon = new ImageIcon(img.getScaledInstance(size, size, Image.SCALE_SMOOTH));
+            ImageIcon icon = new ImageIcon(img.getScaledInstance(SIZE, SIZE, Image.SCALE_SMOOTH));
             this.setIcon(icon);
         } catch (Exception e) {
             System.out.println("Fehler beim Laden von Bild");
@@ -34,7 +39,6 @@ class EditorTileButton extends JButton {
 
 
     }
-
     public BufferedImage getImg() {
         return img;
     }

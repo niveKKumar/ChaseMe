@@ -71,14 +71,28 @@ public class TileSet{
         width = tileSetImage.getWidth() / numberOfTilesX - border;
         height = tileSetImage.getHeight() / numberOfTilesY - border;
     } catch (IOException e) {
-        e.printStackTrace();
-        System.out.println("On the Path : " + tileSetImagePath);
+        System.out.println("Datei nicht vorhanden !");
     }
     int i = 0;
       for(int y = 0; y < numberOfTilesY; y++) {
         for(int x = 0; x < numberOfTilesX; x++) {
-          BufferedImage bi = tileSetImage.getSubimage(x * (width + border), y * (height + border), width, height);
-          bi.getScaledInstance(Tile.TILEWIDTH, Tile.TILEHEIGHT, Image.SCALE_SMOOTH);
+            BufferedImage bi = null;
+            try {
+                bi = tileSetImage.getSubimage(x * (width + border), y * (height + border), width, height);
+                bi.getScaledInstance(Tile.TILEWIDTH, Tile.TILEHEIGHT, Image.SCALE_SMOOTH);
+            } catch (Exception e) {
+                e.printStackTrace();
+                System.out.println("TileSet Daten sind falsch! Probiere manuell");
+                Meldungen m = new Meldungen(null, true, "null");
+                m.tileSetAbfrage(tileSetImagePath);
+                height = Integer.parseInt(m.getUserInput(1));
+                width = Integer.parseInt(m.getUserInput(0));
+                border = Integer.parseInt(m.getUserInput(2));
+                bi = tileSetImage.getSubimage(x * (width + border), y * (height + border), width, height);
+                bi.getScaledInstance(Tile.TILEWIDTH, Tile.TILEHEIGHT, Image.SCALE_SMOOTH);
+            }/*catch (Exception e){
+                System.out.println("Zweite Angabe falsch. Überprüfen Sie Ihr TileSet und versuchen Sie es später erneut");
+            }*/
         tileSet[i++] = new Tile(bi);
       }
     }

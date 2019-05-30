@@ -26,7 +26,7 @@ public class EditorTileMenu extends JDialog {
     private int selectedID;
     private int selectedTileSet;
 
-    private ArrayList tileSet = new ArrayList<TileSet>();
+    private ArrayList tileTabs = new ArrayList<EditorTileTab>();
     private Editor belongingEditor;
     private Frame owner;
 
@@ -54,31 +54,19 @@ public class EditorTileMenu extends JDialog {
     }
 
     private void onOK() {
-        ((EditorMap) belongingEditor.maps.get(belongingEditor.selectedMap)).setGraphicID(selectedID);
-        belongingEditor.addRecently(selectedID, ((TileSet) tileSet.get(selectedTileSet)));
+        belongingEditor.maps.get(belongingEditor.selectedMap).setGraphicID(selectedID);
+        belongingEditor.addRecently(selectedID, ((EditorTileTab) tileTabs.get(selectedTileSet)).getTabTileSet());
         setVisible(false);
     }
 
     public void createTileSet() {
         //Standard TileSet:
         if (firstStart) {
-            //System.out.println("Editor : Create inside TileMenu Standard TS");
-            tileSet.add(new TileSet("Content/Graphics/tileSets/12x12x3 - tileSet.png", 12, 12, 3)); // Standard Tile Set)
-            selectedTileSet = tileSet.size() - 1;
-            //System.out.println("Editor : Create inside TileMenu new TileTab");
-            new EditorTileTab(tsTabPane, ((TileSet) tileSet.get(selectedTileSet)), Integer.toString(tileSet.size()), false);
-            //System.out.println("Editor : Create inside TileMenu Finished");
+            TileSet ts = new TileSet("Content/Graphics/tileSets/12x12x3 - tileSet.png", 12, 12, 3);
+            addCustomTileSet(ts);
             firstStart = false;
         } else {
-            Meldungen meldung = new Meldungen(owner, true, "null");
-            File[] f = Meldungen.getFilesAt("TileSet");
-            for (int i = 0; i < f.length; i++) {
-                //System.out.println("Create TileSet from File : " + i);
-                tileSet.add(new TileSet(f[i].getPath()));
-                selectedTileSet = tileSet.size() - 1;
-                new EditorTileTab(tsTabPane, ((TileSet) tileSet.get(selectedTileSet)), Integer.toString(tileSet.size()), true);
-            }
-            //System.out.println("Finished");
+            addTileSetThroughFileRequest();
         }
     }
 
@@ -87,15 +75,15 @@ public class EditorTileMenu extends JDialog {
         try {
             anzeige.setIcon(icon);
         } catch (Exception e) {
-            for (int i = 0; i < tileSet.size(); i++) {
-                anzeige.setIcon(new ImageIcon(((TileSet) tileSet.get(selectedTileSet)).tileSet[selectedID].tileImage));
+            for (int i = 0; i < tileTabs.size(); i++) {
+                anzeige.setIcon(new ImageIcon(((TileSet) tileTabs.get(selectedTileSet)).tileSet[selectedID].tileImage));
             }
         }
     }
 
     public int findAndSetTileSetID(TileSet ts) {
-        for (int i = 0; i < tileSet.size(); i++) {
-            if (ts.getTileSetImagePath().equals(((TileSet) tileSet.get(i)).getTileSetImagePath())) {
+        for (int i = 0; i < tileTabs.size(); i++) {
+            if (ts.getTileSetImagePath().equals(((EditorTileTab) tileTabs.get(i)).getTabTileSet().getTileSetImagePath())) {
                 return i;
             }
         }
@@ -110,13 +98,13 @@ public class EditorTileMenu extends JDialog {
         return selectedTileSet;
     }
 
-    public void setTileSet(TileSet pTileSet) {
-        tileSet.add(pTileSet);
-        selectedTileSet = tileSet.size() - 1;
+    public void setTileTabs(TileSet pTileSet) {
+        tileTabs.add(pTileSet);
+        selectedTileSet = tileTabs.size() - 1;
     }
 
     public TileSet getTileSet(int index) {
-        return ((TileSet) tileSet.get(index));
+        return ((EditorTileTab) tileTabs.get(index)).getTabTileSet();
     }
 
     public void setSelectedID(int selectedID) {
@@ -180,14 +168,14 @@ public class EditorTileMenu extends JDialog {
         JMenuItem open = new JMenuItem("Öffnen");
         open.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
-                belongingEditor.loadMap();
+                belongingEditor.loadCustomMap();
             }
         });
 
         JMenuItem save = new JMenuItem("Speichern");
         save.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
-                belongingEditor.saveMap(Meldungen.getFileAt("Save"), true);
+                belongingEditor.saveCurrentMap(Meldungen.getFileAt("Save"));
             }
         });
 
@@ -197,7 +185,7 @@ public class EditorTileMenu extends JDialog {
         newMapWithSelection.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
                 Meldungen meldung = new Meldungen(owner, true, "Map");
-                belongingEditor.createEditorMap(Integer.parseInt(meldung.getUserInput(0)), Integer.parseInt(meldung.getUserInput(1)), ((TileSet) tileSet.get(selectedTileSet)), selectedID);
+                belongingEditor.createEditorMap(Integer.parseInt(meldung.getUserInput(0)), Integer.parseInt(meldung.getUserInput(1)), ((TileSet) tileTabs.get(selectedTileSet)), selectedID);
             }
         });
         JMenuItem newBlankMap = new JMenuItem("Neue leere Map");
@@ -232,10 +220,31 @@ public class EditorTileMenu extends JDialog {
         menubar.add(load);
     }
 
+    public boolean checkTileSet(TileSet ts) {
+        for (int i = 0; i < tileTabs.size(); i++) {
+            if (((EditorTileTab) tileTabs.get(i)).getTabTileSet().getTileSetImagePath().contentEquals(ts.getTileSetImagePath())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public void addTileSetThroughFileRequest() {
+        File[] f = Meldungen.getFilesAt("TileSet");
+        for (int i = 0; i < f.length; i++) {
+            addCustomTileSet(new TileSet(f[i].getPath()));
+        }
+    }
+
+    public void addCustomTileSet(TileSet ts) {
+        tileTabs.add(new EditorTileTab(tsTabPane, ts, Integer.toString(tileTabs.size()), false));
+        selectedTileSet = tileTabs.size() - 1;
+    }
+
 
     class EditorTileTab implements MouseListener {
-
         int columns = 5;
+        int gap = 2;
         String name = "k.A.";
         private JPanel tilePanel;
         private TileSet tabTileSet;
@@ -247,93 +256,68 @@ public class EditorTileMenu extends JDialog {
             tabTileSet = ts;
             name = pName;
             filterIDs = new LinkedList<>();
-            createTileSetComponents(location, filter);
-
+            createTabComponents(location, filter);
         }
 
         public void filterImages() {
-            //System.out.println("Filter Images");
             for (int i = 0; i < tiles.length; i++) {
-                //System.out.println("Check if Img is Empty " + i);
                 if (!isImageEmpty(tiles[i].getImg())) {
                     filterIDs.add(i);
-                    //System.out.println("Filtered IDs: " + i);
                 }
+            }
+        }
+
+        public void showFilter(JPanel display) {
+            if (filter) {
+                createTileButtons(tilePanel, false);
+            } else {
+                createTileButtons(tilePanel, true);
             }
         }
 
         public void showFilter(JPanel display, boolean b) {
-            //System.out.println("Show Filter : " + b);
-            if (b != filter) {
-                display.removeAll();
-                //Adding custom Buttons:
-                JButton filterButton = new JButton("<html>Filter: <br>" + filter + "</html>");
-                filterButton.addActionListener(new ActionListener() {
-                    @Override
-                    public void actionPerformed(ActionEvent e) {
-                        if (!filter) {
-                            showFilter(tilePanel, true);
-                        } else {
-                            showFilter(tilePanel, false);
-                        }
-                    }
-                });
-                filterButton.setBorder(null);
-                filterButton.setSize(50, 50);
-                display.add(filterButton);
-                JTextField txtEingabe = new JTextField();
-                txtEingabe.setBorder(null);
-                txtEingabe.setSize(EditorTileButton.size, EditorTileButton.size);
-                txtEingabe.getDocument().addDocumentListener(new DocumentListener() {
-                    @Override
-                    public void insertUpdate(DocumentEvent e) {
-                    }
-
-                    @Override
-                    public void removeUpdate(DocumentEvent e) {
-                    }
-
-                    @Override
-                    public void changedUpdate(DocumentEvent e) {
-                        try {
-                            int idInTextArea = Integer.parseInt(txtEingabe.getText());
-                            if (idInTextArea <= tabTileSet.tileSet.length) {
-                                selectedID = Integer.parseInt(txtEingabe.getText());
-                                selectedinLabel(selectedLabel, new ImageIcon(tabTileSet.tileSet[idInTextArea].tileImage));
-                            } else {
-                                txtEingabe.setText("");
-                                JOptionPane.showMessageDialog(owner, "Es können nur Tiles von  0 bis " + tabTileSet.tileSet.length + " verwendet werden", "", JOptionPane.WARNING_MESSAGE);
-                            }
-                        } catch (NumberFormatException en) {
-                            if (!txtEingabe.getText().equals("")) {
-                                txtEingabe.setText("");
-                                JOptionPane.showMessageDialog(owner, "Ungültige Zahl.", "", JOptionPane.WARNING_MESSAGE);
-                            }
-                        }
-                    }
-                });
-                tilePanel.add(txtEingabe);
-                EditorTileButton emptyButton = new EditorTileButton(9999, new BufferedImage(EditorTileButton.size, EditorTileButton.size, BufferedImage.TYPE_INT_ARGB_PRE));
-                emptyButton.setBorder(null);
-                emptyButton.addMouseListener(this);
-                display.add(emptyButton);
-                //Adding ButtonTiles (with or without Filter):
-                if (b) {
-                    if (filterIDs.isEmpty()) {
-                        filterImages();
-                    }
-                    for (int j = 0; j < filterIDs.size(); j++) {
-                        display.add(tiles[filterIDs.get(j)]);
-                    }
-                } else {
-                    for (int i = 0; i < tiles.length; i++) {
-                        display.add(tiles[i]);
-                    }
-                }
-                filter = b;
-                filterButton.setText("<html>Filter: <br>" + filter + "</html>");
+            if (filterIDs.isEmpty()) {
+                filterImages();
             }
+
+            if (b) {
+                //Nur Tiles mit FilterID:
+                for (int j = 0; j < filterIDs.size(); j++) {
+                    display.add(tiles[filterIDs.get(j)]);
+                }
+
+            } else {
+                //Alle Tiles:
+                for (int i = 0; i < tiles.length; i++) {
+                    display.add(tiles[i]);
+                }
+            }
+            filter = b;
+
             display.revalidate();
+        }
+
+        public TileSet getTabTileSet() {
+            return tabTileSet;
+        }
+
+        public void zoom(boolean zoomInIsTrueZoomOutisFalse, double zoomfactor) {
+            if (zoomInIsTrueZoomOutisFalse) {
+                //Reinzoom:
+                zoomfactor = 1 - zoomfactor;
+            } else {
+                //Rauszoom:
+                zoomfactor = 1 + zoomfactor;
+            }
+            EditorTileButton.setTileButtonSize((int) Math.round(EditorTileButton.SIZE * zoomfactor));
+            tilePanel.removeAll();
+            recalculateGrid(tilePanel.getParent().getWidth());
+            createTileButtons(tilePanel, filter);
+            for (int i = 0; i < tilePanel.getComponents().length; i++) {
+                if (tilePanel.getComponents()[i].getHeight() > EditorTileButton.SIZE) {
+                    System.out.println("Me is stopping the Grid !! " + i + "  " + tilePanel.getComponents()[i]);
+                }
+            }
         }
 
         private boolean isImageEmpty(BufferedImage imgA) {
@@ -359,31 +343,20 @@ public class EditorTileMenu extends JDialog {
 
         }
 
-        public void createTileSetComponents(JTabbedPane tabbedPane, boolean filter) {
-            int gap = 2;
-            //System.out.println("Editor : Create inside TileMenuTab tilePanel");
+        public void createTabComponents(JTabbedPane tabbedPane, boolean filter) {
             tilePanel = new JPanel();
-            // Dynamisches tilePanel GridLayout
-            tilePanel.setLayout(new GridLayout(0, columns, gap, gap));
             //Hinzufuegen der Tiles auf das JPanel
-
-            //System.out.println("Editor : Start inside TileMenuTab TileButtons");
-
-            createTileButtons(tabTileSet, tilePanel, filter);
-
-            //System.out.println("Editor : Finished inside TileMenuTab TileButtons");
-
+            //Adding ButtonTiles (with or without Filter):
+            createTileButtons(tilePanel, filter);
             // Erstellen des Scrollpanes und zuweisen des JPanels
             JScrollPane scrollPane = new JScrollPane();
             scrollPane.add(tilePanel);
+            scrollPane.setMaximumSize(scrollPane.getSize());
             scrollPane.addComponentListener(new ComponentListener() {
                 @Override
                 public void componentResized(ComponentEvent e) {
-//                   //System.out.println("Changed TilePanel Size");
-                    columns = (int) Math.floor(tabbedPane.getWidth() / (EditorTileButton.size + gap));
-                    tilePanel.setLayout(new GridLayout(0, columns, gap, gap));
-                    tilePanel.revalidate();
-                    tilePanel.repaint();
+                    tilePanel.setMaximumSize(scrollPane.getSize());
+                    recalculateGrid(scrollPane.getWidth());
                 }
 
                 @Override
@@ -406,25 +379,133 @@ public class EditorTileMenu extends JDialog {
             //System.out.println("Editor : Fnished inside TileMenuTab");
         }
 
-        public void createTileButtons(TileSet current, JPanel display, boolean pFilter) {
-            tiles = new EditorTileButton[current.tileSet.length];
+        public JButton[] createStandardButtons(JPanel display) {
+            //Erstellen der Standard Buttons: Zoom BTs - TextEingabe BT- empty Button
+            String[] nam = {"+", "-", "<html>Filter: <br>" + filter + "</html>"};
+            JButton[] buttons = new JButton[nam.length];
+            for (int i = 0; i < nam.length; i++) {
+                buttons[i] = new JButton(nam[i]);
+                buttons[i].setMargin(new Insets(0, 0, 0, 0));
+                buttons[i].setBorder(null);
+                buttons[i].setPreferredSize(new Dimension(EditorTileButton.SIZE, EditorTileButton.SIZE));
+                setFontAsBigAsSize(buttons[i]);
+            }
+            setFontAsBigAsSize(buttons[1]);
+            setFontAsBigAsSize(buttons[0]);
+            buttons[0].addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    zoom(false, 0.25);
+                }
+            });
+            buttons[1].addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    zoom(true, 0.25);
+                }
+            });
+            //Adding custom Buttons:
+            buttons[2].addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    showFilter(display);
+                    buttons[2].setText("<html>Filter: <br>" + filter + "</html>");
+                }
+            });
+            System.out.println("size html " + buttons[2].getFont().getSize());
+            return buttons;
+        }
 
-            for (int i = 0; i < current.tileSet.length; i++) {
-                tiles[i] = new EditorTileButton(i, current);
+        public void setFontAsBigAsSize(JButton bt) {
+            boolean tooBig = false;
+            int size = 1;
+            Font f = new Font(bt.getName(), Font.PLAIN, size);
+            bt.setFont(f);
+            while (!tooBig) {
+                FontMetrics metric = bt.getFontMetrics(bt.getFont());
+                if (metric.getHeight() < EditorTileButton.SIZE && metric.stringWidth(bt.getText()) < EditorTileButton.SIZE) {
+                    size++;
+                    f = new Font(bt.getName(), Font.PLAIN, size);
+                    System.out.println(f.getSize());
+                } else {
+                    size--;
+                    f = new Font(bt.getName(), Font.PLAIN, size);
+                    tooBig = true;
+                }
+                bt.setFont(f);
+            }
+        }
+
+        public void createTileButtons(JPanel display, boolean pFilter) {
+            int size = EditorTileButton.SIZE;
+            JButton[] standard = createStandardButtons(display);
+
+            //Erstellen der TileButtons:
+            tiles = new EditorTileButton[tabTileSet.tileSet.length];
+            for (int i = 0; i < tabTileSet.tileSet.length; i++) {
+                tiles[i] = new EditorTileButton(i, tabTileSet);
+                tiles[i].setSize(size, size);
                 tiles[i].addMouseListener(this);
             }
-            if (filter) {
-                filterImages();
-                filter = false;
-                showFilter(display, true);
-            } else {
-                filter = true;
-                showFilter(display, false);
-            }
 
+            //Hinzufügen der Buttons:
+            JTextField txtEingabe = new JTextField();
+            txtEingabe.setBorder(null);
+            txtEingabe.getDocument().addDocumentListener(new DocumentListener() {
+                @Override
+                public void insertUpdate(DocumentEvent e) {
+                }
+
+                @Override
+                public void removeUpdate(DocumentEvent e) {
+                }
+
+                @Override
+                public void changedUpdate(DocumentEvent e) {
+                    try {
+                        int idInTextArea = Integer.parseInt(txtEingabe.getText());
+                        if (idInTextArea <= tabTileSet.tileSet.length) {
+                            selectedID = Integer.parseInt(txtEingabe.getText());
+                            selectedinLabel(selectedLabel, new ImageIcon(tabTileSet.tileSet[idInTextArea].tileImage));
+                        } else {
+                            txtEingabe.setText("");
+                            JOptionPane.showMessageDialog(owner, "Es können nur Tiles von  0 bis " + tabTileSet.tileSet.length + " verwendet werden", "", JOptionPane.WARNING_MESSAGE);
+                        }
+                    } catch (NumberFormatException en) {
+                        if (!txtEingabe.getText().equals("")) {
+                            txtEingabe.setText("");
+                            JOptionPane.showMessageDialog(owner, "Ungültige Zahl.", "", JOptionPane.WARNING_MESSAGE);
+                        }
+                    }
+                }
+            });
+            //Standard:
+            for (int i = 0; i < standard.length; i++) {
+                display.add(standard[i]);
+            }
+            display.add(txtEingabe);
+            EditorTileButton emptyButton = new EditorTileButton(9999, new BufferedImage(size, size, BufferedImage.TYPE_INT_ARGB_PRE));
+            emptyButton.addMouseListener(this);
+            display.add(emptyButton);
+            //Tiles:
+            showFilter(display, pFilter);
 
         }
 
+        public void recalculateGrid(int parentWidth) {
+            System.out.println("Before Calc: " + parentWidth + " / " + (EditorTileButton.SIZE + gap) + " = C:" + columns + "H:" + tilePanel.getHeight() + "W: " + tilePanel.getWidth());
+            columns = parentWidth / (EditorTileButton.SIZE + gap);
+            try {
+                tilePanel.setLayout(new GridLayout(0, columns, gap, gap));
+                System.out.println("After Calc: C:" + columns + " H:" + tilePanel.getHeight() + "W: " + tilePanel.getWidth());
+            } catch (Exception e) {
+                System.out.println("Couldnt calculate therefore the standard colummns:");
+                e.printStackTrace();
+                tilePanel.setLayout(new GridLayout(0, 5, gap, gap));
+            }
+            tilePanel.revalidate();
+            tilePanel.repaint();
+        }
 
         @Override
         public void mouseClicked(MouseEvent e) {
@@ -432,7 +513,7 @@ public class EditorTileMenu extends JDialog {
             selectedID = source.getId();
             //Schnellauswahl
             if (e.getClickCount() == 2) {
-                ((EditorMap) belongingEditor.maps.get(belongingEditor.selectedMap)).setGraphicID(selectedID);
+                belongingEditor.maps.get(belongingEditor.selectedMap).setGraphicID(selectedID);
             }
             selectedinLabel(selectedLabel, source.getIcon());
         }
@@ -441,10 +522,10 @@ public class EditorTileMenu extends JDialog {
         public void mousePressed(MouseEvent e) {
             EditorTileButton source = ((EditorTileButton) e.getSource());
             selectedID = source.getId();
-            for (int i = 0; i < tileSet.size(); i++) {
+            for (int i = 0; i < tileTabs.size(); i++) {
                 if (source.getTileSetPath() == null) {
                     selectedID = 9999;
-                    ((EditorMap) belongingEditor.maps.get(belongingEditor.selectedMap)).setGraphicID(selectedID);
+                    belongingEditor.maps.get(belongingEditor.selectedMap).setGraphicID(selectedID);
                 } else {
                     selectedID = findAndSetTileSetID(new TileSet(source.getTileSetPath()));
                 }

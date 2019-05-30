@@ -3,13 +3,13 @@ import com.sun.istack.internal.Nullable;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseEvent;
-import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
 import java.util.Random;
 
 public class EditorMap extends MapBase {
 
-    private int click = 0, firstX, firstY, secondX, secondY;
+    private int click = 0;
+    private Point firstClick, secondClick;
     private JTextArea editorAnzeige;
     private boolean toIgnore;
     private Color color;
@@ -96,16 +96,13 @@ public class EditorMap extends MapBase {
 
     @Override
     public void renderMap(Graphics2D g2d) {
-        AffineTransform oldTransform = g2d.getTransform();
         g2d.setColor(color);
         g2d.setStroke(new BasicStroke(strokeSize));
         for (int zeile = 0; zeile < mapSizeY; zeile++) {
             for (int spalte = 0; spalte < mapSizeX; spalte++) {
-                mapTiles[zeile][spalte].renderTile(g2d, chapterXOffset + zeile * Tile.TILEWIDTH - gamePanel.getCamera().getClickXOffset(), chapterYOffset + spalte * Tile.TILEHEIGHT - gamePanel.getCamera().getYOffset());
+                mapTiles[zeile][spalte].renderTile(g2d, chapterXOffset + zeile * Tile.TILEWIDTH - gamePanel.getCamera().getClickXOffset(), chapterYOffset + spalte * Tile.TILEHEIGHT - gamePanel.getCamera().getClickYOffset());
             }
         }
-        g2d.setTransform(oldTransform);
-
     }
 
     private void setMapTile(int xIndex, int yIndex, TileSet ts) {
@@ -124,9 +121,9 @@ public class EditorMap extends MapBase {
             Insets tempInsets = null;
             tempInsets = mapTiles[xIndex][yIndex].getBorderInsets();
             if (graphicID == 9999) {
-                mapTiles[xIndex][yIndex] = new Tile(new BufferedImage(Tile.TILEWIDTH, Tile.TILEHEIGHT, BufferedImage.TYPE_4BYTE_ABGR));
+                mapTiles[xIndex][yIndex] = new Tile(new BufferedImage(Tile.TILEWIDTH, Tile.TILEHEIGHT, BufferedImage.TYPE_4BYTE_ABGR)).clone();
             } else {
-                mapTiles[xIndex][yIndex] = tileSet.tileSet[graphicID];
+                mapTiles[xIndex][yIndex] = tileSet.tileSet[graphicID].clone();
             }
             mapTiles[xIndex][yIndex].setBorderInsets(tempInsets);
             mapTiles[xIndex][yIndex].setID(graphicID);
@@ -140,42 +137,37 @@ public class EditorMap extends MapBase {
 
     public Point getTileID(MouseEvent e) {
         int x = Math.round(e.getX() + gamePanel.getCamera().getClickXOffset() - chapterXOffset) / Tile.TILEWIDTH;
-        int y = (int) Math.round(e.getY() + gamePanel.getCamera().getClickYOffset() - chapterYOffset) / Tile.TILEHEIGHT;
+        int y = Math.round(e.getY() + gamePanel.getCamera().getClickYOffset() - chapterYOffset) / Tile.TILEHEIGHT;
         return new Point(x, y);
     }
     public void setTile(MouseEvent e, TileSet ts) {
-        int x = Math.round(e.getX() + gamePanel.getCamera().getClickXOffset() - chapterXOffset) / Tile.TILEWIDTH;
-        int y = (int) Math.round(e.getY() + gamePanel.getCamera().getClickYOffset() - chapterYOffset) / Tile.TILEHEIGHT;
-        System.out.println("X :" + x + " | " + y);
-        setMapTile(x, y, ts);
+        Point click = getTileID(e);
+        setMapTile(click.x, click.y, ts);
     }
 
     public void setTileRect(MouseEvent e, TileSet ts) {
-//       //System.out.println("Klick ist beim Aufruf" + click);
         click++;
         if (click == 1) {
-            firstX = Math.round(Math.round(e.getX() + gamePanel.getCamera().getClickXOffset() - chapterXOffset) / Tile.TILEWIDTH);
-            firstY = Math.round(Math.round(e.getY() + gamePanel.getCamera().getClickYOffset() - chapterYOffset) / Tile.TILEHEIGHT);
+            firstClick = getTileID(e);
             editorAnzeige.setText("Fläche zeichnen :" + "\n" + " erster Klick");
         }
         if (click == 2) {
-            secondX = Math.round(e.getX() + gamePanel.getCamera().getClickXOffset() - chapterXOffset) / Tile.TILEWIDTH;
-            secondY = (int) Math.round(e.getY() + gamePanel.getCamera().getClickYOffset() - chapterYOffset) / Tile.TILEHEIGHT;
+            secondClick = getTileID(e);
             editorAnzeige.setText("");
 
-            if (firstX > secondX) {
+            if (firstClick.getX() > secondClick.getX()) {
                 int swap;
-                swap = firstX;
-                firstX = secondX;
-                secondX = swap;
+                swap = (int) firstClick.getX();
+                firstClick.x = (int) secondClick.getX();
+                secondClick.x = swap;
             }
-            if (firstY > secondY) {
-                int swap = firstY;
-                firstY = secondY;
-                secondY = swap;
+            if (firstClick.getY() > secondClick.getY()) {
+                int swap = (int) firstClick.getY();
+                firstClick.y = (int) secondClick.getY();
+                secondClick.y = swap;
             }
-            for (int x = firstX; x < secondX + 1; x++) {
-                for (int y = firstY; y < secondY + 1; y++) {
+            for (int x = (int) firstClick.getX(); x < secondClick.getX() + 1; x++) {
+                for (int y = (int) firstClick.getY(); y < secondClick.getY() + 1; y++) {
                     setMapTile(x, y, ts);
                 }
             }
@@ -206,16 +198,6 @@ public class EditorMap extends MapBase {
 
     public void setToIgnore(boolean toIgnore) {
         this.toIgnore = toIgnore;
-    }
-
-    public void setShowMapBorder(boolean showMapBorder) {
-        this.showMapBorder = showMapBorder;
-        if (this.showMapBorder) {
-            setMapBorder(5);
-        }
-        {
-            setMapBorder(0);
-        }
     }
 
     public void setGraphicID(int graphicID) {

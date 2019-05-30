@@ -1,5 +1,4 @@
 import java.awt.*;
-import java.awt.geom.AffineTransform;
 import java.util.LinkedList;
 
 
@@ -77,12 +76,11 @@ public class Character extends Mover {
         //temp:
         speakingSpeed = 25;
 
-        if (speechBubble != null && clear) {
-            speechBubble.setText("");
-        }
         if (speechBubble == null) {
             speechBubble = new SpeechBubble(this);
-            speechBubble.setText(text);
+        }
+        if (clear) {
+            speechBubble.setText("");
         }
         speechBubble.setVisible(true);
         speaking = true;
@@ -122,7 +120,6 @@ public class Character extends Mover {
     public void setSpeaking(boolean speaking) {
         this.speaking = speaking;
     }
-//    // TODO: 24.03.2019 Komplett neu bedenken!!!
 
     public static class SpeechBubble {
 
@@ -148,7 +145,6 @@ public class Character extends Mover {
         }
 
         public void renderSpeechBubble(Graphics2D g2d) {
-            AffineTransform copy = g2d.getTransform();
             if (visible) {
                 int xPos = (int) (character.xPos - character.gamePanel.getCamera().getXOffset());
                 int yPos = (int) (character.yPos - character.gamePanel.getCamera().getYOffset());
@@ -164,7 +160,6 @@ public class Character extends Mover {
                 }
                 int width = getMaxWidth(showText, metric); // Gibt GesamtBreite der Textfolge an
                 int height = showText.length * metric.getHeight(); //Gibt den Standard-Zeilenabstand (Abstand zwischen Grundlinie und Grundlinie) in Pixeln zurück
-                System.out.println("height : " + height + " " + showText.length + " x " + metric.getHeight());
                 int rounded = height / 8;
                 int gap = metric.getMaxAdvance() / 4; //Liefert die Breite des breitesten Zeichens, –1, wenn unbekannt.
 
@@ -172,14 +167,11 @@ public class Character extends Mover {
                 g2d.fillRoundRect(xPos - width / 2 - gap / 2, yPos - height - gap / 2, width + gap, height + gap, rounded, rounded);
                 g2d.setColor(Color.black);
                 g2d.drawRoundRect(xPos - width / 2 - gap / 2, yPos - height - gap / 2, width + gap, height + gap, rounded, rounded);
-                System.out.println("YPos should be:" + (yPos - height));
                 height -= metric.getHeight();
                 for (int i = 0; i < showText.length; i++) {
-                    System.out.println(g2d.getFontMetrics().getHeight());
                     g2d.drawString(showText[i], xPos - width / 2, yPos + i * g2d.getFontMetrics().getHeight() - height);
                 }
             }
-            g2d.setTransform(copy);
         }
 
         public Integer getMaxWidth(String[] text, FontMetrics metrics) {

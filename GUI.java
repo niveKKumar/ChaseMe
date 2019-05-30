@@ -21,10 +21,11 @@ public class GUI extends JFrame implements ActionListener, MouseListener, MouseM
     public static JPanel south = new JPanel(new FlowLayout());
     private KeyManager keyManager;
     public JTextArea debugAnzeige = new JTextArea();
-    private GamePanel gamePanel;
+
     public MenuUI menuUI;
+    private GamePanel gamePanel;
     private Editor editor;
-    private Game level;
+    private Game game;
 
     private Loop loop = new Loop();
     private Thread t = new Thread(loop);
@@ -47,7 +48,7 @@ public class GUI extends JFrame implements ActionListener, MouseListener, MouseM
         int y = (d.height - getSize().height) / 2;
 
         setLocation(x, y);
-        setTitle("ChaseME");
+        setTitle("Chase ME - Ein RPG Spiel zum Selbst Programmieren");
         setResizable(true);
         cp = getContentPane();
         cp.setLayout(new BorderLayout());
@@ -156,8 +157,8 @@ public class GUI extends JFrame implements ActionListener, MouseListener, MouseM
         getFocus.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                getOwner().requestFocusInWindow();
-                getOwner().requestFocus();
+                gamePanel.requestFocus();
+                gamePanel.revalidate();
             }
         });
         south.add(getFocus);
@@ -165,40 +166,55 @@ public class GUI extends JFrame implements ActionListener, MouseListener, MouseM
 
     private void createEditor() {
         editor = new Editor(this, gamePanel, keyManager);
-        level.clear();
+        game.clear();
     }
 
     public void actionPerformed(ActionEvent evt) {
-        if (level.isActive()) {
-            level.actionPerformed(evt);
+//        if (game != null && game.isActive()) {
+//            game.actionPerformed(evt);
+//        }
+        if (editor != null && editor.isActive()) {
+            editor.actionPerformed(evt);
         }
         JButton temp = (JButton) evt.getSource();
+        if (temp.getName() != null && temp.getName().contentEquals("Info")) {
+            System.out.println("info clicked");
+            if (game != null && game.isActive()) {
+                menuUI.showButtonPaneByName("guiInfo");
+            }
+            if (editor != null && editor.isActive()) {
+                menuUI.showButtonPaneByName("editorInfo");
+            }
+        }
+        if (temp.getName() != null && temp.getName().contentEquals("Settings")) {
+            menuUI.showMainMenu();
+            System.out.println("Settings pressed and MainMenu loaded");
+        }
         switch (temp.getText()) {
             case "Exit":
                 System.exit(0);
                 this.requestFocus();
                 break;
             case "GridLines":
-                for (int i = 0; i < level.analytics.length; i++) {
-                    if (level.analytics[i].active == true) {
-                        level.analytics[i].setActive(false);
+                for (int i = 0; i < game.analytics.length; i++) {
+                    if (game.analytics[i].active == true) {
+                        game.analytics[i].setActive(false);
                         this.requestFocus();
                     } else {
-                        level.analytics[i].setMover(level.mover);
-                        level.analytics[i].setActive(true);
+                        game.analytics[i].setMover(game.mover);
+                        game.analytics[i].setActive(true);
                         this.requestFocus();
                     } // end of if-else
                 } // end of for
-                //System.out.println(level.analytics[0].active );
                 break;
 
             case "Game":
                 if (!menuUI.searchForPanel("Level")) {
-                    JPanel levelMenu = level.createLevelMenu();
+                    MenuUI.MenuTab levelMenu = game.createLevelMenu();
                     levelMenu.setName("Level");
-                    menuUI.addCustomPanel(levelMenu);
+                    menuUI.addAndShowMenuTab(levelMenu);
                 } else {
-                    menuUI.showButtonPane("Level");
+                    menuUI.showButtonPaneByName("Level");
                 }
                 this.requestFocus();
                 break;
@@ -206,17 +222,21 @@ public class GUI extends JFrame implements ActionListener, MouseListener, MouseM
             case "Editor":
                 if (editor == null) {
                     createEditor();
-                    JPanel editorMenu = editor.createEditorMenu();
+                    MenuUI.MenuTab editorMenu = editor.createEditorMenu();
                     editorMenu.setName("Editor");
-                    menuUI.addCustomPanel(editorMenu);
+                    menuUI.addInfo(editor.createInfoPane());
+                    menuUI.addAndShowMenuTab(editorMenu);
                 } else {
-                    menuUI.showButtonPane("Editor");
+                    menuUI.showButtonPaneByName("Editor");
                 }
                 this.requestFocus();
                 break;
 
-            case "Neustart":
-                //System.out.println("Spawn to cPoints");
+            case "Restart":
+                if (game.isActive()) {
+                    game.respawn(game.whichLevel());
+                }
+                System.out.println("Restart");
                 break;
             case "TestButton":
 
@@ -225,43 +245,30 @@ public class GUI extends JFrame implements ActionListener, MouseListener, MouseM
             /**Level*/
             case "1":
                 menuUI.showMenu();
-                level.createlevel1();
-                menuUI.showButtonPane("MainMenu");
+                game.createlevel1();
+                menuUI.showButtonPaneByName("MainMenu");
                 break;
             case "2":
                 menuUI.showMenu();
-                level.createlevel2();
-                menuUI.showButtonPane("MainMenu");
+                game.createlevel2();
+                menuUI.showButtonPaneByName("MainMenu");
                 break;
             case "3":
                 menuUI.showMenu();
-                level.createlevel3();
-                menuUI.showButtonPane("MainMenu");
+                game.createlevel3();
+                menuUI.showButtonPaneByName("MainMenu");
                 break;
             case "4":
                 menuUI.showMenu();
-                level.createlevel4();
-                menuUI.showButtonPane("MainMenu");
+                game.createlevel4();
+                menuUI.showButtonPaneByName("MainMenu");
                 break;
             case "5":
                 menuUI.showMenu();
-                level.createlevel5();
-                menuUI.showButtonPane("MainMenu");
+                game.createlevel5();
+                menuUI.showButtonPaneByName("MainMenu");
                 break;
             /** Editor Buttons:*/ // FIXME: 03.05.2019 Action Peformed in Editor ? (siehe V. 1.05.2019)
-            case "+":
-                //System.out.println("Zoom rein");
-                editor.zoom(true);
-                break;
-
-            case "-":
-                //System.out.println("Zoom raus");
-                editor.zoom(false);
-                break;
-            case "Tile MenuTab":
-                editor.createTileMenu();
-                break;
-
         }
         this.requestFocus();
     }
@@ -271,17 +278,26 @@ public class GUI extends JFrame implements ActionListener, MouseListener, MouseM
         cp.add(gamePanel);
         gamePanel.addtoRender(this);
         menuUI = new MenuUI(null, this);
+        JPanel guiInfoPane = new JPanel(new BorderLayout());
+        JTextArea info = new JTextArea
+                ("Willkommen zu Chase ME! Du willst wissen was das Spiel kann? " +
+                        "\n Zur Entstehung... Steuerung: " +
+                        "\n W: Oben Laufen  S: Unten Laufen" +
+                        "\n A: Links Laufen D: Rechts Laufen" +
+                        "\n LG Kevin");
+        guiInfoPane.add(info);
+        guiInfoPane.setName("guiInfo");
+        menuUI.addInfo(guiInfoPane);
         menuUI.loadMainMenu(new String[]{"Game", "Restart", "GridLines", "Editor", "Exit", "TestButton"});
-
-        level = new Game(gamePanel, keyManager);
+        game = new Game(gamePanel, keyManager);
 
         t.start();
     }
 
     public void render(Graphics2D g2d ) {
         try {
-            if (level.isActive()) {
-                level.renderLevel(g2d);
+            if (game.isActive()) {
+                game.renderLevel(g2d);
             } else {
                 editor.renderEditor(g2d);
             }
@@ -291,8 +307,8 @@ public class GUI extends JFrame implements ActionListener, MouseListener, MouseM
         }
     }
 
-    public Game getLevel() {
-        return level;
+    public Game getGame() {
+        return game;
     }
 
     public Editor getEditor() {
@@ -304,7 +320,6 @@ public class GUI extends JFrame implements ActionListener, MouseListener, MouseM
     }
 
     public static void main(String[] args) {
-        //https://www.java-forum.org/thema/swing-komponenten-standart-windows-design.34019/
         try {
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
         }catch(Exception e) {
@@ -315,15 +330,14 @@ public class GUI extends JFrame implements ActionListener, MouseListener, MouseM
 
     public void update() {
         keyManager.update();
-        if (level.isActive()) {
-            level.updateLevel();
+        if (game.isActive()) {
+            game.updateLevel();
         }else { //Editor:
             editor.update();
         }
-
         GAMEPANEL_HEIGHT = gamePanel.getWidth();
         GAMEPANEL_WIDTH = gamePanel.getWidth();
-        debugAnzeige.setText("GP Groesse:" + GAMEPANEL_WIDTH + " | " + GAMEPANEL_HEIGHT + "\n" + gamePanel.getCamera());
+        debugAnzeige.setText("GP Groesse:" + GAMEPANEL_WIDTH + " | " + GAMEPANEL_HEIGHT + "\n" + menuUI.currentPage);
 
         gamePanel.repaint();
         gamePanel.revalidate();
@@ -366,8 +380,8 @@ public class GUI extends JFrame implements ActionListener, MouseListener, MouseM
     @Override
     public void mouseClicked(MouseEvent e) {
         e.getSource();
-        if (level.isActive()) {
-            level.mouseClicked(e);
+        if (game.isActive()) {
+            game.mouseClicked(e);
             //System.out.println("Level Clicked");
         } else {
             editor.mouseClicked(e);
@@ -396,7 +410,7 @@ public class GUI extends JFrame implements ActionListener, MouseListener, MouseM
 
     @Override
     public void mouseDragged(MouseEvent e) {
-        if (!level.isActive()) {
+        if (!game.isActive() && e.getSource().equals(gamePanel)) {
             editor.mouseDragged(e);
         }
         System.out.println("Dragged");

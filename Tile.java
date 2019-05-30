@@ -1,6 +1,5 @@
 import javax.swing.*;
 import java.awt.*;
-import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
 import java.util.LinkedList;
 
@@ -24,16 +23,15 @@ public class Tile extends JPanel implements Cloneable, Comparable{
   }
 
   public void renderTile(Graphics2D g2d, int pXPos, int pYPos){
-    AffineTransform oldTransform = g2d.getTransform();
     this.setLocation(pXPos, pYPos);
     if (showImage) {
       g2d.drawImage(tileImage, this.getX(), this.getY(), TILEWIDTH, TILEHEIGHT, null);
     }
     paintBorder(g2d);
-    g2d.setTransform(oldTransform);
   }
 
   private void paintBorder(Graphics2D g2d) {
+      Stroke beforeStroke = g2d.getStroke();
     if (borderInsets.top > 0) {
       int stroke = borderInsets.top;
       g2d.setStroke(new BasicStroke(stroke));
@@ -57,6 +55,7 @@ public class Tile extends JPanel implements Cloneable, Comparable{
       g2d.setStroke(new BasicStroke(stroke));
       g2d.drawLine(getX() + stroke / 2, getY() + stroke / 2, getX() + stroke / 2, getY() + TILEHEIGHT - stroke / 2);
     }
+      g2d.setStroke(beforeStroke);
   }
 
   public void setBorderInsets(Insets insets) {

@@ -92,7 +92,7 @@ public class Camera {
         this.clickXOffset = clickXOffset;
     }
 
-    public double getClickYOffset() {
+    public int getClickYOffset() {
         return clickYOffset;
     }
 

@@ -15,17 +15,11 @@ public class MenuButton extends JButton {
         Border margin = new EmptyBorder(5, 15, 5, 15);
         Border compound = new CompoundBorder(line, margin);
         setBorder(compound);
-        setFont(getFont().deriveFont(Font.BOLD, 50));
+        setFont(getFont().deriveFont(Font.BOLD, 40));
     }
 
     public MenuButton(int level) {
-        super(Integer.toString(level));
-        setForeground(Color.DARK_GRAY);
-        setBackground(Color.WHITE);
-        Border line = new LineBorder(Color.BLACK);
-        Border margin = new EmptyBorder(5, 15, 5, 15);
-        Border compound = new CompoundBorder(line, margin);
-        setBorder(compound);
+        this(Integer.toString(level));
         setFont(getFont().deriveFont(Font.BOLD, 25));
     }
 

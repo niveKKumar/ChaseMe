@@ -296,6 +296,7 @@ public class Meldungen extends JDialog implements ActionListener {
             center.add(eingabe[i]);
         }
         abfrage.setText(abfrageText);
+        setVisible(true);
     }
 
     private void setUserInput() {
