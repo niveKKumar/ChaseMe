@@ -21,8 +21,8 @@ public class SpriteSheet{
         height = image.getHeight() / pDirections;
 //       //System.out.println("Width:"+ height);
     } catch(IOException e) {
-        System.out.println("LADEFEHLER SPRITESHEET");
-        return;
+        System.out.println("Height:" + height + "Width+" + width + "LADEFEHLER SPRITESHEET");
+        // TODO: 03.06.2019 Nur temp Lösung
     } // end of try
   for ( int direction = 0;direction<pDirections ;direction++ ) {
     for ( int move=0;move<pMoves ;move++ ) {

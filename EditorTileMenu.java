@@ -409,9 +409,10 @@ public class EditorTileMenu extends JDialog {
                 @Override
                 public void actionPerformed(ActionEvent e) {
                     showFilter(display);
-                    buttons[2].setText("<html>Filter: <br>" + filter + "</html>");
+                    buttons[2].setText("<html>Filter:<br>" + filter + "</html>");
                 }
             });
+            setFontAsBigAsSize(buttons[2]);
             System.out.println("size html " + buttons[2].getFont().getSize());
             return buttons;
         }
@@ -419,11 +420,15 @@ public class EditorTileMenu extends JDialog {
         public void setFontAsBigAsSize(JButton bt) {
             boolean tooBig = false;
             int size = 1;
-            Font f = new Font(bt.getName(), Font.PLAIN, size);
+            String name = bt.getText();
+            if (name.contentEquals("<html>")) {
+                name = name.replaceAll("<html>", "");
+            }
+            Font f = new Font(bt.getFont().getName(), Font.PLAIN, size);
             bt.setFont(f);
             while (!tooBig) {
                 FontMetrics metric = bt.getFontMetrics(bt.getFont());
-                if (metric.getHeight() < EditorTileButton.SIZE && metric.stringWidth(bt.getText()) < EditorTileButton.SIZE) {
+                if (metric.getHeight() < EditorTileButton.SIZE && metric.stringWidth(name) < EditorTileButton.SIZE) {
                     size++;
                     f = new Font(bt.getName(), Font.PLAIN, size);
                     System.out.println(f.getSize());

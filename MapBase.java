@@ -12,17 +12,20 @@ public class MapBase {
     protected int graphicID = 22;
     protected int chapterXOffset, chapterYOffset;
     protected String mapStatus;
-    private boolean active;
+    protected boolean active;
+    protected boolean gridLines = false;
 
     public MapBase(GamePanel gp, TileSet pTileSet, @Nullable String pStatus, @Nullable Point pChapterOffset) {
         gamePanel = gp;
         tileSet = pTileSet;
         mapStatus = pStatus;
+
         if (pStatus == null) {
             mapStatus = "null";
         } else {
             mapStatus = pStatus;
         }
+
         if (pChapterOffset == null) {
             chapterYOffset = 0;
             chapterXOffset = 0;
@@ -30,6 +33,7 @@ public class MapBase {
             chapterXOffset = (int) pChapterOffset.getX() * Tile.TILEWIDTH;
             chapterYOffset = (int) pChapterOffset.getY() * Tile.TILEHEIGHT;
         }
+
     }
 
 
@@ -56,11 +60,14 @@ public class MapBase {
         }
         if (mapStatus.equals("Item")) {
             itemBlock();
+            System.out.println("Map has ItemBlock");
         }
         if (mapStatus.equals("Border")) {
+            System.out.println("Map has BorderBlock");
             borderBlock();
         }
         if (mapStatus.equals("All")) {
+            System.out.println("Map has BorderBlock and ItemBlock");
             itemBlock();
             borderBlock();
         }
@@ -73,7 +80,7 @@ public class MapBase {
         }
         //Unten:
         for (int i = 0; i < mapSizeX - 1; i++) {
-            mapTiles[mapSizeY - 1][i].setBlocked(true);
+            mapTiles[i][mapSizeY - 1].setBlocked(true);
         }
         //Links:
         for (int i = 0; i < mapSizeY - 1; i++) {
@@ -81,7 +88,7 @@ public class MapBase {
         }
         //Rechts:
         for (int i = 0; i < mapSizeY - 1; i++) {
-            mapTiles[i][mapSizeY - 1].setBlocked(true);
+            mapTiles[mapSizeX - 1][i].setBlocked(true);
         }
     }
 
@@ -198,4 +205,30 @@ public class MapBase {
         return new Point(chapterXOffset, chapterYOffset);
     }
 
+    public void setGridLines(boolean gridLines) {
+        Insets border;
+        boolean showImage;
+        boolean fill;
+
+        if (gridLines) {
+            border = new Insets(2, 2, 2, 2);
+            showImage = false;
+            fill = true;
+        } else {
+            border = new Insets(0, 0, 0, 0);
+            showImage = true;
+            fill = false;
+        }
+
+        for (int spalte = 0; spalte < mapTiles.length; spalte++) {
+            for (int zeile = 0; zeile < mapTiles.length; zeile++) {
+                mapTiles[spalte][zeile].showImage(showImage);
+                mapTiles[spalte][zeile].setBorderInsets(border);
+
+                if (mapTiles[spalte][zeile].isBlocked()) {
+                    mapTiles[spalte][zeile].setFill(fill);
+                }
+            }
+        }
+    }
 }

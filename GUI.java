@@ -11,8 +11,8 @@ public class GUI extends JFrame implements ActionListener, MouseListener, MouseM
     public static final int FRAME_WIDTH = 1080;
     public static final int FRAME_HEIGHT = 720;
 
-    public static int GAMEPANEL_WIDTH = 500;
-    public static int GAMEPANEL_HEIGHT = 500;
+    public static int GAMEPANEL_WIDTH = 700;
+    public static int GAMEPANEL_HEIGHT = 700;
     public static JPanel east = new JPanel(new GridBagLayout());
     private JPanel north = new JPanel(new FlowLayout());
     public static JPanel tempDebugPane;
@@ -162,6 +162,11 @@ public class GUI extends JFrame implements ActionListener, MouseListener, MouseM
             }
         });
         south.add(getFocus);
+
+        gamePanel = new GamePanel(cp, this, this, keyManager);
+        cp.add(gamePanel);
+        gamePanel.addtoRender(this);
+        menuUI = new MenuUI(null, this);
     }
 
     private void createEditor() {
@@ -178,12 +183,13 @@ public class GUI extends JFrame implements ActionListener, MouseListener, MouseM
         }
         JButton temp = (JButton) evt.getSource();
         if (temp.getName() != null && temp.getName().contentEquals("Info")) {
-            System.out.println("info clicked");
             if (game != null && game.isActive()) {
                 menuUI.showButtonPaneByName("guiInfo");
+                System.out.println("info clicked guiInfo");
             }
             if (editor != null && editor.isActive()) {
                 menuUI.showButtonPaneByName("editorInfo");
+                System.out.println("info clicked editorInfo");
             }
         }
         if (temp.getName() != null && temp.getName().contentEquals("Settings")) {
@@ -196,25 +202,16 @@ public class GUI extends JFrame implements ActionListener, MouseListener, MouseM
                 this.requestFocus();
                 break;
             case "GridLines":
-                for (int i = 0; i < game.analytics.length; i++) {
-                    if (game.analytics[i].active == true) {
-                        game.analytics[i].setActive(false);
-                        this.requestFocus();
-                    } else {
-                        game.analytics[i].setMover(game.mover);
-                        game.analytics[i].setActive(true);
-                        this.requestFocus();
-                    } // end of if-else
-                } // end of for
+                game.setGridLines();
                 break;
 
             case "Game":
-                if (!menuUI.searchForPanel("Level")) {
-                    MenuUI.MenuTab levelMenu = game.createLevelMenu();
-                    levelMenu.setName("Level");
-                    menuUI.addAndShowMenuTab(levelMenu);
+                if (!menuUI.searchForPanel("gamePage")) {
+                    JPanel levelMenu = game.createLevelMenu();
+                    levelMenu.setName("gamePage");
+                    menuUI.addAndShowPanel(levelMenu, true, false, true);
                 } else {
-                    menuUI.showButtonPaneByName("Level");
+                    menuUI.showButtonPaneByName("gamePage");
                 }
                 this.requestFocus();
                 break;
@@ -222,12 +219,16 @@ public class GUI extends JFrame implements ActionListener, MouseListener, MouseM
             case "Editor":
                 if (editor == null) {
                     createEditor();
+
                     MenuUI.MenuTab editorMenu = editor.createEditorMenu();
-                    editorMenu.setName("Editor");
-                    menuUI.addInfo(editor.createInfoPane());
+                    editorMenu.setName("EditorMenu");
                     menuUI.addAndShowMenuTab(editorMenu);
+
+                    JPanel editorInfo = editor.createInfoPane();
+                    editorInfo.setName("editorInfo");
+                    menuUI.addInfo(editorInfo);
                 } else {
-                    menuUI.showButtonPaneByName("Editor");
+                    menuUI.showButtonPaneByName("EditorMenu");
                 }
                 this.requestFocus();
                 break;
@@ -250,22 +251,22 @@ public class GUI extends JFrame implements ActionListener, MouseListener, MouseM
                 break;
             case "2":
                 menuUI.showMenu();
-                game.createlevel2();
+//                game.createlevel2();
                 menuUI.showButtonPaneByName("MainMenu");
                 break;
             case "3":
                 menuUI.showMenu();
-                game.createlevel3();
+//                game.createlevel3();
                 menuUI.showButtonPaneByName("MainMenu");
                 break;
             case "4":
                 menuUI.showMenu();
-                game.createlevel4();
+//                game.createlevel4();
                 menuUI.showButtonPaneByName("MainMenu");
                 break;
             case "5":
                 menuUI.showMenu();
-                game.createlevel5();
+//                game.createlevel5();
                 menuUI.showButtonPaneByName("MainMenu");
                 break;
             /** Editor Buttons:*/ // FIXME: 03.05.2019 Action Peformed in Editor ? (siehe V. 1.05.2019)
@@ -274,17 +275,28 @@ public class GUI extends JFrame implements ActionListener, MouseListener, MouseM
     }
 
     private void createGameComponents() {
-        gamePanel = new GamePanel(cp, this, this, keyManager);
-        cp.add(gamePanel);
-        gamePanel.addtoRender(this);
-        menuUI = new MenuUI(null, this);
         JPanel guiInfoPane = new JPanel(new BorderLayout());
-        JTextArea info = new JTextArea
-                ("Willkommen zu Chase ME! Du willst wissen was das Spiel kann? " +
-                        "\n Zur Entstehung... Steuerung: " +
+        InfoTextArea info = new InfoTextArea();
+        info.appendHeading("Info");
+        info.appendRegularText
+                ("\n Willkommen zu Chase ME! Du willst wissen was das Spiel kann? " +
+                        "\n Zur Entstehung und Spielidee" +
+                        "\n Du bist ein gejagter Mann, dem ein Verbrechen untergejubelt wurde" +
+                        "\n Dein bester Freund ist ein Hacker und konnte dadurch die richtigen" +
+                        "\n Verbrecher finden." +
+                        "\n Daher musst du um deine Unschuld zu Beweisen aus BeachTown entkommen und in" +
+                        "\n Castle City die echten Verbrecher finden." +
+                        "\n Das Spiel besteht aus insgesamt 5 verschiedenen Level die jeweils in eigene Kapitel eingeteilt sind" +
+                        "\n Wenn du schaffst alle Rätsel zu lösen erwarest du ein Geschenk!" +
+                        "\n Außerdem kannst du acuh deine eigenen Maps erstellen (im Editor Tab) und mithilfe " +
+                        "\n der Level Klasse, ein eigenes Level zu realisieren. Der Quellcode ist sehr detailreich beschrieben" +
+                        "\n ,sodass ein einfaches Level kinderleicht zu erstellen ist. " +
+                        "\n Achtung: Bearbeiten von unerlaubtem Code kann" +
+                        "\n zu Problemen führen, weshalb diese nur unter Vorsicht bearbeitet werden sollten! " +
+                        "\n Steuerung: " +
                         "\n W: Oben Laufen  S: Unten Laufen" +
                         "\n A: Links Laufen D: Rechts Laufen" +
-                        "\n LG Kevin");
+                        "\n Viel Spaß beim Rätseln \n -Kevin");
         guiInfoPane.add(info);
         guiInfoPane.setName("guiInfo");
         menuUI.addInfo(guiInfoPane);

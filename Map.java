@@ -6,7 +6,6 @@ import java.io.FileReader;
 public class Map extends MapBase {
 
     private String[] mapText;
-
     public Map(GamePanel gp, TileSet pTileSet, String pMapPlanPath, String pStatus, Point pChapterOffset) {
         super(gp, pTileSet, pStatus, pChapterOffset);
         mapText = readMap(pMapPlanPath);
@@ -63,4 +62,5 @@ public class Map extends MapBase {
         }
         return temp;
     }
+
 }

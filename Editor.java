@@ -8,7 +8,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.LinkedList;
 
-public class Editor {
+public class Editor implements ActionListener {
 
     // eigene Objekte:
     public EditorTileMenu tileMenu;
@@ -70,7 +70,7 @@ public class Editor {
         active = false;
     }
     /**
-     * Erstellung Editor Menu (in Form eines MenuTabs):
+     * Erstellung Editor Menü (in Form eines MenüTabs):
      */
     public MenuUI.MenuTab createEditorMenu() {
         MenuUI.MenuTab menuTab = new MenuUI.MenuTab("shouldBeSelectedByTheManager", new String[]{"+", "-", "Tile MenuTab"}, true, false, true);
@@ -80,7 +80,26 @@ public class Editor {
     public JPanel createInfoPane() {
         JPanel editorInfoPane = new JPanel(new BorderLayout());
         editorInfoPane.setName("editorInfo");
-        editorInfoPane.add(new JLabel("Willkommen zum Editor in ChaseMe. Du willst wissen was der Editor kann? \n Zur Entstehung... Steuerung:\n W: Oben Laufen... \n LG Kevin"));
+        InfoTextArea description = new InfoTextArea("");
+        description.appendHeading("Info");
+        description.appendRegularText
+                ("Willkommen zum Editor ! Du willst wissen was der Editor kann? " +
+                        "\n Es können ganz einfach Maps erstellt werden" +
+                        "\n Es gibt ein eigenes Menü für den Editor, dazu einfach" +
+                        "\n auf das Menü (unten in der Leiste) -> Editor -> Tile Menü" +
+                        "\n Du kannst deine gewünschten Tiles mit Doppelklick direkt anwählen oder durch einen Klick und und per Bestätigen." +
+                        "\n Um die TIle zu verändern einfach auf die gewünschte Fläche in deiner Map klicken ." +
+                        "\n Mit der Shift Taste und zwei Klicks können ganze Flächen ausgewählt und geändernt werden" +
+                        "\n Mit der STR Taste können Tiles aus der Map ganz einfach kopiert und verwendet werden." +
+                        "\n Kamera - Steuerung:" +
+                        "\n W: Kamera nach oben bewegen" +
+                        "\n A: Kamera nach links bewegen" +
+                        "\n S: Kamera nach unten bewegen" +
+                        "\n D: Kamera nach rechts bewegen" +
+                        "\n - : Zoom verringern | + : Zoom erhöhen" +
+                        "\n ..." +
+                        "\n Viel Spaß beim Maps bauen \n -Kevin");
+        editorInfoPane.add(description);
         return editorInfoPane;
     }
 
@@ -180,18 +199,7 @@ public class Editor {
             }
         });
         btSimulate = new JButton("Simulate your Game");
-        btSimulate.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                Game tempGame = new Game(gamePanel, keyListener);
-                MapBase[] temp = new Map[maps.size()];
-                for (int i = 0; i < maps.size(); i++) {
-                    temp[i] = maps.get(i);
-                }
-                tempGame.createlevel0(temp, null);
-
-            }
-        });
+        btSimulate.addActionListener(this);
         mapSelectActionsPanel.add(btAutosave);
         mapSelectActionsPanel.add(btSimulate);
 
@@ -656,7 +664,7 @@ public class Editor {
             case "-":
                 zoom(false);
                 break;
-            case "TileMenuTab":
+            case "Tile MenuTab":
                 createTileMenu();
                 break;
         }

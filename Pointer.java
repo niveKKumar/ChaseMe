@@ -61,14 +61,16 @@ class Pointer {
         return new Point((int) xPos, (int) yPos);
     }
 
-    public void setLocation(Point pKords) {
-        xPos = (int) pKords.getX();
-        yPos = (int) pKords.getY();
-    }
-
     public void setLocation(int xPos, int yPos) {
         this.xPos = xPos;
         this.yPos = yPos;
+        if (camera != null) {
+            camera.centerOnObject(this);
+        }
+    }
+
+    public void setLocation(double xPos, double yPos) {
+        setLocation(Math.round(xPos), Math.round(yPos));
     }
 
     public Camera getCamera() {

@@ -14,6 +14,7 @@ public class Tile extends JPanel implements Cloneable, Comparable{
   public float costFromStart;
   protected float estimatedCostToGoal;
     protected Insets borderInsets;
+    protected boolean fill;
 
     public Tile(BufferedImage pTileImage) {
     super();
@@ -56,11 +57,18 @@ public class Tile extends JPanel implements Cloneable, Comparable{
       g2d.drawLine(getX() + stroke / 2, getY() + stroke / 2, getX() + stroke / 2, getY() + TILEHEIGHT - stroke / 2);
     }
       g2d.setStroke(beforeStroke);
+      if (fill) {
+          g2d.fillRect(getX(), getY(), Tile.TILEWIDTH, Tile.TILEHEIGHT);
+      }
   }
 
   public void setBorderInsets(Insets insets) {
     borderInsets = insets;
   }
+
+    public void setFill(boolean fill) {
+        this.fill = fill;
+    }
 
   public void showImage(boolean b){
     showImage = b;

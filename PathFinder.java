@@ -66,14 +66,15 @@ public class PathFinder{
 
     private void setBlockedTilesToClosedList() {
         for (int m = 0; m < map.length; m++) {
-            for (int i = 0; i < map[m].mapTiles.length; i++) {
-                for (int j = 0; j < map[m].mapTiles[i].length; j++) {
-                    if (map[m].mapTiles[i][j].isBlocked()) {
-                        closedList.add(map[m].mapTiles[i][j]);
-                    } // end of if
-                } // end of for
+            if (map[m] != null) {
+                for (int i = 0; i < map[m].mapTiles.length; i++) {
+                    for (int j = 0; j < map[m].mapTiles[i].length; j++) {
+                        if (map[m].mapTiles[i][j].isBlocked()) {
+                            closedList.add(map[m].mapTiles[i][j]);
+                        } // end of if
+                    } // end of for
+                }
             }
-
         }//end of for - Map
     }
 

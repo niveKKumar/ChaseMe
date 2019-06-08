@@ -59,7 +59,6 @@ public class MenuUI extends JFrame {
 //        }
         repaint();
         revalidate();
-        setVisible(true);
     }
     /**
      * Konstruktor mit direkter Eingabe der Haupt Menu Buttons
@@ -99,16 +98,14 @@ public class MenuUI extends JFrame {
 
         //Main Butons:
         buttonPane = new JPanel();
-        buttonPane.setBackground(null);
         buttonPane.setBorder(BorderFactory.createLineBorder(Color.pink,5));
         gbc = new GridBagConstraints();
         gbc.gridheight = GridBagConstraints.REMAINDER;
         gbc.gridwidth = GridBagConstraints.REMAINDER;
         gbc.fill = GridBagConstraints.BOTH;
-        addObject(buttonPane, 1, 1, 3, 3, GridBagConstraints.CENTER);
+        addObject(buttonPane, 1, 1, 1, 1, GridBagConstraints.CENTER);
 
-        Image imgReturn = (new ImageIcon("Content/Graphics/UI/returnIcon.png")).getImage().getScaledInstance(50, 50, Image.SCALE_SMOOTH);
-        btReturn = new MenuButton(new ImageIcon(imgReturn));
+        btReturn = new MenuButton("Content/Graphics/UI/returnIcon.png", 50, 50);
         btReturn.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -124,8 +121,7 @@ public class MenuUI extends JFrame {
         gbc.insets = new Insets(5, 5, 5, 5);
         addObject(gbc, btReturn, menuPane, 0, 0, 0, 0);
 
-        Image imgSettings = (new ImageIcon("Content/Graphics/UI/settingsIcon.png")).getImage().getScaledInstance(30, 30, Image.SCALE_SMOOTH);
-        btSettings = new MenuButton(new ImageIcon(imgSettings));
+        btSettings = new MenuButton("Content/Graphics/UI/settingsIcon.png", 30, 30);
         btSettings.setName("Settings");
         btSettings.setFocusable(false);
         btSettings.setAlignmentX(RIGHT_ALIGNMENT);
@@ -134,8 +130,7 @@ public class MenuUI extends JFrame {
         gbc.insets = new Insets(10, 10, 10, 10);
         addObject(gbc, btSettings, menuPane, 0, 2, 0, 0);
 
-        Image imgInfo = (new ImageIcon("Content/Graphics/UI/infoIcon.png")).getImage().getScaledInstance(30, 30, Image.SCALE_SMOOTH);
-        btInfo = new MenuButton(new ImageIcon(imgInfo));
+        btInfo = new MenuButton("Content/Graphics/UI/infoIcon.png", 30, 30);
         btInfo.setName("Info");
         btInfo.addActionListener(actionListener);
         btInfo.setFocusable(false);
@@ -167,6 +162,7 @@ public class MenuUI extends JFrame {
         btReturn.setVisible(false);
         btSettings.setVisible(true);
         btInfo.setVisible(true);
+        setVisible(true);
     }
 
     /**
@@ -181,14 +177,7 @@ public class MenuUI extends JFrame {
 //        addPanel(customButtonPane,showReturn,showSettings,showInfo);
 //    }
     public void addInfo(JPanel yourInfoPanel) {
-        if (yourInfoPanel.getName() == null) {
-            Meldungen m = new Meldungen(this, true, "null");
-            m.createComponents(1, "Geben Sie bitte einen Namen ein, \n denn ein Menu ohne Name kann nicht weiter identifiziert und damit abgerufen werden!");
-            m.setVisible(true);
-            yourInfoPanel.setName(m.getUserInput(0));
-        }
-        System.out.println("Adding Info with the Name: " + yourInfoPanel.getName());
-        addPanel(yourInfoPanel, true, false, true);
+        addPanel(yourInfoPanel, true, false, false);
     }
 
     /**
@@ -216,6 +205,7 @@ public class MenuUI extends JFrame {
         if (!searchForPanel(menu.getName())) {
             addedMenus.add(menu);
             buttonPane.add(menu);
+            System.out.println("Added " + menu.getName());
         }
     }
 
@@ -242,6 +232,11 @@ public class MenuUI extends JFrame {
         showButtonPaneByName(yourPanelWithButtons.getName());
     }
 
+    public void addAndShowPanel(JPanel yourPanelWithButtons, String heading, boolean showReturn, boolean showSettings, boolean showInfo) {
+        addPanel(yourPanelWithButtons, showReturn, showSettings, showInfo);
+        getButtonPaneByName(yourPanelWithButtons.getName()).setHeading(heading);
+        showButtonPaneByName(yourPanelWithButtons.getName());
+    }
     /**
      * Lässt eine Seite per Namen suchen
      */
@@ -281,21 +276,28 @@ public class MenuUI extends JFrame {
     public void showButtonPaneByName(String name) {
         for (int i = 0; i < addedMenus.size(); i++) {
             addedMenus.get(i).setVisible(false);
-            if (addedMenus.get(i).getName().equals(name)) {
-                MenuTab found = addedMenus.get(i);
-                buttonPane.add(found);
-                found.setVisible(true);
-                setMinimumSize(found.getSize());
-                currentPage = found.getName();
-                btReturn.setVisible(found.showReturn);
-                btSettings.setVisible(found.showSettings);
-                btInfo.setVisible(found.showInfo);
-            }
         }
+        MenuTab found = getButtonPaneByName(name);
+        found.setVisible(true);
+        System.out.println("minimum size:" + found.getMinimumSize());
+        setMinimumSize(found.getMinimumSize());
+        currentPage = found.getName();
+        btReturn.setVisible(found.showReturn);
+        btSettings.setVisible(found.showSettings);
+        btInfo.setVisible(found.showInfo);
+
         repaint();
         revalidate();
     }
 
+    public MenuTab getButtonPaneByName(String name) {
+        for (int i = 0; i < addedMenus.size(); i++) {
+            if (addedMenus.get(i).getName().equals(name)) {
+                return addedMenus.get(i);
+            }
+        }
+        return null;
+    }
     /**
      * Hilfsmethode zum Hinzufügen von Objekten auf das MenuPane im Menu
      */
@@ -316,6 +318,7 @@ public class MenuUI extends JFrame {
          */
         boolean showReturn = false, showSettings = false, showInfo = false;
         JPanel contentPane;
+        JLabel heading;
 
 
         public MenuTab(String pName, String[] btNames) {
@@ -354,16 +357,43 @@ public class MenuUI extends JFrame {
             contentPane.setOpaque(false);
             contentPane.setLayout(new BoxLayout(contentPane, BoxLayout.Y_AXIS));
 
+            GridBagConstraints gbc = new GridBagConstraints();
+            gbc.gridy = 0;
+            gbc.gridx = 0;
+            gbc.anchor = GridBagConstraints.NORTH;
+            heading = new JLabel();
+            heading.setAlignmentX(CENTER_ALIGNMENT);
+            heading.setAlignmentY(CENTER_ALIGNMENT);
+            contentPane.add(heading, gbc);
+
+            FontMetrics fm;
+            int minWidth = 0;
+            int minHeight = 0;
+            int gap = 10;
             MenuButton[] buttons = new MenuButton[btNames.length];
             for (int i = 0; i < buttons.length; i++) {
                 buttons[i] = new MenuButton(btNames[i]);
+                fm = buttons[i].getFontMetrics(buttons[i].getFont());
                 buttons[i].addActionListener(actionListener);
                 buttons[i].setAlignmentX(Component.CENTER_ALIGNMENT);
                 buttons[i].setAlignmentY(Component.CENTER_ALIGNMENT);
                 buttons[i].setFocusable(false);
-                contentPane.add(Box.createRigidArea(new Dimension(0, 10)));
+                contentPane.add(Box.createRigidArea(new Dimension(0, gap)));
                 contentPane.add(buttons[i]);
+
+                if (fm.stringWidth(buttons[i].getText()) > minWidth) {
+                    minWidth = fm.stringWidth(buttons[i].getText());
+                }
+                if (fm.getHeight() > minHeight) {
+                    minHeight = fm.getHeight();
+                }
             }
+            int leftSpace = 200;
+            setMinimumSize(new Dimension(minWidth + leftSpace, (minHeight + gap) * (buttons.length + 1) + leftSpace));
+        }
+
+        public void setHeading(String headingText) {
+            heading.setText(headingText);
         }
     }
 }
