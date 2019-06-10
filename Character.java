@@ -1,17 +1,37 @@
+import javax.swing.*;
 import java.awt.*;
 import java.util.LinkedList;
 
 
 public class Character extends Mover {
-    private int checkpointsActivated = 0;
 
+    public JTextArea moverDebugPane = new JTextArea("");
+    /**
+     * MainCharacter Klasse (abgeleitet von Mover Klasse)
+     * -> kann Schritte zählen
+     * -> Position auf einem Tile oder auf einer Tile Fläche kann abgefragt werden
+     */
+    protected int steps;
+    protected int checkpointsActivated = 0;
+
+    /**
+     * Zum Erstellen des Character benötigt man
+     * - einen Bildschirm (Panel),Position (xPos,yPos) und die zugehörige(n) Map(s)
+     */
     public Character(GamePanel pGP, int pXpos, int pYpos, MapBase[] pMap) {
         super(pGP, pXpos, pYpos, new SpriteSheet("Content/Graphics/player/playersheet.png", 4, 3), pMap);
         if (gamePanel.getCamera() != null) {
             gamePanel.getCamera().centerOnObject(this);
         }
+
+        moverDebugPane.setSize(400, 150);
+        GUI.addToDebugPane(moverDebugPane);
+
     }
 
+    /**
+     * Schritte werden hochgezählt
+     */
     @Override
     public void setMove(Point pMove) {
         if (!speaking) {
@@ -20,18 +40,25 @@ public class Character extends Mover {
                 steps++;
             }
         }
+
+        moverDebugPane.setText("XPos: " + getLocation().getX() + "\n = Tile: " + getLocation().getX() / Tile.TILEWIDTH + "\n YPos: " + getLocation().getY() + " = \nTile: " + getLocation().getY() / Tile.TILEHEIGHT);
+
         gamePanel.getCamera().centerOnObject(this);
     }
 
-    public boolean isOnThisTile(int xPos, int yPos, int cpAmount) {
-        Point cord = new Point(xPos, yPos);
+    /**
+     * Liste mit allen "aktiven" TileIDs wird aufgerufen (moverIsOnTileID)
+     * und mit Parameter IDs abgeglichen
+     * CP Amount gibt an, wie weit der Mover das Tile berühren soll (1 = leicht berühren,4 = voller Umfang)
+     */
+    public boolean isOnThisTile(int xTileID, int yTileID, int cpAmount) {
+        Point cord = new Point(xTileID, yTileID);
         LinkedList<Point> tileList = moverIsOnTileID();
 
         for (int i = 0; i < tileList.size(); i++) {
             if (tileList.get(i).getLocation().equals(cord)) {
                 checkpointsActivated++;
             }
-//           //System.out.println("X: " + tileList.get(i).getLocation().getX() +" must be "+ xPos + " is " + x + "\n Y:" + tileList.get(i).getLocation().getY()+" must be "+ yPos + "is " + y);
         }
         if (checkpointsActivated >= cpAmount) {
             checkpointsActivated = 0;
@@ -42,6 +69,9 @@ public class Character extends Mover {
         }
     }
 
+    /**
+     * Abfrage ob Character in einer bestimmten FLäche ist
+     */
     public boolean isInThisArea(Point firstCorner, Point secondCorner, int cpAmount) {
         if (firstCorner.getX() > secondCorner.getX()) {
             int swap = (int) firstCorner.getX();
@@ -54,10 +84,10 @@ public class Character extends Mover {
             secondCorner.setLocation(secondCorner.getX(), swap);
         }
 
-        for (int i = (int) firstCorner.getY(); i < (int) secondCorner.getY(); i++) {
-            for (int j = (int) firstCorner.getX(); j < (int) secondCorner.getX(); j++) {
+        for (int i = (int) firstCorner.getY(); i < (int) secondCorner.getY() + 1; i++) {
+            for (int j = (int) firstCorner.getX(); j < (int) secondCorner.getX() + 1; j++) {
                 if (isOnThisTile(j, i, cpAmount)) {
-                    //System.out.println("is in area");
+                    System.out.println("is in area");
                     return true;
                 }
             }
@@ -65,51 +95,12 @@ public class Character extends Mover {
         return false;
     }
 
-    public void saySomething(String text, boolean clear, int speakingSpeed) {
-        //temp:
-        speakingSpeed = 25;
-
-        if (speechBubble == null) {
-            speechBubble = new SpeechBubble(this);
-        }
-        if (clear) {
-            speechBubble.setText("");
-        }
-        speechBubble.setVisible(true);
-        speaking = true;
-        for (int i = 0; i < text.length(); i++) {
-            speechBubble.append(String.valueOf(text.charAt(i)));
-            try {
-                Thread.sleep(speakingSpeed);//Delay des Textes
-            } catch (InterruptedException ex) {
-                Thread.currentThread().interrupt();
-            }
-        }
-        speaking = false;
-    }
-
-    @Override
-    public void draw(Graphics2D g2d) {
-        super.draw(g2d);
-
-    }
-
-    public void setSpeed(int pSpeed) {
-        speed = pSpeed;
-    }
-
-    // Für End-Statistik: Wie viel ist "km" ist man gelaufen
+    /**
+     * Funktionsmethoden (Schrittanzahl,)
+     */
     public int getSteps() {
         return steps;
     }
 
-    public boolean isSpeaking() {
-        return speaking;
-    }
-
-    public void setSpeaking(boolean speaking) {
-        this.speaking = speaking;
-    }
-    
 }
 

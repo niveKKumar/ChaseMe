@@ -1,6 +1,7 @@
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
+import java.awt.image.BufferedImage;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
@@ -10,8 +11,19 @@ import java.util.LinkedList;
 
 public class Editor implements ActionListener {
 
+    /**
+     * Editor Klasse womit Maps erstellt und gespeichert werden können
+     * Am Quellcode nichts verändern !
+     */
+
     // eigene Objekte:
     public EditorTileMenu tileMenu;
+    //Editor Konfiguration:
+    //Kann editiert werden!
+    double bounce = 1;
+    boolean upBorder;
+    private boolean autosave = true;
+    private int maxRecentTiles = 10;
     double zoomFactor = 0.25;
     private int zoomSteps = 0;
     private int zoomRange = 10;
@@ -20,20 +32,13 @@ public class Editor implements ActionListener {
     public Pointer cameraPoint;
     public int selectedMap;
     public JLabel idAnzeige;
-    double bounce = 1;
     private Timer autosaver;
+    private LinkedList recentListTiles = new LinkedList();
     boolean leftBorder;
     boolean rightBorder;
     boolean downBorder;
-    /**
-     * Editor Klasse womit Maps erstellt und gespeichert werden können
-     */
 
-    //Editor Konfiguration:
-    //Kann editiert werden!
-    private int maxRecentTiles = 10;
-    private LinkedList recentListTiles = new LinkedList();
-    boolean upBorder;
+
     private LinkedList<JCheckBox> mapCheck = new LinkedList<>();
     //Data:
     private boolean active;
@@ -78,11 +83,9 @@ public class Editor implements ActionListener {
     }
 
     public JPanel createInfoPane() {
-        JPanel editorInfoPane = new JPanel(new BorderLayout());
-        editorInfoPane.setName("editorInfo");
-        InfoTextArea description = new InfoTextArea("");
-        description.appendHeading("Info");
-        description.appendRegularText
+        InfoTextArea editorInfoPane = new InfoTextArea("");
+        editorInfoPane.appendHeading("Info");
+        editorInfoPane.appendRegularText
                 ("Willkommen zum Editor ! Du willst wissen was der Editor kann? " +
                         "\n Es können ganz einfach Maps erstellt werden" +
                         "\n Es gibt ein eigenes Menü für den Editor, dazu einfach" +
@@ -99,7 +102,6 @@ public class Editor implements ActionListener {
                         "\n - : Zoom verringern | + : Zoom erhöhen" +
                         "\n ..." +
                         "\n Viel Spaß beim Maps bauen \n -Kevin");
-        editorInfoPane.add(description);
         return editorInfoPane;
     }
 
@@ -116,7 +118,7 @@ public class Editor implements ActionListener {
         idAnzeige = new JLabel();
         idAnzeige.setFocusable(false);
         idAnzeige.setText("Kein Tile ausgewählt");
-        idAnzeige.setBorder(BorderFactory.createLineBorder(Color.black));
+
 
         selectMapPanel.setLayout(new GridLayout(0,2,5,5));
         selectMapPanel.add(idAnzeige);
@@ -176,7 +178,9 @@ public class Editor implements ActionListener {
         autosaver = new Timer(30000, new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                autoSaveMap();
+                if (autosave) {
+                    autoSaveMap();
+                }
 
             }
         });
@@ -202,10 +206,6 @@ public class Editor implements ActionListener {
         btSimulate.addActionListener(this);
         mapSelectActionsPanel.add(btAutosave);
         mapSelectActionsPanel.add(btSimulate);
-
-        recent.setBorder(BorderFactory.createLineBorder(Color.DARK_GRAY, 3));
-        selectMapPanel.setBorder(BorderFactory.createLineBorder(Color.PINK, 3));
-        mapSelectActionsPanel.setBorder(BorderFactory.createLineBorder(Color.CYAN, 3));
 
         // FIXME: 29.04.2019 Andere Lösung = unabhängig von GUI
         GridBagConstraints gbc = new GridBagConstraints();
@@ -314,7 +314,11 @@ public class Editor implements ActionListener {
     }
 
     public void addRecently(int id, TileSet ts) {
-        recentListTiles.add(new EditorTileButton(id, ts));
+        if (id != 9999) {
+            recentListTiles.add(new EditorTileButton(id, ts));
+        } else {
+            recentListTiles.add(new EditorTileButton(9999, new BufferedImage(Tile.TILEWIDTH, Tile.TILEHEIGHT, BufferedImage.TYPE_INT_ARGB_PRE)));
+        }
         if (recentListTiles.size() >= maxRecentTiles) {
             recentListTiles.removeFirst();
         }
@@ -685,6 +689,9 @@ public class Editor implements ActionListener {
             m.setGraphicID(clicked.getID());
             addRecently(m.getGraphicID(), m.getTileSet());
             editorAnzeige.setText("Copied");
+        }
+        if (keyListener.alt) {
+            System.out.println("Tile markiert unter : " + m.getTileID(e));
         }
         m.setTile(e, ts);
         keyListener.update();

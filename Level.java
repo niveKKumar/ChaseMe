@@ -1,5 +1,5 @@
 import java.awt.*;
-import java.awt.geom.Point2D;
+import java.util.LinkedList;
 
 public class Level {
     /**
@@ -8,10 +8,8 @@ public class Level {
      */
     public int dialog = 0;
     public Character mover;
-    public Runner[] enemy;
-    public MapBase[] maps;
-    public PathFinder pathFinder;
-    public DisplayAnalytics[] analytics;
+    public LinkedList<Runner> enemy = new LinkedList<>();
+    public Map[] maps;
     private int level;
     private Camera cam;
     private GamePanel gamePanel;
@@ -26,18 +24,17 @@ public class Level {
         cam = camera;
     }
 
-    public void createLevelObjects(int mapAmount, int enemyAmount, int checkPointsAmount) {
+    public void createLevelObjects(int mapAmount, int enemyAmount) {
         maps = new Map[mapAmount];
         mover = new Character(gamePanel, 0, 0, maps);
-        enemy = new Runner[enemyAmount];
 
-        for (int i = 0; i < enemy.length; i++) {
-            enemy[i] = new Runner(gamePanel, 0, 0, maps);
+        if (!enemy.isEmpty()) {
+            enemy.clear();
         }
-        pathFinder = new PathFinder(maps, mover, gamePanel);
+        for (int i = 0; i < enemyAmount; i++) {
+            enemy.add(new Runner(gamePanel, 0, 0, maps));
+        }
         dialog = 0;
-
-        analytics = new DisplayAnalytics[mapAmount];
     }
 
 
@@ -45,69 +42,38 @@ public class Level {
         if (GUI.keyInputToMove(keyListener).getX() != 0 || GUI.keyInputToMove(keyListener).getY() != 0) {
             mover.setMove(GUI.keyInputToMove(keyListener));
             gamePanel.getCamera().centerOnObject(mover);
-            pathFinder.resetPath();
-        } // end of if
-        Point2D from = pathFinder.getNextStep();
-        Point2D to = pathFinder.getNextStep();
-        if (to != null && GUI.keyInputToMove(keyListener).getX() == 0 && GUI.keyInputToMove(keyListener).getY() == 0) {
-            mover.setPathMove(from, to);
         } // end of if
     }
 
     public void renderLevel(Graphics2D g2d) {
-        maps[0].renderMap(g2d);
-        if (enemy.length > 0) {
-            for (int enemyamount = 0; enemyamount < enemy.length; enemyamount++) {
-                if (enemy[enemyamount] != null) {
-                    enemy[enemyamount].draw(g2d);
+        if (maps[0] != null) {
+            maps[0].renderMap(g2d);
+        } else {
+            System.out.println("Keine Base Map");
+        }
+        if (enemy.size() > 0) {
+            for (int enemyamount = 0; enemyamount < enemy.size(); enemyamount++) {
+                if (enemy.get(enemyamount) != null) {
+                    enemy.get(enemyamount).draw(g2d);
                 }
             }
-            mover.draw(g2d);
         }
+        mover.draw(g2d);
 //        Item Maps :
         for (int mapsAmount = 1; mapsAmount < maps.length; mapsAmount++) {
             if (maps[mapsAmount] != null) {
                 maps[mapsAmount].renderMap(g2d);
             }
         }
-        for (int i = 0; i < analytics.length; i++) {
-            if (analytics[i] != null) {
-                analytics[i].renderAnalytics(g2d);
-            }
-        }
-        // Zum Testen
-        if (enemy.length > 0) {
-            for (int enemyamount = 0; enemyamount < enemy.length; enemyamount++) {
-                if (enemy[enemyamount] != null) {
-                    enemy[enemyamount].draw(g2d);
-                }
-            }
-            mover.draw(g2d);
-        }
-    }
-
-    public DisplayAnalytics[] getAnalytics() {
-        return analytics;
-    }
-
-    public MapBase[] getMaps() {
-        return maps;
-    }
-
-    public Character getMover() {
-        return mover;
-    }
-
-    public Runner[] getEnemys() {
-        return enemy;
-    }
-
-    public int getLevel() {
-        return level;
-    }
-
-    public int getDialog() {
-        return dialog;
+//        // Zum Testen
+//        if (enemy.length > 0) {
+//            for (int enemyamount = 0; enemyamount < enemy.length; enemyamount++) {
+//                if (enemy[enemyamount] != null) {
+//                    enemy[enemyamount].draw(g2d);
+//                }
+//            }
+//            mover.draw(g2d);
+//        }
     }
 
     public void setMap(int mapNumber, String tsPath, String pStatus, Point chapterOffset) {
@@ -128,6 +94,53 @@ public class Level {
             }
         }
     }
+
+    public void addNewEnemyOnTile(int xTile, int yTile, double pSpeed) {
+        addNewEnemy(xTile * Tile.TILEWIDTH, yTile * Tile.TILEHEIGHT, pSpeed);
+        System.out.println("ADD new " + pSpeed);
+    }
+
+    public void addNewEnemy(int xPos, int yPos, double pSpeed) {
+        Runner r = new Runner(gamePanel, xPos, yPos, maps);
+        r.setSpeed(pSpeed);
+        addEnemy(r);
+    }
+
+    public void addEnemy(Runner r) {
+        enemy.add(r);
+    }
+
+    public void stop() {
+        mover.setSpeaking(true);
+        for (int i = 0; i < enemy.size(); i++) {
+            enemy.get(i).setSpeaking(true);
+        }
+    }
+
+    public Map[] getMaps() {
+        return maps;
+    }
+
+    public Map getBaseMap() {
+        return getMaps()[0];
+    }
+
+    public Character getMover() {
+        return mover;
+    }
+
+    public LinkedList<Runner> getEnemyList() {
+        return enemy;
+    }
+
+    public Runner getEnemy(int enemyNumber) {
+        return enemy.get(enemyNumber);
+    }
+
+    public int getLevel() {
+        return level;
+    }
+
 
     public boolean isGridlines() {
         return gridlines;

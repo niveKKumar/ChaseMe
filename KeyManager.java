@@ -6,6 +6,7 @@ public class KeyManager implements KeyListener {
   public boolean up,down,left,right,upLeft,upRight,downLeft,downRight;
   public boolean shift;
   public boolean str;
+    public boolean alt;
     public boolean plus, minus;
 
     int temp = 0;
@@ -30,6 +31,7 @@ public class KeyManager implements KeyListener {
 
     shift = keys[16];
     str = keys[17];
+      alt = keys[KeyEvent.VK_ALT];
     up = keys[KeyEvent.VK_W];
     down = keys[KeyEvent.VK_S];
     left = keys[KeyEvent.VK_A];
@@ -39,8 +41,7 @@ public class KeyManager implements KeyListener {
     upRight = keys[KeyEvent.VK_E];
     downLeft = keys[KeyEvent.VK_Y];
     downRight = keys[KeyEvent.VK_C];
-//    if (!shift){temp++;
-//     //System.out.println(temp);}
+
       plus = keys[KeyEvent.VK_ADD];
       plus = keys[KeyEvent.VK_PLUS];
       minus = keys[KeyEvent.VK_SUBTRACT];

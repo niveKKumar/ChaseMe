@@ -1,4 +1,3 @@
-import javax.swing.*;
 import java.awt.*;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
@@ -10,7 +9,6 @@ public class Mover extends Pointer {
      * kann sprechen
      */
     public Character.SpeechBubble speechBubble;
-    protected int steps;
     protected boolean speaking = false;
     public static int MOVER_WIDTH, MOVER_HEIGHT;
     protected Image img;
@@ -22,7 +20,6 @@ public class Mover extends Pointer {
     protected double angle ;
     protected GamePanel gamePanel;
     public Point[] cPoints = new Point[4];
-    private JTextArea moverDebugPane = new JTextArea("Mover Debugging");
 
     public Mover(GamePanel gp, int pXpos, int pYpos, SpriteSheet pSpriteSheet, MapBase[] pMap) { //Image Initialisierung nachher...
         super(gp, pXpos, pYpos);
@@ -32,9 +29,6 @@ public class Mover extends Pointer {
         img = sprites.getSpriteElement(0, 1);
         gamePanel = gp;
         map = pMap;
-        moverDebugPane.setSize(400, 150);
-        GUI.addToDebugPane(moverDebugPane);
-
     }
 
     @Override
@@ -59,7 +53,6 @@ public class Mover extends Pointer {
             xPos = oldXPos;
             yPos = oldYPos;
         }
-        moverDebugPane.setText("XPos: " + getLocation().getX() + "\n = Tile: " + getLocation().getX() / Tile.TILEWIDTH + "\n YPos: " + getLocation().getY() + " = \nTile: " + getLocation().getY() / Tile.TILEHEIGHT);
     }
 
     public void setPathMove(Point2D from, Point2D to) {
@@ -128,11 +121,12 @@ public class Mover extends Pointer {
     //                                                                                            CollisionCheck guckt ob diese IDs geblockt sind
 
     public boolean collisionCheck() {
-        LinkedList<Point> tileList = moverOnTiles();
+        LinkedList<Point> tileList = moverIsOnTileID();
         for (int i = 0; i < map.length; i++) {
             for (int j = 0; j < tileList.size(); j++) {
                 Point moverCPpos = tileList.get(j);
-                if (map[i] != null && map[i].isActiveInPosition(moverCPpos) && map[i].mapTiles[(int) (moverCPpos.getX() - map[i].chapterXOffset) / Tile.TILEWIDTH][(int) (moverCPpos.getY() - map[i].chapterYOffset) / Tile.TILEHEIGHT].isBlocked()) {
+                if (map[i] != null && map[i].isActiveInPosition(moverCPpos) &&
+                        map[i].mapTiles[(int) moverCPpos.getX()][(int) moverCPpos.getY()].isBlocked()) {
                     return true;
                 }
             }
@@ -140,7 +134,22 @@ public class Mover extends Pointer {
         return false;
     }
 
-    public LinkedList<Point> moverOnTiles() {
+    public boolean dangerCheck() {
+        LinkedList<Point> tileList = moverIsOnTileID();
+        int activeCP = 0;
+        for (int i = 0; i < map.length; i++) {
+            for (int j = 0; j < tileList.size(); j++) {
+                Point moverCPpos = tileList.get(j);
+                if (map[i] != null && map[i].isActiveInPosition(moverCPpos) &&
+                        map[i].mapTiles[(int) moverCPpos.getX()][(int) moverCPpos.getY()].isDanger()) {
+                    activeCP++;
+                }
+            }
+        }
+        return activeCP >= 2;
+    }
+
+    public LinkedList<Point> checkPointCords() {
         LinkedList<Point> cords = new LinkedList<>();
         int hitBoxCenter = 10;
         Point[] checkPoint = new Point[4];
@@ -153,22 +162,18 @@ public class Mover extends Pointer {
         /*Right*/
         checkPoint[3] = new Point((int) xPos + MOVER_WIDTH - hitBoxCenter, (int) yPos + MOVER_HEIGHT / 2);
         for (int j = 0; j < checkPoint.length; j++) {
-            cPoints[j] = checkPoint[j];
             cords.add(checkPoint[j]);
         }
         return cords;
     }
 
     public LinkedList<Point> moverIsOnTileID() {
-        LinkedList<Point> cords = moverOnTiles();
+        LinkedList<Point> cords = checkPointCords();
         LinkedList<Point> tileID = new LinkedList<>();
         for (int j = 0; j < map.length; j++) {
-//           //System.out.println("Tile IDs for Map "+j);
             if (map[j] != null) {
                 for (int i = 0; i < cords.size(); i++) {
-//                moverDebugPane.append("Tile IDs for Map "+j+" : \n"+ "Cords "+i+" "+ cords.get(i));
                     tileID.add(new Point(((int) cords.get(i).getX() - map[j].chapterXOffset) / Tile.TILEWIDTH, ((int) (cords.get(i).getY() - map[j].chapterYOffset)) / Tile.TILEHEIGHT));
-//               //System.out.println("Active TileIDs "+i+" "+ tileID.get(i));
                 }
             }
         }
@@ -176,7 +181,7 @@ public class Mover extends Pointer {
     }
 
     public Point getTileLocation() {
-        return new Point((int) getLocation().getX() / Tile.TILEWIDTH, (int) getLocation().getY() / Tile.TILEHEIGHT);
+        return new Point((int) (getLocation().getX()) / Tile.TILEWIDTH, (int) (getLocation().getY()) / Tile.TILEHEIGHT);
     }
     protected void getAngle(Point2D from, Point2D to) {
         angleCheck = Math.atan2(from.getY() - to.getY(), from.getX() - to.getX())-Math.PI;
@@ -239,22 +244,25 @@ public class Mover extends Pointer {
         //4: Unten
         img = sprites.getSpriteElement(direction, 1);
     }
+
+    public double getSpeed() {
+        return speed;
+    }
+
+    /**
+     * set Methoden (ob Mover spricht) = sich nicht bewegen kann / Spritesheet = andere Textur
+     */
     public void setSpritesheet(SpriteSheet sprites) {
         this.sprites = sprites;
     }
 
-    public void setXPos(int xPos) {
-        this.xPos = xPos;
+    public void setSpeaking(boolean speaking) {
+        this.speaking = speaking;
     }
 
-    public void setYPos(int yPos) {
-        this.yPos = yPos;
+    public void setLocationAtTile(int xTileID, int yTileID) {
+        setLocation(xTileID * Tile.TILEWIDTH, yTileID * Tile.TILEHEIGHT);
     }
-
-    public int getSpeed() {
-        return speed;
-    }
-
     public static class SpeechBubble {
 
         private Mover character;
@@ -280,6 +288,7 @@ public class Mover extends Pointer {
 
         public void renderSpeechBubble(Graphics2D g2d) {
             if (visible) {
+                g2d.setStroke(new BasicStroke(1.5f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_ROUND));
                 int xPos = (int) (character.xPos - character.gamePanel.getCamera().getXOffset());
                 int yPos = (int) (character.yPos - character.gamePanel.getCamera().getYOffset());
 

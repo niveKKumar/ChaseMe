@@ -2,7 +2,7 @@ import java.awt.*;
 
 class Pointer {
     protected double xPos, yPos;
-    protected int speed = 10;
+    protected double speed = 10;
     /**
      * Objekt was sich bewegen kann
      */
@@ -61,6 +61,14 @@ class Pointer {
         return new Point((int) xPos, (int) yPos);
     }
 
+    public int getxPos() {
+        return (int) xPos;
+    }
+
+    public int getyPos() {
+        return (int) yPos;
+    }
+
     public void setLocation(int xPos, int yPos) {
         this.xPos = xPos;
         this.yPos = yPos;
@@ -73,6 +81,7 @@ class Pointer {
         setLocation(Math.round(xPos), Math.round(yPos));
     }
 
+
     public Camera getCamera() {
         return camera;
     }
@@ -84,7 +93,7 @@ class Pointer {
         this.camera = camera;
     }
 
-    public void setSpeed(int speed) {
+    public void setSpeed(double speed) {
         this.speed = speed;
     }
 

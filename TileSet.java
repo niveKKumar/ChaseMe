@@ -110,28 +110,28 @@ public class TileSet{
     return tileSetImagePath;
   }
 
-    public void setBlockedTiles(Integer blockedID, boolean umkehren) {
-        if (umkehren == false) {
+    public void setBlockedTiles(Integer blockedID) {
             if (!blockedTiles.contains(blockedID)) {
                 this.blockedTiles.add(blockedID);
             }
-        } else {
-            // TODO: 07.05.2019 !!!!!!!
-            /* Pseudo-Code: Alle IDs die NICHT in der jetzigen Liste (blocked Tiles)
-                vorhanden ist hinzufügen und alle geblockten Tiles entfernen*/
-        }
     }
 
-    public void setBlockedTiles(Integer[] blockedIDArray, boolean umkehren) {
-        if (umkehren == false) {
+    public void setBlockedTiles(Integer[] blockedIDArray) {
             for (int i = 0; i < blockedIDArray.length; i++) {
-                setBlockedTiles(blockedIDArray[i], umkehren);
+                setBlockedTiles(blockedIDArray[i]);
             }
-        } else {
-            /* Pseudo-Code: Alle IDs die NICHT in der jetzigen Liste (blocked Tiles)
-                vorhanden ist hinzufügen und alle geblockten Tiles entfernen*/
+    }
 
+    public void invertBlocked() {
+        LinkedList<Integer> unBlockedTiles = blockedTiles;
+        blockedTiles.clear();
+        for (int i = 0; i < tileSet.length; i++) {
+            blockedTiles.add(tileSet[i].getID());
         }
+        for (int i = 0; i < unBlockedTiles.size(); i++) {
+            blockedTiles.remove(unBlockedTiles.get(i));
+        }
+
     }
 
     public void automaticBlockedTiles() {

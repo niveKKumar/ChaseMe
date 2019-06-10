@@ -175,11 +175,13 @@ public class GUI extends JFrame implements ActionListener, MouseListener, MouseM
     }
 
     public void actionPerformed(ActionEvent evt) {
-//        if (game != null && game.isActive()) {
-//            game.actionPerformed(evt);
-//        }
         if (editor != null && editor.isActive()) {
             editor.actionPerformed(evt);
+        }
+        if (game != null && game.isActive()) {
+            game.actionPerformed(evt);
+            menuUI.showButtonPaneByName("MainMenu");
+            menuUI.setVisible(false);
         }
         JButton temp = (JButton) evt.getSource();
         if (temp.getName() != null && temp.getName().contentEquals("Info")) {
@@ -208,6 +210,7 @@ public class GUI extends JFrame implements ActionListener, MouseListener, MouseM
             case "Game":
                 if (!menuUI.searchForPanel("gamePage")) {
                     JPanel levelMenu = game.createLevelMenu();
+                    levelMenu.setBorder(BorderFactory.createLineBorder(Color.yellow, 8));
                     levelMenu.setName("gamePage");
                     menuUI.addAndShowPanel(levelMenu, true, false, true);
                 } else {
@@ -217,16 +220,15 @@ public class GUI extends JFrame implements ActionListener, MouseListener, MouseM
                 break;
 
             case "Editor":
-                if (editor == null) {
+                if (editor == null || !editor.isActive()) {
                     createEditor();
-
                     MenuUI.MenuTab editorMenu = editor.createEditorMenu();
                     editorMenu.setName("EditorMenu");
                     menuUI.addAndShowMenuTab(editorMenu);
 
                     JPanel editorInfo = editor.createInfoPane();
                     editorInfo.setName("editorInfo");
-                    menuUI.addInfo(editorInfo);
+                    menuUI.addPanel(editorInfo, true, false, false);
                 } else {
                     menuUI.showButtonPaneByName("EditorMenu");
                 }
@@ -242,67 +244,16 @@ public class GUI extends JFrame implements ActionListener, MouseListener, MouseM
             case "TestButton":
 
                 break;
-
-            /**Level*/
-            case "1":
-                menuUI.showMenu();
-                game.createlevel1();
-                menuUI.showButtonPaneByName("MainMenu");
-                break;
-            case "2":
-                menuUI.showMenu();
-//                game.createlevel2();
-                menuUI.showButtonPaneByName("MainMenu");
-                break;
-            case "3":
-                menuUI.showMenu();
-//                game.createlevel3();
-                menuUI.showButtonPaneByName("MainMenu");
-                break;
-            case "4":
-                menuUI.showMenu();
-//                game.createlevel4();
-                menuUI.showButtonPaneByName("MainMenu");
-                break;
-            case "5":
-                menuUI.showMenu();
-//                game.createlevel5();
-                menuUI.showButtonPaneByName("MainMenu");
-                break;
-            /** Editor Buttons:*/ // FIXME: 03.05.2019 Action Peformed in Editor ? (siehe V. 1.05.2019)
         }
         this.requestFocus();
     }
 
     private void createGameComponents() {
-        JPanel guiInfoPane = new JPanel(new BorderLayout());
-        InfoTextArea info = new InfoTextArea();
-        info.appendHeading("Info");
-        info.appendRegularText
-                ("\n Willkommen zu Chase ME! Du willst wissen was das Spiel kann? " +
-                        "\n Zur Entstehung und Spielidee" +
-                        "\n Du bist ein gejagter Mann, dem ein Verbrechen untergejubelt wurde" +
-                        "\n Dein bester Freund ist ein Hacker und konnte dadurch die richtigen" +
-                        "\n Verbrecher finden." +
-                        "\n Daher musst du um deine Unschuld zu Beweisen aus BeachTown entkommen und in" +
-                        "\n Castle City die echten Verbrecher finden." +
-                        "\n Das Spiel besteht aus insgesamt 5 verschiedenen Level die jeweils in eigene Kapitel eingeteilt sind" +
-                        "\n Wenn du schaffst alle Rätsel zu lösen erwarest du ein Geschenk!" +
-                        "\n Außerdem kannst du acuh deine eigenen Maps erstellen (im Editor Tab) und mithilfe " +
-                        "\n der Level Klasse, ein eigenes Level zu realisieren. Der Quellcode ist sehr detailreich beschrieben" +
-                        "\n ,sodass ein einfaches Level kinderleicht zu erstellen ist. " +
-                        "\n Achtung: Bearbeiten von unerlaubtem Code kann" +
-                        "\n zu Problemen führen, weshalb diese nur unter Vorsicht bearbeitet werden sollten! " +
-                        "\n Steuerung: " +
-                        "\n W: Oben Laufen  S: Unten Laufen" +
-                        "\n A: Links Laufen D: Rechts Laufen" +
-                        "\n Viel Spaß beim Rätseln \n -Kevin");
-        guiInfoPane.add(info);
-        guiInfoPane.setName("guiInfo");
-        menuUI.addInfo(guiInfoPane);
         menuUI.loadMainMenu(new String[]{"Game", "Restart", "GridLines", "Editor", "Exit", "TestButton"});
         game = new Game(gamePanel, keyManager);
-
+        JPanel guiInfo = game.createInfoPane();
+        guiInfo.setName("guiInfo");
+        menuUI.addPanel(guiInfo, true, false, false);
         t.start();
     }
 

@@ -7,7 +7,7 @@ import java.util.LinkedList;
 public class MenuUI extends JFrame {
     /**
      * MenuUI Klasse womit Menus angezeigt werden können
-     * -> Funktioniert durch das einfügen von JPanels (mit Namen), die auf der menuPane (GridBagLayout) angezeigt werden
+     * -> Funktioniert durch das einfügen von JPanels (mit Namen), die auf der topPane (GridBagLayout) angezeigt werden
      * -> Integrierte MenuTab Klasse zeigt MenuButtons in der Mitte des Bildschirms an (BoxLayout)
      * -> diese können angezeigt werden mithilfe von Methoden (siehe Beschreibung unten)
      * -> besitzt vorgefertigte Buttons    : btReturn = zum Laden des Hauptmenüs
@@ -17,20 +17,22 @@ public class MenuUI extends JFrame {
     //Editor Konfiguration:
     public static int MENUUI_WIDTH = 500;
     public static int MENUUI_HEIGHT = 650;
+    private static int optionButtonSize = 40;
     //Debuggin:
     public String currentPage;
     //Core Objects:
-    private JPanel menuPane;   //(MainPane)
+    private JPanel topPane;   //(MainPane)
+    private JPanel bottomPane;
     private MenuButton btSettings;
     private MenuButton btReturn;
     private MenuButton btInfo;
     private static ActionListener actionListener;
-    private GridBagConstraints gbc = new GridBagConstraints();
     private JPanel buttonPane; //(mittige Pane für MenuTabs...)
     private LinkedList<MenuTab> addedMenus;
 
+
     /**
-     * Standard Konstruktor, wo nur Menu JFrame erstellt wird
+     * Standard Konstruktor, womit Menu JFrame erstellt wird
      */
     public MenuUI(JPanel display, ActionListener act) {
 //        super("MenuUI", true, true, false, true);
@@ -83,62 +85,46 @@ public class MenuUI extends JFrame {
      * Erstellung der MenuPane mit den Buttons:
      */
     private void createMenuPane() {
-        menuPane = new JPanel(new FlowLayout(FlowLayout.CENTER)) {
-            protected void paintComponent(Graphics g) {
-                super.paintComponent(g);
-                g.setColor(menuPane.getBackground());
-                g.fillRect(0, 0, getSize().width, getSize().height);
-            }
-        };
-        menuPane.setLayout(new GridBagLayout());
-//        menuPane.setBackground(new Color(0, 0, 0, 50));
-        menuPane.setOpaque(false);
-        menuPane.setFocusable(false);
-        add(menuPane, BorderLayout.CENTER);
+        topPane = new JPanel(new BorderLayout());
+        topPane.setBackground(new Color(0, 0, 0, 50));
+        topPane.setOpaque(false);
+        topPane.setFocusable(false);
+        add(topPane, BorderLayout.NORTH);
 
-        //Main Butons:
-        buttonPane = new JPanel();
+//        //Main Butons:
+        buttonPane = new JPanel(new BorderLayout());
         buttonPane.setBorder(BorderFactory.createLineBorder(Color.pink,5));
-        gbc = new GridBagConstraints();
-        gbc.gridheight = GridBagConstraints.REMAINDER;
-        gbc.gridwidth = GridBagConstraints.REMAINDER;
-        gbc.fill = GridBagConstraints.BOTH;
-        addObject(buttonPane, 1, 1, 1, 1, GridBagConstraints.CENTER);
+        add(buttonPane, BorderLayout.CENTER);
 
-        btReturn = new MenuButton("Content/Graphics/UI/returnIcon.png", 50, 50);
+        bottomPane = new JPanel(new BorderLayout());
+        bottomPane.setBackground(new Color(0, 0, 0, 50));
+        bottomPane.setOpaque(false);
+        bottomPane.setFocusable(false);
+        add(bottomPane, BorderLayout.SOUTH);
+
+        btReturn = new MenuButton("Content/Graphics/UI/returnIcon.png", optionButtonSize, optionButtonSize);
         btReturn.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 showMainMenu();
             }
         });
-        btReturn.setFocusable(false);
         btReturn.setAlignmentX(Component.LEFT_ALIGNMENT);
         btReturn.setVisible(false);
-        gbc = new GridBagConstraints();
-//        gbc.anchor = GridBagConstraints.FIRST_LINE_START;
-        gbc.fill = GridBagConstraints.NONE;
-        gbc.insets = new Insets(5, 5, 5, 5);
-        addObject(gbc, btReturn, menuPane, 0, 0, 0, 0);
+        topPane.add(btReturn, BorderLayout.WEST);
 
-        btSettings = new MenuButton("Content/Graphics/UI/settingsIcon.png", 30, 30);
+        btSettings = new MenuButton("Content/Graphics/UI/settingsIcon.png", optionButtonSize, optionButtonSize);
         btSettings.setName("Settings");
-        btSettings.setFocusable(false);
-        btSettings.setAlignmentX(RIGHT_ALIGNMENT);
-        gbc = new GridBagConstraints();
-        gbc.anchor = GridBagConstraints.FIRST_LINE_START;
-        gbc.insets = new Insets(10, 10, 10, 10);
-        addObject(gbc, btSettings, menuPane, 0, 2, 0, 0);
+        btSettings.setAlignmentX(Component.LEFT_ALIGNMENT);
+        bottomPane.add(btSettings, BorderLayout.WEST);
 
-        btInfo = new MenuButton("Content/Graphics/UI/infoIcon.png", 30, 30);
+
+        btInfo = new MenuButton("Content/Graphics/UI/infoIcon.png", optionButtonSize, optionButtonSize);
         btInfo.setName("Info");
+        btInfo.setAlignmentX(Component.RIGHT_ALIGNMENT);
         btInfo.addActionListener(actionListener);
-        btInfo.setFocusable(false);
-        gbc = new GridBagConstraints();
-        gbc.anchor = GridBagConstraints.FIRST_LINE_END;
-        gbc.insets = new Insets(10, 10, 10, 10);
-//        addObject(gbc, btInfo, menuPane, 3, 2, 0.5f, 0.5f);
-        addObject(gbc, btInfo, menuPane, 2, 2, 0, 0);
+        bottomPane.add(btInfo, BorderLayout.EAST);
+
     }
 
     /**
@@ -153,11 +139,10 @@ public class MenuUI extends JFrame {
     }
 
     /**
-     * Methode lädt das HauptMenu
+     * Methode erstellt HauptMenu mit ButtonNamen
      */
     public void loadMainMenu(String[] mainMenuBTNames) {
         MenuTab mainM = new MenuTab("MainMenu", mainMenuBTNames);
-        System.out.println(mainM.getName());
         addAndShowMenuTab(mainM);
         btReturn.setVisible(false);
         btSettings.setVisible(true);
@@ -168,17 +153,22 @@ public class MenuUI extends JFrame {
     /**
      * Erzwingt das Laden eines Menus
      */
-//    public void forceAdd(MenuTab customButtonPane){
-//        removeMenuPaneByName(customButtonPane.getName());
-//        addMenuTab(customButtonPane);
-//    }
-//    public void forceAdd(JPanel customButtonPane, boolean showReturn, boolean showSettings, boolean showInfo){
-//        removeMenuPaneByName(customButtonPane.getName());
-//        addPanel(customButtonPane,showReturn,showSettings,showInfo);
-//    }
-    public void addInfo(JPanel yourInfoPanel) {
-        addPanel(yourInfoPanel, true, false, false);
+    public void forceAdd(MenuTab customButtonPane) {
+        removeMenuPaneByName(customButtonPane.getName());
+        addMenuTab(customButtonPane);
     }
+
+    public void forceAdd(JPanel customButtonPane, boolean showReturn, boolean showSettings, boolean showInfo) {
+        removeMenuPaneByName(customButtonPane.getName());
+        addPanel(customButtonPane, showReturn, showSettings, showInfo);
+    }
+
+    /**
+     * Erstellen einer Info Seite (InfoPaneText) = nur btReturn wird angezeigt
+     */
+//    public void addInfo(JPanel yourInfoPanel) {
+//        addPanel(yourInfoPanel, true, false, false);
+//    }
 
     /**
      * Löscht Menu Seite über den Namen
@@ -195,7 +185,7 @@ public class MenuUI extends JFrame {
     }
 
     /**
-     * Hinzufügt eine Menu Seite
+     * Fügt ein MenuTab hinzu
      */
     public void addMenuTab(MenuTab menu) {
         //Debugging:
@@ -203,14 +193,14 @@ public class MenuUI extends JFrame {
         }
 
         if (!searchForPanel(menu.getName())) {
+            menu.setVisible(false);
             addedMenus.add(menu);
-            buttonPane.add(menu);
             System.out.println("Added " + menu.getName());
         }
     }
 
     /**
-     * Hinzufügt und zeigt eine Seite (die aus einem beliebigen JPanel besteht)
+     * Fügt eine JPanel Seite als MenuTab hinzu
      */
     public void addPanel(JPanel yourPanelWithButtons, boolean showReturn, boolean showSettings, boolean showInfo) {
         MenuTab yourPane;
@@ -219,13 +209,16 @@ public class MenuUI extends JFrame {
         addMenuTab(yourPane);
     }
 
+    /**
+     * Fügt ein MenuTab als Seite hinzu und zeigt sie an
+     */
     public void addAndShowMenuTab(MenuTab menu) {
         addMenuTab(menu);
         showButtonPaneByName(menu.getName());
     }
 
     /**
-     * Hinzufügt und zeigt eine Seite (die aus einem beliebigen JPanel besteht)
+     * Fügt und zeigt eine Seite (die aus einem beliebigen JPanel besteht)
      */
     public void addAndShowPanel(JPanel yourPanelWithButtons, boolean showReturn, boolean showSettings, boolean showInfo) {
         addPanel(yourPanelWithButtons, showReturn, showSettings, showInfo);
@@ -252,7 +245,6 @@ public class MenuUI extends JFrame {
                 e.printStackTrace();
             }
         }
-        System.out.println("Couldnt find " + name);
         return false;
     }
 
@@ -274,42 +266,40 @@ public class MenuUI extends JFrame {
      * Zeigt ButtonPane per Name
      */
     public void showButtonPaneByName(String name) {
-        for (int i = 0; i < addedMenus.size(); i++) {
-            addedMenus.get(i).setVisible(false);
+        if (!isVisible()) {
+            setVisible(true);
         }
-        MenuTab found = getButtonPaneByName(name);
-        found.setVisible(true);
-        System.out.println("minimum size:" + found.getMinimumSize());
-        setMinimumSize(found.getMinimumSize());
-        currentPage = found.getName();
-        btReturn.setVisible(found.showReturn);
-        btSettings.setVisible(found.showSettings);
-        btInfo.setVisible(found.showInfo);
-
-        repaint();
+        if (searchForPanel(name)) {
+            for (int i = 0; i < addedMenus.size(); i++) {
+                addedMenus.get(i).setVisible(false);
+                buttonPane.add(addedMenus.get(i));
+            }
+            MenuTab found = getButtonPaneByName(name);
+            found.setVisible(true);
+            System.out.println("Found " + found.getName() + " and setted visible ");
+            setMinimumSize(found.getMinimumSize());
+            currentPage = found.getName();
+            btReturn.setVisible(found.showReturn);
+            btSettings.setVisible(found.showSettings);
+            btInfo.setVisible(found.showInfo);
+        } else {
+            System.out.println("Button Pane nicht geladen!!");
+        }
+        buttonPane.revalidate();
         revalidate();
+        repaint();
+        requestFocus();
+
     }
 
     public MenuTab getButtonPaneByName(String name) {
         for (int i = 0; i < addedMenus.size(); i++) {
-            if (addedMenus.get(i).getName().equals(name)) {
+            if (addedMenus.get(i).getName().contentEquals(name)) {
+                System.out.println("Name is in addedMenus");
                 return addedMenus.get(i);
             }
         }
         return null;
-    }
-    /**
-     * Hilfsmethode zum Hinzufügen von Objekten auf das MenuPane im Menu
-     */
-    private void addObject(JComponent comp, int gridX, int gridY, double weightX, double weightY) {
-        GridBagConstraints gbc = new GridBagConstraints();
-        addObject(gbc, comp, menuPane, gridX, gridY, weightX, weightY);
-    }
-
-    private void addObject(JComponent comp, int gridX, int gridY, double weightX, double weightY, int anchor) {
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.anchor = anchor;
-        addObject(comp, gridX, gridY, weightX, weightY);
     }
 
     public static class MenuTab extends JPanel {
@@ -323,6 +313,7 @@ public class MenuUI extends JFrame {
 
         public MenuTab(String pName, String[] btNames) {
             super();
+            setLayout(new BorderLayout());
             contentPane = new JPanel(new BorderLayout());
             add(contentPane);
             createButtons(btNames);
@@ -339,6 +330,7 @@ public class MenuUI extends JFrame {
 
         public MenuTab(String pName, JPanel panel) {
             super();
+            setLayout(new BorderLayout());
             contentPane = panel;
             add(contentPane);
             setName(pName);

@@ -3,26 +3,38 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.util.LinkedList;
 
-public class Tile extends JPanel implements Cloneable, Comparable{
+public class Tile extends JPanel implements Cloneable, Comparable {
+  /**
+   * Tile Klasse - Basis der Maps
+   * -> hat verschiedene Attribute (blocked,danger) auf die vom Mover reagiert werden können
+   * -> besitzt eine ID zur Identifikation (standardmäßig die Tilenummer im TileSet)
+   * -> besitzt ein Image (Grafik)
+   */
   protected boolean blocked = false;
+  protected boolean danger = false;
+
   public static int TILEWIDTH = 64, TILEHEIGHT = 64;
   public BufferedImage tileImage;
-  protected LinkedList neighbours;
+  protected LinkedList neighbours = new LinkedList();
   protected boolean showImage = true;
   protected int id;
   public Tile pathParent;
   public float costFromStart;
   protected float estimatedCostToGoal;
-    protected Insets borderInsets;
-    protected boolean fill;
+  protected Insets borderInsets;
+  protected boolean fill;
+  protected Color color;
 
     public Tile(BufferedImage pTileImage) {
     super();
     setOpaque(true);
     tileImage = pTileImage;
     borderInsets = new Insets(0, 0, 0, 0);
-  }
+    }
 
+  /**
+   * rendert das Tile Bild und den Border
+   */
   public void renderTile(Graphics2D g2d, int pXPos, int pYPos){
     this.setLocation(pXPos, pYPos);
     if (showImage) {
@@ -32,7 +44,7 @@ public class Tile extends JPanel implements Cloneable, Comparable{
   }
 
   private void paintBorder(Graphics2D g2d) {
-      Stroke beforeStroke = g2d.getStroke();
+    g2d.setColor(color);
     if (borderInsets.top > 0) {
       int stroke = borderInsets.top;
       g2d.setStroke(new BasicStroke(stroke));
@@ -56,17 +68,20 @@ public class Tile extends JPanel implements Cloneable, Comparable{
       g2d.setStroke(new BasicStroke(stroke));
       g2d.drawLine(getX() + stroke / 2, getY() + stroke / 2, getX() + stroke / 2, getY() + TILEHEIGHT - stroke / 2);
     }
-      g2d.setStroke(beforeStroke);
-      if (fill) {
-          g2d.fillRect(getX(), getY(), Tile.TILEWIDTH, Tile.TILEHEIGHT);
-      }
+    if (fill) {
+      g2d.fillRect(getX(), getY(), Tile.TILEWIDTH, Tile.TILEHEIGHT);
+    }
+
   }
 
+  public Point getTileLocation() {
+    return new Point((getX() / TILEWIDTH) - 1, (getY() / TILEHEIGHT)-1);
+  }
   public void setBorderInsets(Insets insets) {
     borderInsets = insets;
   }
 
-    public void setFill(boolean fill) {
+  public void setFill(boolean fill) {
         this.fill = fill;
     }
 
@@ -77,11 +92,22 @@ public class Tile extends JPanel implements Cloneable, Comparable{
 
   public void setBlocked(boolean b){
     blocked = b;
-    }
+  }
+
+  public boolean isDanger() {
+    return danger;
+  }
 
   public boolean isBlocked(){return blocked;
   }
-     
+
+  public void setDanger(boolean danger) {
+    this.danger = danger;
+    if (danger) {
+      setColor(Color.red);
+    }
+  }
+
   public Tile clone(){
     try{
         return (Tile) super.clone();
@@ -90,9 +116,10 @@ public class Tile extends JPanel implements Cloneable, Comparable{
     }
   }
 
-    public Insets getBorderInsets() {
+  public Insets getBorderInsets() {
         return borderInsets;
-    }
+  }
+
   public LinkedList getNeighbours(){
       return neighbours;
   }
@@ -148,7 +175,7 @@ public class Tile extends JPanel implements Cloneable, Comparable{
       return (v > 0) ? 1 : (v < 0) ? -1 : 0;
   }
 
-    public void setTileImage(BufferedImage pTileImage) {
+  public void setTileImage(BufferedImage pTileImage) {
         tileImage = pTileImage;
     }
 
@@ -158,5 +185,15 @@ public class Tile extends JPanel implements Cloneable, Comparable{
 
   public static void setTILEHEIGHT(int TILEHEIGHT) {
     Tile.TILEHEIGHT = TILEHEIGHT;
+  }
+
+  public void setColor(Color color) {
+    this.color = color;
+  }
+
+  public void drawCenteredCircle(Graphics2D g, int x, int y, int r) {
+    x = x - (r / 2);
+    y = y - (r / 2);
+    g.fillOval(x, y,r,r);
   }
 }

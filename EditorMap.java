@@ -131,7 +131,6 @@ public class EditorMap extends MapBase {
             new JOptionPane("Klick ist außerhalb der Map: " + xIndex + " || " + yIndex);
         }
         mapTiles[xIndex][yIndex].revalidate();
-        System.out.println("Set Map Tile on " + xIndex + " || " + yIndex);
 
     }
 

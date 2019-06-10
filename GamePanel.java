@@ -7,12 +7,10 @@ import java.util.LinkedList;
 class GamePanel extends /*JInternalFrame*/ JPanel {
 
     /**
-     * Viewer des Spiels
+     * Display des Spiels
      */
     private Camera camera;
     private JPanel display;
-    public Tile start;
-    public Tile target;
     private LinkedList renderList;
 
 
