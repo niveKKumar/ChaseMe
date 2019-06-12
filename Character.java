@@ -44,7 +44,7 @@ public class Character extends Mover {
      * CP Amount gibt an, wie weit der Mover das Tile berühren soll (1 = leicht berühren,4 = voller Umfang)
      */
     public boolean isOnThisTile(int xTileID, int yTileID, int cpAmount) {
-        Point cord = new Point(xTileID - 1, yTileID - 1);
+        Point cord = new Point(xTileID, yTileID);
         LinkedList<Point> tileList = moverIsOnTileID();
 
         for (int i = 0; i < tileList.size(); i++) {

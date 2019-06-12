@@ -259,7 +259,7 @@ public class Mover extends Pointer {
     }
 
     public void setLocationAtTile(int xTileID, int yTileID) {
-        setLocation((xTileID - 1) * Tile.TILEWIDTH, (yTileID - 1) * Tile.TILEHEIGHT);
+        setLocation((xTileID) * Tile.TILEWIDTH, (yTileID) * Tile.TILEHEIGHT);
     }
 
     public static class SpeechBubble {

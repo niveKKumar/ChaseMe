@@ -252,7 +252,7 @@ public class GUI extends JFrame implements ActionListener, MouseListener, MouseM
 
     private void createGameComponents() {
         //GridLines kann beim erstellen ganz einfach eingeschaltet werden
-        menuUI.loadMainMenu(new String[]{"Game", "Restart", "GridLines", "Editor", "Exit", "TestButton"});
+        menuUI.loadMainMenu(new String[]{"Game", "Restart"/*, "GridLines"*/, "Editor", "Exit"});
         menuUI.getButtonPaneByName("MainMenu").setHeading("ChaseME");
         menuUI.getButtonPaneByName("MainMenu").setSubTextInHeading("Das Spiel zum Selbstprogrammieren");
         game = new Game(gamePanel, keyManager);
