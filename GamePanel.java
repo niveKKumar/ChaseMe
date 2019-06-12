@@ -71,6 +71,7 @@ class GamePanel extends /*JInternalFrame*/ JPanel {
         camera = new Camera(pXSize, pYSize, (int) chapterOffset.getX(), (int) chapterOffset.getY());
     }
 
+
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);

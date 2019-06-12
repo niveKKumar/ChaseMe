@@ -1,11 +1,9 @@
-import javax.swing.*;
 import java.awt.*;
 import java.util.LinkedList;
 
 
 public class Character extends Mover {
 
-    public JTextArea moverDebugPane = new JTextArea("");
     /**
      * MainCharacter Klasse (abgeleitet von Mover Klasse)
      * -> kann Schritte zählen
@@ -24,8 +22,6 @@ public class Character extends Mover {
             gamePanel.getCamera().centerOnObject(this);
         }
 
-        moverDebugPane.setSize(400, 150);
-        GUI.addToDebugPane(moverDebugPane);
 
     }
 
@@ -33,26 +29,22 @@ public class Character extends Mover {
      * Schritte werden hochgezählt
      */
     @Override
-    public void setMove(Point pMove) {
+    public void setMove(int xMove, int yMove) {
         if (!speaking) {
-            super.setMove(pMove);
+            super.setMove(xMove, yMove);
             if (!collisionCheck()) {
                 steps++;
             }
         }
-
-        moverDebugPane.setText("XPos: " + getLocation().getX() + "\n = Tile: " + getLocation().getX() / Tile.TILEWIDTH + "\n YPos: " + getLocation().getY() + " = \nTile: " + getLocation().getY() / Tile.TILEHEIGHT);
-
         gamePanel.getCamera().centerOnObject(this);
     }
-
     /**
      * Liste mit allen "aktiven" TileIDs wird aufgerufen (moverIsOnTileID)
      * und mit Parameter IDs abgeglichen
      * CP Amount gibt an, wie weit der Mover das Tile berühren soll (1 = leicht berühren,4 = voller Umfang)
      */
     public boolean isOnThisTile(int xTileID, int yTileID, int cpAmount) {
-        Point cord = new Point(xTileID, yTileID);
+        Point cord = new Point(xTileID - 1, yTileID - 1);
         LinkedList<Point> tileList = moverIsOnTileID();
 
         for (int i = 0; i < tileList.size(); i++) {
@@ -87,7 +79,6 @@ public class Character extends Mover {
         for (int i = (int) firstCorner.getY(); i < (int) secondCorner.getY() + 1; i++) {
             for (int j = (int) firstCorner.getX(); j < (int) secondCorner.getX() + 1; j++) {
                 if (isOnThisTile(j, i, cpAmount)) {
-                    System.out.println("is in area");
                     return true;
                 }
             }

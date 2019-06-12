@@ -1,13 +1,16 @@
-import com.sun.istack.internal.Nullable;
-
 import java.awt.*;
 import java.util.LinkedList;
 
 public class MapBase {
-    protected GamePanel gamePanel;
+    /**
+     * Border = blockt die Seiten
+     * Item = Blockt alle Items (eingestellten TileIDs)
+     * = Blockt beide oberen
+     */
     public Tile[][] mapTiles;
     public int mapSizeX;
     public int mapSizeY;
+    protected GamePanel gamePanel;
     protected TileSet tileSet;
     protected int graphicID = 22;
     protected int chapterXOffset, chapterYOffset;
@@ -15,7 +18,7 @@ public class MapBase {
     protected boolean active;
     protected boolean gridLines = false;
 
-    public MapBase(GamePanel gp, TileSet pTileSet, @Nullable String pStatus, @Nullable Point pChapterOffset) {
+    public MapBase(GamePanel gp, TileSet pTileSet, String pStatus, Point pChapterOffset) {
         gamePanel = gp;
         tileSet = pTileSet;
         mapStatus = pStatus;
@@ -57,20 +60,22 @@ public class MapBase {
 
     public void setBorderOrItemsBlocked() {
         if (mapStatus.equals("null")) {
+            return;
         }
         if (mapStatus.equals("Item")) {
             itemBlock();
-            System.out.println("Map has ItemBlock");
+            return;
         }
         if (mapStatus.equals("Border")) {
-            System.out.println("Map has BorderBlock");
             borderBlock();
+            return;
         }
         if (mapStatus.equals("All")) {
-            System.out.println("Map has BorderBlock and ItemBlock");
             itemBlock();
             borderBlock();
+            return;
         }
+        System.err.println("Möglicherweise ein Schreibfehler beim Status!");
     }
 
     public void borderBlock() {
@@ -94,6 +99,9 @@ public class MapBase {
 
     public void itemBlock() {
         LinkedList<Integer> blockedIDs = tileSet.getBlockedTiles();
+        for (int i = 0; i < blockedIDs.size(); i++) {
+            System.out.println("Blocked: " + blockedIDs.get(i));
+        }
 
         for (int zeile = 0; zeile < mapSizeX; zeile++) {
             for (int spalte = 0; spalte < mapSizeY; spalte++) {
@@ -107,7 +115,11 @@ public class MapBase {
     }
 
     public boolean isActiveInPosition(Point position) {
-        active = position.getX() < (getMapSizeX() * Tile.TILEWIDTH) && position.getY() < (getMapSizeY() * Tile.TILEHEIGHT) && position.getX() >= 0 && position.getY() >= 0;
+        return isActiveInTileID(new Point((int) position.getX() * Tile.TILEWIDTH, (int) position.getY() * Tile.TILEHEIGHT));
+    }
+
+    public boolean isActiveInTileID(Point tileID) {
+        active = tileID.getX() < getMapSizeX() && tileID.getY() < getMapSizeY() && tileID.getX() >= 0 && tileID.getY() >= 0;
         return active;
     }
 

@@ -18,6 +18,7 @@ public class MenuUI extends JFrame {
     public static int MENUUI_WIDTH = 500;
     public static int MENUUI_HEIGHT = 650;
     private static int optionButtonSize = 40;
+    private static ActionListener actionListener;
     //Debuggin:
     public String currentPage;
     //Core Objects:
@@ -26,7 +27,6 @@ public class MenuUI extends JFrame {
     private MenuButton btSettings;
     private MenuButton btReturn;
     private MenuButton btInfo;
-    private static ActionListener actionListener;
     private JPanel buttonPane; //(mittige Pane für MenuTabs...)
     private LinkedList<MenuTab> addedMenus;
 
@@ -34,8 +34,7 @@ public class MenuUI extends JFrame {
     /**
      * Standard Konstruktor, womit Menu JFrame erstellt wird
      */
-    public MenuUI(JPanel display, ActionListener act) {
-//        super("MenuUI", true, true, false, true);
+    public MenuUI(ActionListener act) {
         super("Main Menu");
         setSize(MENUUI_WIDTH, MENUUI_HEIGHT);
         Dimension d = Toolkit.getDefaultToolkit().getScreenSize();
@@ -45,28 +44,19 @@ public class MenuUI extends JFrame {
         actionListener = act;
         addedMenus = new LinkedList<>();
         setName("MenuUI");
-//        display.add(this, BorderLayout.CENTER);
         setFocusable(false);
-//        setOpaque(false);
         setBackground(null);
         setLayout(new BorderLayout());
         createMenuPane();
-//        ((BasicInternalFrameUI) getUI()).setNorthPane(null);
-//        setBorder(null);
-//        setBorder(BorderFactory.createLineBorder(Color.black, 5));
-//        try {
-//            setMaximum(false);
-//        } catch (PropertyVetoException e) {
-//            e.printStackTrace();
-//        }
         repaint();
         revalidate();
     }
+
     /**
      * Konstruktor mit direkter Eingabe der Haupt Menu Buttons
      */
-    public MenuUI(JPanel display, String[] btStringNames, ActionListener e) {
-        new MenuUI(display, e);
+    public MenuUI(String[] btStringNames, ActionListener e) {
+        this(e);
         loadMainMenu(btStringNames);
     }
 
@@ -91,9 +81,8 @@ public class MenuUI extends JFrame {
         topPane.setFocusable(false);
         add(topPane, BorderLayout.NORTH);
 
-//        //Main Butons:
+        //Main Butons:
         buttonPane = new JPanel(new BorderLayout());
-        buttonPane.setBorder(BorderFactory.createLineBorder(Color.pink,5));
         add(buttonPane, BorderLayout.CENTER);
 
         bottomPane = new JPanel(new BorderLayout());
@@ -114,6 +103,7 @@ public class MenuUI extends JFrame {
         topPane.add(btReturn, BorderLayout.WEST);
 
         btSettings = new MenuButton("Content/Graphics/UI/settingsIcon.png", optionButtonSize, optionButtonSize);
+        btSettings.addActionListener(actionListener);
         btSettings.setName("Settings");
         btSettings.setAlignmentX(Component.LEFT_ALIGNMENT);
         bottomPane.add(btSettings, BorderLayout.WEST);
@@ -124,6 +114,7 @@ public class MenuUI extends JFrame {
         btInfo.setAlignmentX(Component.RIGHT_ALIGNMENT);
         btInfo.addActionListener(actionListener);
         bottomPane.add(btInfo, BorderLayout.EAST);
+
 
     }
 
@@ -146,7 +137,7 @@ public class MenuUI extends JFrame {
         addAndShowMenuTab(mainM);
         btReturn.setVisible(false);
         btSettings.setVisible(true);
-        btInfo.setVisible(true);
+        btInfo.setVisible(false);
         setVisible(true);
     }
 
@@ -177,25 +168,18 @@ public class MenuUI extends JFrame {
         for (int i = 0; i < addedMenus.size(); i++) {
             if (addedMenus.get(i).getName().contentEquals(pName)) {
                 addedMenus.remove(i);
-                System.out.println("Gefunden und gelöscht");
                 break;
             }
         }
-        System.out.println("Couldnt Find the PaneName");
     }
 
     /**
-     * Fügt ein MenuTab hinzu
+     * Fügt ein MenuTab hinzu - Name ist notwendig zur Identifkation
      */
     public void addMenuTab(MenuTab menu) {
-        //Debugging:
-        if (menu.getName().equals(".")) {
-        }
-
+        menu.setVisible(false);
         if (!searchForPanel(menu.getName())) {
-            menu.setVisible(false);
             addedMenus.add(menu);
-            System.out.println("Added " + menu.getName());
         }
     }
 
@@ -203,9 +187,8 @@ public class MenuUI extends JFrame {
      * Fügt eine JPanel Seite als MenuTab hinzu
      */
     public void addPanel(JPanel yourPanelWithButtons, boolean showReturn, boolean showSettings, boolean showInfo) {
-        MenuTab yourPane;
-        yourPane = new MenuTab(yourPanelWithButtons.getName(), yourPanelWithButtons, showReturn, showSettings, showInfo);
-        System.out.println("Converted JPanel to MenuTab:" + yourPane.getName());
+        MenuTab yourPane = new MenuTab("", yourPanelWithButtons, showReturn, showSettings, showInfo);
+        yourPane.setName(yourPanelWithButtons.getName());
         addMenuTab(yourPane);
     }
 
@@ -230,6 +213,7 @@ public class MenuUI extends JFrame {
         getButtonPaneByName(yourPanelWithButtons.getName()).setHeading(heading);
         showButtonPaneByName(yourPanelWithButtons.getName());
     }
+
     /**
      * Lässt eine Seite per Namen suchen
      */
@@ -237,7 +221,6 @@ public class MenuUI extends JFrame {
         for (int i = 0; i < addedMenus.size(); i++) {
             try {
                 if (addedMenus.get(i).getName().equals(name)) {
-                    System.out.println("You searched for " + name + "and the Menu" + addedMenus.get(i) + "was found");
                     return true;
                 }
             } catch (Exception e) {
@@ -251,14 +234,14 @@ public class MenuUI extends JFrame {
     /**
      * Zeigt MainMenu
      */
-    public void showMainMenu(){
+    public void showMainMenu() {
         if (searchForPanel("MainMenu")) {
             showButtonPaneByName("MainMenu");
             btSettings.setVisible(true);
             btInfo.setVisible(true);
             btReturn.setVisible(false);
         } else {
-            System.out.println("MainMenu nicht geladen!");
+            JOptionPane.showMessageDialog(null, "Es wurde kein Hauptmenü geladen", "", JOptionPane.WARNING_MESSAGE);
         }
     }
 
@@ -266,24 +249,25 @@ public class MenuUI extends JFrame {
      * Zeigt ButtonPane per Name
      */
     public void showButtonPaneByName(String name) {
-        if (!isVisible()) {
-            setVisible(true);
-        }
         if (searchForPanel(name)) {
+            setVisible(false);
             for (int i = 0; i < addedMenus.size(); i++) {
                 addedMenus.get(i).setVisible(false);
                 buttonPane.add(addedMenus.get(i));
             }
             MenuTab found = getButtonPaneByName(name);
             found.setVisible(true);
-            System.out.println("Found " + found.getName() + " and setted visible ");
             setMinimumSize(found.getMinimumSize());
             currentPage = found.getName();
             btReturn.setVisible(found.showReturn);
             btSettings.setVisible(found.showSettings);
             btInfo.setVisible(found.showInfo);
         } else {
-            System.out.println("Button Pane nicht geladen!!");
+            JOptionPane.showMessageDialog(null, "Das gesuchte Button Pane gibt es nicht!", "", JOptionPane.WARNING_MESSAGE);
+            showMainMenu();
+        }
+        if (!isVisible()) {
+            setVisible(true);
         }
         buttonPane.revalidate();
         revalidate();
@@ -295,7 +279,6 @@ public class MenuUI extends JFrame {
     public MenuTab getButtonPaneByName(String name) {
         for (int i = 0; i < addedMenus.size(); i++) {
             if (addedMenus.get(i).getName().contentEquals(name)) {
-                System.out.println("Name is in addedMenus");
                 return addedMenus.get(i);
             }
         }
@@ -307,8 +290,9 @@ public class MenuUI extends JFrame {
          * Klasse für die Buttons im Menu (sogenannte Menu Seiten)
          */
         boolean showReturn = false, showSettings = false, showInfo = false;
-        JPanel contentPane;
-        JLabel heading;
+        private JPanel contentPane;
+        private InfoTextArea heading;
+        private MenuButton[] buttons = new MenuButton[1];
 
 
         public MenuTab(String pName, String[] btNames) {
@@ -332,9 +316,8 @@ public class MenuUI extends JFrame {
             super();
             setLayout(new BorderLayout());
             contentPane = panel;
-            add(contentPane);
+            add(contentPane, BorderLayout.CENTER);
             setName(pName);
-            System.out.println("setted cp and added" + pName);
         }
 
         public MenuTab(String name, JPanel panel, boolean showReturn, boolean showSettings, boolean showInfo) {
@@ -344,27 +327,23 @@ public class MenuUI extends JFrame {
             this.showInfo = showInfo;
         }
 
-        public void createButtons(String[] btNames) {
+        public void createButtons(String[] buttonnames) {
             setOpaque(false);
             contentPane.setOpaque(false);
             contentPane.setLayout(new BoxLayout(contentPane, BoxLayout.Y_AXIS));
 
-            GridBagConstraints gbc = new GridBagConstraints();
-            gbc.gridy = 0;
-            gbc.gridx = 0;
-            gbc.anchor = GridBagConstraints.NORTH;
-            heading = new JLabel();
+            heading = new InfoTextArea("");
             heading.setAlignmentX(CENTER_ALIGNMENT);
             heading.setAlignmentY(CENTER_ALIGNMENT);
-            contentPane.add(heading, gbc);
+            add(heading, BorderLayout.NORTH);
 
             FontMetrics fm;
             int minWidth = 0;
             int minHeight = 0;
             int gap = 10;
-            MenuButton[] buttons = new MenuButton[btNames.length];
+            buttons = new MenuButton[buttonnames.length];
             for (int i = 0; i < buttons.length; i++) {
-                buttons[i] = new MenuButton(btNames[i]);
+                buttons[i] = new MenuButton(buttonnames[i]);
                 fm = buttons[i].getFontMetrics(buttons[i].getFont());
                 buttons[i].addActionListener(actionListener);
                 buttons[i].setAlignmentX(Component.CENTER_ALIGNMENT);
@@ -384,8 +363,22 @@ public class MenuUI extends JFrame {
             setMinimumSize(new Dimension(minWidth + leftSpace, (minHeight + gap) * (buttons.length + 1) + leftSpace));
         }
 
+        public void setSubTextInHeading(String text) {
+            heading.appendRegularText("\n" + text);
+            heading.centerText();
+        }
+
+        public InfoTextArea getHeading() {
+            return heading;
+        }
+
         public void setHeading(String headingText) {
-            heading.setText(headingText);
+            heading.appendHeading(headingText);
+            heading.centerText();
+        }
+
+        public MenuButton[] getButtons() {
+            return buttons;
         }
     }
 }

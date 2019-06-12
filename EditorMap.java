@@ -16,13 +16,11 @@ public class EditorMap extends MapBase {
     private int strokeSize = 10;
     private boolean showMapBorder = true;
 
-    private JLabel test = new JLabel();
 
     public EditorMap(GamePanel gp, int pMapSizeX, int pMapSizeY, TileSet pTileSet) {
         super(gp, pTileSet, null, null);
         setMapSizeX(pMapSizeX);
         setMapSizeY(pMapSizeY);
-        GUI.addToEast(test);
         editorAnzeige = new JTextArea("EditorAnzeige");
         toIgnore = false;
         Random r = new Random();
@@ -139,6 +137,7 @@ public class EditorMap extends MapBase {
         int y = Math.round(e.getY() + gamePanel.getCamera().getClickYOffset() - chapterYOffset) / Tile.TILEHEIGHT;
         return new Point(x, y);
     }
+
     public void setTile(MouseEvent e, TileSet ts) {
         Point click = getTileID(e);
         setMapTile(click.x, click.y, ts);

@@ -27,6 +27,7 @@ public class MenuButton extends JButton {
         this();
         setImage(iconPath, height, width);
     }
+
     public MenuButton(int level) {
         this(Integer.toString(level));
     }
@@ -48,12 +49,11 @@ public class MenuButton extends JButton {
 
     public void setLocked() {
         setEnabled(false);
-        // FIXME: 31.05.2019 so gross wie die schrfit vorher war
         setImage("Content/Graphics/UI/lockIcon.png", 50, 50);
     }
 
     public void setUnlocked() {
-        setEnabled(false);
+        setEnabled(true);
         setIcon(null);
     }
 }

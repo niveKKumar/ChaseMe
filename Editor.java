@@ -18,51 +18,42 @@ public class Editor implements ActionListener {
 
     // eigene Objekte:
     public EditorTileMenu tileMenu;
-    //Editor Konfiguration:
-    //Kann editiert werden!
-    double bounce = 1;
-    boolean upBorder;
-    private boolean autosave = true;
-    private int maxRecentTiles = 10;
-    double zoomFactor = 0.25;
-    private int zoomSteps = 0;
-    private int zoomRange = 10;
     public LinkedList<EditorMap> maps = new LinkedList<>();
     //Core Objects:
     public Pointer cameraPoint;
     public int selectedMap;
     public JLabel idAnzeige;
-    private Timer autosaver;
-    private LinkedList recentListTiles = new LinkedList();
+    //Editor Konfiguration:
+    //Kann editiert werden!
+    double bounce = 1;
+    boolean upBorder;
+    double zoomFactor = 0.25;
     boolean leftBorder;
     boolean rightBorder;
     boolean downBorder;
-
-
+    //Benutzerführung:
+    JPanel selectMapPanel = new JPanel();
+    private boolean autosave = true;
+    private int maxRecentTiles = 10;
+    private int zoomSteps = 0;
+    private int zoomRange = 10;
+    private Timer autosaver;
+    private LinkedList recentListTiles = new LinkedList();
     private LinkedList<JCheckBox> mapCheck = new LinkedList<>();
-    //Data:
     private boolean active;
-    //benötigte Objekte (Parameter):
     private Frame owner;
     private GamePanel gamePanel;
-
-    //Benutzerführung:
-    private KeyManager keyListener;
-    private JPanel selectMapPanel = new JPanel();
     private JPanel mapSelectActionsPanel = new JPanel(new GridLayout(0, 1));
+    private KeyManager keyListener;
     private JComboBox mapSelectedBox;
     private JButton btAutosave;
-    private JButton btSimulate;
     private GroupLayout layout;
     private JPanel recent = new JPanel(new BorderLayout());
-    private JTextArea editorAnzeige;
-    private JTextArea customNot;
-    private JLabel warning;
 
     /**
      * Konstruktor:
      */
-    public Editor(Frame pOwner, GamePanel gp, KeyManager pKeyListener) {
+    public Editor(Frame pOwner, GamePanel gp, KeyManager pKeyListener, JPanel recentPane) {
         gamePanel = gp;
         owner = pOwner;
         keyListener = pKeyListener;
@@ -72,8 +63,12 @@ public class Editor implements ActionListener {
     }
 
     public void clear() {
+        selectMapPanel.removeAll();
+        recent.removeAll();
+
         active = false;
     }
+
     /**
      * Erstellung Editor Menü (in Form eines MenüTabs):
      */
@@ -83,26 +78,30 @@ public class Editor implements ActionListener {
     }
 
     public JPanel createInfoPane() {
-        InfoTextArea editorInfoPane = new InfoTextArea("");
-        editorInfoPane.appendHeading("Info");
-        editorInfoPane.appendRegularText
+        InfoTextArea info = new InfoTextArea("");
+        info.appendHeading("Info");
+        info.appendRegularText
                 ("Willkommen zum Editor ! Du willst wissen was der Editor kann? " +
-                        "\n Es können ganz einfach Maps erstellt werden" +
-                        "\n Es gibt ein eigenes Menü für den Editor, dazu einfach" +
-                        "\n auf das Menü (unten in der Leiste) -> Editor -> Tile Menü" +
-                        "\n Du kannst deine gewünschten Tiles mit Doppelklick direkt anwählen oder durch einen Klick und und per Bestätigen." +
-                        "\n Um die TIle zu verändern einfach auf die gewünschte Fläche in deiner Map klicken ." +
-                        "\n Mit der Shift Taste und zwei Klicks können ganze Flächen ausgewählt und geändernt werden" +
-                        "\n Mit der STR Taste können Tiles aus der Map ganz einfach kopiert und verwendet werden." +
-                        "\n Kamera - Steuerung:" +
+                        " Es können ganz einfach Maps erstellt werden" +
+                        " Es gibt ein eigenes Menü für den Editor, dazu einfach" +
+                        " auf das Menü (oben in der Leiste) -> Editor -> Tile Menü" +
+                        " Du kannst deine gewünschten Tiles mit Doppelklick direkt anwählen oder dein Tile  durch einen Klick und und per Bestätigen auswählen." +
+                        " Um die Tile zu verändern einfach auf die gewünschte Fläche in deiner Map klicken/ziehen ." +
+                        " Mit der Shift Taste und zwei Klicks können ganze Flächen ausgewählt und geändert werden" +
+                        " Mit der STR Taste können Tiles aus der Map ganz einfach kopiert und verwendet werden." +
+                        " Kamera - Steuerung:" +
                         "\n W: Kamera nach oben bewegen" +
-                        "\n A: Kamera nach links bewegen" +
-                        "\n S: Kamera nach unten bewegen" +
-                        "\n D: Kamera nach rechts bewegen" +
-                        "\n - : Zoom verringern | + : Zoom erhöhen" +
-                        "\n ..." +
-                        "\n Viel Spaß beim Maps bauen \n -Kevin");
-        return editorInfoPane;
+                        "\n  A: Kamera nach links bewegen" +
+                        "\n  S: Kamera nach unten bewegen" +
+                        "\n  D: Kamera nach rechts bewegen" +
+                        " - : Zoom verringern | + : Zoom erhöhen" +
+                        " Im Tile Menü kann außerdem mit einem dreifach-Schnellklick die TileID abgefragt werden" +
+                        " Um Maps zu Speichern einfach auf Speichern klicken und im gewünschten Pfad den Namen eintippen" +
+                        " Wenn du Autosave eingeschaltet hast werden die Maps automatisch im autosave Ordner gespeichert." +
+                        " Das Laden von TileSets und Maps kann ganz einfach in der Leiste im Menü gemacht werden." +
+                        " Du kannst auch direkt mehrere TileSets aufeinmal laden, was aber durchaus zu Verzögerungen führen kann" +
+                        " Viel Spaß beim Maps bauen  -Kevin");
+        return info;
     }
 
     /**
@@ -114,17 +113,16 @@ public class Editor implements ActionListener {
      * -> Leiste für vorherige Tiles (recentTiles)
      */
     public void createMenu() {
-        // FIXME: 14.04.2019 Anständige Initialisierung (Nicht oben)
         idAnzeige = new JLabel();
         idAnzeige.setFocusable(false);
         idAnzeige.setText("Kein Tile ausgewählt");
 
-
-        selectMapPanel.setLayout(new GridLayout(0,2,5,5));
+        selectMapPanel.setLayout(new GridLayout(0, 2, 5, 5));
         selectMapPanel.add(idAnzeige);
         layout = new GroupLayout(selectMapPanel);
         layout.setAutoCreateGaps(true);
 
+        mapSelectActionsPanel.add(selectMapPanel);
 
         recent.setLayout(new GridLayout(maxRecentTiles, 1, 5, 5));
 
@@ -142,7 +140,6 @@ public class Editor implements ActionListener {
                     mapCheck.get(selectedMap).setSelected(true);
 
                     if (cameraPoint != null) {
-                        //System.out.println("CameraPoint is moved to middle of Map No: " + selectedMap);
                         EditorMap currentMap = maps.get(selectedMap);
                         cameraPoint.setLocation((int) (currentMap.getMapSizeX() + currentMap.getChapterOffset().getX()) / 2, (int) (currentMap.getMapSizeY() + currentMap.getChapterOffset().getY()) / 2);
                     }
@@ -202,18 +199,10 @@ public class Editor implements ActionListener {
 
             }
         });
-        btSimulate = new JButton("Simulate your Game");
-        btSimulate.addActionListener(this);
         mapSelectActionsPanel.add(btAutosave);
-        mapSelectActionsPanel.add(btSimulate);
 
-        // FIXME: 29.04.2019 Andere Lösung = unabhängig von GUI
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.gridx = 1;
-        GUI.east.add(recent, gbc);
-        GUI.addToEast(selectMapPanel);
-        GUI.addToEast(mapSelectActionsPanel);
     }
+
     /**
      * Erstellt aus allen Maps Checkboxen womit die sichbar gemanaged wird
      */
@@ -278,34 +267,18 @@ public class Editor implements ActionListener {
 
     /**
      * Erstellung von TileMenu:
-     *  -> Eine zugehörige Klasse um das Editieren (anschaulich) zu ermöglichen
-     *  -> typische create-Methode, wie in der Dokumentation erklärt
+     * -> Eine zugehörige Klasse um das Editieren (anschaulich) zu ermöglichen
+     * -> typische create-Methode, wie in der Dokumentation erklärt
      */
     public void createTileMenu() {
         if (tileMenu == null) {
-            //////DebuggingThings
-            editorAnzeige = new JTextArea();
-            customNot = new JTextArea();
-            GUI.addToDebugPane(editorAnzeige);
-            GUI.addToDebugPane(customNot);
-            warning = new JLabel("Es können beim Speichern wegen verschiedenen TileSets Fehler unterlaufen \n ", UIManager.getIcon("OptionPane.warningIcon"), SwingConstants.CENTER);
-            warning.setBackground(Color.RED);
-            warning.setForeground(Color.WHITE);
-            warning.setFont(warning.getFont().deriveFont(Font.BOLD, 5));
-            GUI.addToEast(warning);
-            //////////////////////////////////////////////////////////////////////////////////
-
-            //System.out.println("Editor : Create TileMenu");
             tileMenu = new EditorTileMenu(owner, false, this);
-            //System.out.println("Editor : Create Standard TS");
+            cameraPoint = new Pointer();
             TileSet tempTS = new TileSet("Content/Graphics/tileSets/12x12x3 - tileSet.png", 12, 12, 3);
             //On release:
-//            Meldungen m = new Meldungen(JFrame,true,"Map");
-//            createEditorMap(Integer.parseInt(m.getUserInput(0)),Integer.parseInt(m.getUserInput(1)), tempTS, null);
-            cameraPoint = new Pointer();
-            createEditorMap(50, 50, tempTS, null);
+            Meldungen m = new Meldungen(null, true, "Map");
+            createEditorMap(Integer.parseInt(m.getUserInput(0)), Integer.parseInt(m.getUserInput(0)), tempTS, null);
             cameraPoint.setSpeed(15);
-            //System.out.println("Editor : Finished");
         } else {
             // Damit kein erneutes Starten immer entsteht
             tileMenu.setVisible(true);
@@ -322,29 +295,24 @@ public class Editor implements ActionListener {
         if (recentListTiles.size() >= maxRecentTiles) {
             recentListTiles.removeFirst();
         }
-            displayRecent(recent);
+        displayRecent(recent);
     }
 
     /**
      * Editor Mechanik:
-     *  -> Steuern der Tastatureingabe 
-     *      - Steuern des Pointers bzw. der Kamera
-     *      - Zoomen mit Tasten  // FIXME: 29.05.2019 (> Vllt auch mit Mausrad später möglich)
-     *  -> Steuert die Anzeige der Warnung > muss überarbeitet werden
+     * -> Steuern der Tastatureingabe
+     * - Steuern des Pointers bzw. der Kamera
+     * - Zoomen mit Tasten  // FIXME: 29.05.2019 (> Vllt auch mit Mausrad später möglich)
+     * -> Steuert die Anzeige der Warnung > muss überarbeitet werden
      */
     public void update() {
         try {
             if (!bordercheck(cameraPoint, maps.get(selectedMap)) && GUI.keyInputToMove(keyListener).getX() != 0 || !bordercheck(cameraPoint, maps.get(selectedMap)) && GUI.keyInputToMove(keyListener).getY() != 0) {
-                cameraPoint.setMove(GUI.keyInputToMove(keyListener));
+                cameraPoint.setMove((int) GUI.keyInputToMove(keyListener).getX(), (int) GUI.keyInputToMove(keyListener).getY());
                 gamePanel.getCamera().centerOnObject(cameraPoint);
             }
-            if (maps.get(selectedMap).isToIgnore()) {
-                warning.setVisible(false);
-            }
         } catch (Exception e) {
-//            e.printStackTrace();
-            System.out.println("Selected Map is not in the Maps list ! " +
-                    "\n The Map has a SIZE of " + maps.size() + "and the selected Map is " + selectedMap);
+            e.printStackTrace();
         }
 
         if (keyListener.plus) {
@@ -368,28 +336,6 @@ public class Editor implements ActionListener {
         }
     }
 
-    private void debugPane(int maxBorderX, int maxBorderY) {
-        editorAnzeige.setText("Editor: "
-                + "\n selected Map :" + selectedMap + "from total: " + maps.size()
-                + "\n Current Map Stats -"
-                + "\n X-Size: " + maps.get(selectedMap).getMapSizeX()
-                + "\n Y-Size: " + maps.get(selectedMap).getMapSizeY()
-                + "\n Chapter X-Offset: " + maps.get(selectedMap).getChapterOffset().getX()
-                + "\n Chapter Y-Offset: " + maps.get(selectedMap).getChapterOffset().getY()
-                + "\n Current CameraPointer -"
-                + "\n X-Pos: " + cameraPoint.getLocation().getX() + " maxXPos: " + (maxBorderX - GUI.GAMEPANEL_WIDTH / 2)
-                + "\n Y-Pos: " + cameraPoint.getLocation().getY() + " maxYPos: " + (maxBorderY - GUI.GAMEPANEL_HEIGHT / 2)
-                + "\n X-Offset:" + gamePanel.getCamera().getXOffset() + " max : " + (maxBorderX - GUI.GAMEPANEL_WIDTH)
-                + "\n Y- Offset:" + gamePanel.getCamera().getYOffset() + " max : " + (maxBorderY - GUI.GAMEPANEL_HEIGHT)
-        );
-
-        String[] length = customNot.getText().split("\n");
-        if (length.length > 10) {
-            customNot.setText("");
-        }
-
-    }
-
     public boolean bordercheck(Pointer pointer, EditorMap em) {
         /**
          * Check ob Pointer am Rand ist (-> Etwas "Handlungsspielraum um über die Grenze zu gehen damit alle Tiles erreichbar sind)
@@ -410,50 +356,39 @@ public class Editor implements ActionListener {
 
         downBorder = pointer.getLocation().getY() > maxyBorder - GUI.GAMEPANEL_WIDTH / 2;
 
-
-        debugPane(maxxBorder, maxyBorder);
         if (leftBorder || rightBorder || upBorder || downBorder) {
             Camera cam = gamePanel.getCamera();
             if (leftBorder) {
-                customNot.append("Left Bounce \n");
                 pointer.setXPos((int) pointer.getLocation().getX() + bounce);
                 gamePanel.getCamera().centerOnObject(pointer);
             }
             if (rightBorder) {
-                customNot.append("Right Bounce \n");
                 pointer.setXPos((int) pointer.getLocation().getX() - bounce);
                 gamePanel.getCamera().centerOnObject(pointer);
             }
             if (upBorder) {
-                customNot.append(" Up Bounce \n");
                 pointer.setYPos((int) pointer.getLocation().getY() + bounce);
                 gamePanel.getCamera().centerOnObject(pointer);
             }
             if (downBorder) {
-                customNot.append(" Down Bounce \n");
                 pointer.setYPos((int) pointer.getLocation().getY() - bounce);
                 gamePanel.getCamera().centerOnObject(pointer);
             }
             return true;
-        } else {
-            String[] length = customNot.getText().split("\n");
-            if (length.length > 0 && !length[length.length - 1].contentEquals("\n")) {
-                customNot.append("\n");
-            }
-            return false;
         }
+        return false;
     }
+
     /**
      * Fügt die Recent Leiste zu beliebigen Panel hinzu
      */
-    public void displayRecent(JPanel panel){
+    public void displayRecent(JPanel panel) {
         panel.removeAll();
         for (int i = 0; i < recentListTiles.size(); i++) {
             EditorTileButton temp = (EditorTileButton) recentListTiles.get(i);
             temp.addMouseListener(new MouseListener() {
                 @Override
                 public void mouseClicked(MouseEvent e) {
-//                   //System.out.println(temp.getId()+"meine ID beim klicken  ");
                     EditorMap m = maps.get(selectedMap);
                     tileMenu.setSelectedID(temp.getId());
                     m.setGraphicID(temp.getId());
@@ -486,12 +421,12 @@ public class Editor implements ActionListener {
         gamePanel.repaint();
         panel.revalidate();
 
-
         panel.setBorder(BorderFactory.createLineBorder(Color.yellow, 3));
     }
+
     /**
      * Speicher Methoden:
-     *  -> Beziehen sich aufeinander (saveMap als Kernmethode zum Speichern einer X beliebigen Map)
+     * -> Beziehen sich aufeinander (saveMap als Kernmethode zum Speichern einer X beliebigen Map)
      */
     public void saveMap(EditorMap toBeSavedMap, File path, boolean notification) {
         try (BufferedWriter out = new BufferedWriter(new FileWriter(path))) {
@@ -500,7 +435,6 @@ public class Editor implements ActionListener {
             out.write(toBeSavedMap.getMapSizeX() + ";" + toBeSavedMap.getMapSizeX());
             out.newLine();
 
-            //System.out.println("Saving Map");
             for (int zeile = 0; zeile < toBeSavedMap.mapTiles.length; zeile++) {
                 String line = "";
                 for (int spalte = 0; spalte < toBeSavedMap.mapTiles[zeile].length - 1; spalte++) {
@@ -582,13 +516,14 @@ public class Editor implements ActionListener {
             JOptionPane.showMessageDialog(null, "Map konnte nicht geladen werden.", "", JOptionPane.ERROR_MESSAGE);
         }
     }
+
     /**
      * Laden von Maps per Abfrage
-     *  -> Öffnet Meldungsfenster um Map Datei zu öffnen
+     * -> Öffnet Meldungsfenster um Map Datei zu öffnen
      */
     public void loadCustomMap() {
         Meldungen m = new Meldungen(null, true, "null");
-        File f = Meldungen.getFileAt("Open");//Der Filechooeser liefert die Pfadangabe zu dem selektierten Speicherort.
+        File f = Meldungen.getFileAt("Open");
         String path = f.getPath();
         loadMap(path);
     }
@@ -596,7 +531,7 @@ public class Editor implements ActionListener {
     /**
      * Liste aller ausgewählten Checkboxen
      */
-    public LinkedList<Integer> checkMapBoxes(){
+    public LinkedList<Integer> checkMapBoxes() {
         LinkedList indexOfActivatedMaps = new LinkedList<Integer>();
         for (int i = 0; i < mapCheck.size(); i++) {
             if (mapCheck.get(i).isSelected() && !indexOfActivatedMaps.contains(i)) {
@@ -605,12 +540,13 @@ public class Editor implements ActionListener {
         }
         return indexOfActivatedMaps;
     }
+
     /**
      * Zoom Methode
-     *  -> Macht globale Tile-Groeße kleiner
-     *  -> Grenzen des Zooms können in der Konfiguration geändert werden
+     * -> Macht globale Tile-Groeße kleiner
+     * -> Grenzen des Zooms können in der Konfiguration geändert werden
      */
-    public void zoom(boolean zoomInIsTrueZoomOutisFalse){
+    public void zoom(boolean zoomInIsTrueZoomOutisFalse) {
         // TODO: 23.03.2019 Zoom an Mapgroesse angepasst EDIT: NICHT WIRKLICH NÖTIG...
         EditorMap m = maps.get(selectedMap);
         gamePanel.getCamera().centerOnObject(cameraPoint);
@@ -644,10 +580,10 @@ public class Editor implements ActionListener {
 
     /**
      * Render Methode der aktiven Maps!:
-     *  -> Liste die alle aktivierten Map IDs hat
-     *  -> render führt nur Methode bei IDs aus der oben gennanten Liste
-     *  -> WICHTIG: Reihenfolge nur nach öffnen der Maps (erstmal nicht änderbar)
-     *      d.h wenn Map 1 und Map 2 ausgewählt sind, wird erst 1 und dannach 2 gerendert (Maps überlappen)
+     * -> Liste die alle aktivierten Map IDs hat
+     * -> render führt nur Methode bei IDs aus der oben gennanten Liste
+     * -> WICHTIG: Reihenfolge nur nach öffnen der Maps (erstmal nicht änderbar)
+     * d.h wenn Map 1 und Map 2 ausgewählt sind, wird erst 1 und dannach 2 gerendert (Maps überlappen)
      */
     public void renderEditor(Graphics2D g2d) {
         for (int i = 0; i < checkMapBoxes().size(); i++) {
@@ -688,10 +624,8 @@ public class Editor implements ActionListener {
             Tile clicked = m.mapTiles[(int) m.getTileID(e).getX()][(int) m.getTileID(e).getY()];
             m.setGraphicID(clicked.getID());
             addRecently(m.getGraphicID(), m.getTileSet());
-            editorAnzeige.setText("Copied");
         }
         if (keyListener.alt) {
-            System.out.println("Tile markiert unter : " + m.getTileID(e));
         }
         m.setTile(e, ts);
         keyListener.update();
@@ -702,12 +636,15 @@ public class Editor implements ActionListener {
         EditorMap m = maps.get(selectedMap);
         TileSet ts = tileMenu.getTileSet(tileMenu.getSelectedTileSetIndex());
         m.setTile(e, ts);
-        System.out.println("Dragged");
         gamePanel.repaint();
     }
 
     public boolean isActive() {
         return active;
+    }
+
+    public JPanel getMapSelectActionsPanel() {
+        return mapSelectActionsPanel;
     }
 
     /**

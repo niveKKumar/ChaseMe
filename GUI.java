@@ -1,4 +1,3 @@
-import javax.swing.FocusManager;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
@@ -7,33 +6,26 @@ public class GUI extends JFrame implements ActionListener, MouseListener, MouseM
     /**
      * Model + Controller des Spiels
      */
-    public static GUI gui;
-    public static final int FRAME_WIDTH = 1080;
-    public static final int FRAME_HEIGHT = 720;
 
+    public static final int FRAME_WIDTH = 800;
+    public static final int FRAME_HEIGHT = 800;
+    public static final int FPS = 30; //(Bilder pro Sekunde)
+    public static final long maxLoopTime = 1000 / FPS;
+    public static GUI gui;
     public static int GAMEPANEL_WIDTH = 700;
     public static int GAMEPANEL_HEIGHT = 700;
     public static JPanel east = new JPanel(new GridBagLayout());
-    private JPanel north = new JPanel(new FlowLayout());
-    public static JPanel tempDebugPane;
-    private static GridBagConstraints gbc = new GridBagConstraints();
-    public JPanel west = new JPanel(new FlowLayout());
     public static JPanel south = new JPanel(new FlowLayout());
-    private KeyManager keyManager;
-    public JTextArea debugAnzeige = new JTextArea();
-
+    public JPanel west = new JPanel(new FlowLayout());
     public MenuUI menuUI;
+    public Container cp;
+    private JPanel north = new JPanel(new FlowLayout());
+    private KeyManager keyManager;
     private GamePanel gamePanel;
     private Editor editor;
     private Game game;
-
     private Loop loop = new Loop();
     private Thread t = new Thread(loop);
-    public static final int FPS = 60; //(Bilder pro Sekunde)
-    public static final long maxLoopTime = 1000 / FPS;
-
-    public Container cp;
-    private JLabel focuslb = new JLabel();
 
 
     public GUI() {
@@ -58,20 +50,6 @@ public class GUI extends JFrame implements ActionListener, MouseListener, MouseM
         requestFocus();
     }
 
-    /**
-     * Temp:
-     */
-    public static void addToDebugPane(JComponent comp) {
-        gbc.gridx = 0;
-        gbc.gridy = gbc.gridy + 1;
-        tempDebugPane.add(comp, gbc);
-    }
-
-    public static void addToEast(JComponent comp) {
-        gbc.gridx = 0;
-        gbc.gridy = gbc.gridy + 1;
-        east.add(comp, gbc);
-    }
 
     public static Point keyInputToMove(KeyManager keyManager) {
         int xMove = 0;
@@ -99,8 +77,16 @@ public class GUI extends JFrame implements ActionListener, MouseListener, MouseM
         return new Point(xMove, yMove);
     }
 
+    public static void main(String[] args) {
+        try {
+            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(null, "Das LookAndFeel des Betriebssystems kann nicht geladen werden!\nDas Programm wird daher jetzt im Java-LookAndFeel angezeigt.", "Allgemeine Ausnahme", JOptionPane.ERROR_MESSAGE);
+        }
+        new GUI();
+    } // end of main
+
     private void createGUI() {
-        //Listener:
         keyManager = new KeyManager();
         addKeyListener(keyManager);
         addMouseListener(this);
@@ -111,17 +97,6 @@ public class GUI extends JFrame implements ActionListener, MouseListener, MouseM
         cp.add(east, BorderLayout.EAST);
         cp.add(west, BorderLayout.WEST);
         cp.add(north, BorderLayout.NORTH);
-
-        tempDebugPane = new JPanel(new GridBagLayout());
-        debugAnzeige.setFocusable(false);
-        debugAnzeige.setBorder(BorderFactory.createLineBorder(Color.black));
-        debugAnzeige.setSize(100, 100);
-        debugAnzeige.setText("Debugging TextArea");
-        focuslb.setText("Shows current Focus");
-        focuslb.setBorder(BorderFactory.createLineBorder(Color.red, 3));
-        addToDebugPane(debugAnzeige);
-        addToDebugPane(focuslb);
-        west.add(tempDebugPane);
 
         JButton btMenu = new JButton("MenuTab");
         btMenu.setFocusable(false);
@@ -139,7 +114,7 @@ public class GUI extends JFrame implements ActionListener, MouseListener, MouseM
             }
         });
         btMenu.setFocusable(false);
-        south.add(btMenu);
+        north.add(btMenu);
 
         JButton appRestart = new JButton("Spiel neustarten");
         appRestart.setFocusable(false);
@@ -150,7 +125,7 @@ public class GUI extends JFrame implements ActionListener, MouseListener, MouseM
                 new GUI();
             }
         });
-        south.add(appRestart);
+        north.add(appRestart);
 
         JButton getFocus = new JButton("Regain Focus");
         getFocus.setFocusable(false);
@@ -161,43 +136,44 @@ public class GUI extends JFrame implements ActionListener, MouseListener, MouseM
                 gamePanel.revalidate();
             }
         });
-        south.add(getFocus);
+        north.add(getFocus);
 
         gamePanel = new GamePanel(cp, this, this, keyManager);
         cp.add(gamePanel);
         gamePanel.addtoRender(this);
-        menuUI = new MenuUI(null, this);
+        menuUI = new MenuUI(this);
     }
 
     private void createEditor() {
-        editor = new Editor(this, gamePanel, keyManager);
+        editor = new Editor(this, gamePanel, keyManager, east);
+        east.add(editor.getMapSelectActionsPanel());
         game.clear();
+    }
+
+    private void createGame() {
+        MenuUI.MenuTab settings = game.createSettings();
+        settings.setName("Settings");
+        menuUI.addMenuTab(settings);
+        if (menuUI.searchForPanel("editorInfo")) {
+            menuUI.removeMenuPaneByName("editorInfo");
+        }
+        menuUI.getButtonPaneByName("MainMenu").showInfo = false;
     }
 
     public void actionPerformed(ActionEvent evt) {
         if (editor != null && editor.isActive()) {
             editor.actionPerformed(evt);
         }
-        if (game != null && game.isActive()) {
-            game.actionPerformed(evt);
-            menuUI.showButtonPaneByName("MainMenu");
-            menuUI.setVisible(false);
-        }
         JButton temp = (JButton) evt.getSource();
         if (temp.getName() != null && temp.getName().contentEquals("Info")) {
-            if (game != null && game.isActive()) {
-                menuUI.showButtonPaneByName("guiInfo");
-                System.out.println("info clicked guiInfo");
-            }
             if (editor != null && editor.isActive()) {
                 menuUI.showButtonPaneByName("editorInfo");
-                System.out.println("info clicked editorInfo");
             }
         }
         if (temp.getName() != null && temp.getName().contentEquals("Settings")) {
-            menuUI.showMainMenu();
-            System.out.println("Settings pressed and MainMenu loaded");
+            menuUI.showButtonPaneByName("Settings");
         }
+
         switch (temp.getText()) {
             case "Exit":
                 System.exit(0);
@@ -210,12 +186,12 @@ public class GUI extends JFrame implements ActionListener, MouseListener, MouseM
             case "Game":
                 if (!menuUI.searchForPanel("gamePage")) {
                     JPanel levelMenu = game.createLevelMenu();
-                    levelMenu.setBorder(BorderFactory.createLineBorder(Color.yellow, 8));
                     levelMenu.setName("gamePage");
                     menuUI.addAndShowPanel(levelMenu, true, false, true);
                 } else {
                     menuUI.showButtonPaneByName("gamePage");
                 }
+
                 this.requestFocus();
                 break;
 
@@ -229,6 +205,7 @@ public class GUI extends JFrame implements ActionListener, MouseListener, MouseM
                     JPanel editorInfo = editor.createInfoPane();
                     editorInfo.setName("editorInfo");
                     menuUI.addPanel(editorInfo, true, false, false);
+                    game.clear();
                 } else {
                     menuUI.showButtonPaneByName("EditorMenu");
                 }
@@ -241,23 +218,49 @@ public class GUI extends JFrame implements ActionListener, MouseListener, MouseM
                 }
                 System.out.println("Restart");
                 break;
-            case "TestButton":
 
+            case "1":
+                game.createlevel1();
+                menuUI.showMenu();
+                break;
+            case "2":
+                game.createlevel2();
+                menuUI.showMenu();
+                break;
+            case "3":
+                game.createlevel3();
+                menuUI.showMenu();
+                break;
+            case "Lobby":
+                game.createLobby();
+                menuUI.showMenu();
+                break;
+            case "Schwierigkeitsgrad":
+                game.changeDifficulty();
+                game.createLobby();
+                menuUI.showMenu();
+                break;
+            case "<html> Eigene<br>Schwierigkeit erstellen </html>":
+                game.createOwnDifficulty();
+                game.setDifficulty(999);
+                game.createLobby();
+                menuUI.showMenu();
                 break;
         }
         this.requestFocus();
     }
 
     private void createGameComponents() {
+        //GridLines kann beim erstellen ganz einfach eingeschaltet werden
         menuUI.loadMainMenu(new String[]{"Game", "Restart", "GridLines", "Editor", "Exit", "TestButton"});
+        menuUI.getButtonPaneByName("MainMenu").setHeading("ChaseME");
+        menuUI.getButtonPaneByName("MainMenu").setSubTextInHeading("Das Spiel zum Selbstprogrammieren");
         game = new Game(gamePanel, keyManager);
-        JPanel guiInfo = game.createInfoPane();
-        guiInfo.setName("guiInfo");
-        menuUI.addPanel(guiInfo, true, false, false);
+        createGame();
         t.start();
     }
 
-    public void render(Graphics2D g2d ) {
+    public void render(Graphics2D g2d) {
         try {
             if (game.isActive()) {
                 game.renderLevel(g2d);
@@ -266,7 +269,6 @@ public class GUI extends JFrame implements ActionListener, MouseListener, MouseM
             }
         } catch (Exception e) {
             e.printStackTrace();
-            System.out.println("Render Fehler ! \n Game/Editor ist möglicherweise noch gar nicht existent");
         }
     }
 
@@ -282,59 +284,23 @@ public class GUI extends JFrame implements ActionListener, MouseListener, MouseM
         return gamePanel;
     }
 
-    public static void main(String[] args) {
-        try {
-            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-        }catch(Exception e) {
-            JOptionPane.showMessageDialog(null,"Das LookAndFeel des Betriebssystems kann nicht geladen werden!\nDas Programm wird daher jetzt im Java-LookAndFeel angezeigt.","Allgemeine Ausnahme",JOptionPane.ERROR_MESSAGE);
-        }
-        new GUI();
-    } // end of main
-
     public void update() {
         keyManager.update();
         if (game.isActive()) {
             game.updateLevel();
-        }else { //Editor:
+        } else { //Editor:
             editor.update();
         }
         GAMEPANEL_HEIGHT = gamePanel.getWidth();
         GAMEPANEL_WIDTH = gamePanel.getWidth();
-        debugAnzeige.setText("GP Groesse:" + GAMEPANEL_WIDTH + " | " + GAMEPANEL_HEIGHT + "\n" + menuUI.currentPage);
 
         gamePanel.repaint();
         gamePanel.revalidate();
-        // Nicht nötig wenn maximized !!
-//        if (gamePanel.getSize() != menuUI.getSize()){
-//            if (gamePanel.getWidth() > menuUI.getWidth()){
-//            menuUI.setSize(gamePanel.getWidth(),menuUI.getHeight());
-//            }else{
-//                gamePanel.setSize(menuUI.getWidth(),gamePanel.getHeight());}
-//
-//            if (gamePanel.getHeight() > menuUI.getHeight()){
-//              menuUI.setSize(menuUI.getWidth(),gamePanel.getHeight());
-//            }else{
-//                gamePanel.setSize(gamePanel.getWidth(),menuUI.getHeight());}
-//
-//        }
         //Debugging:
         if (this.hasFocus() && !menuUI.isActive()) {
             menuUI.setAlwaysOnTop(true);
         } else {
             menuUI.setAlwaysOnTop(false);
-        }
-        try {
-            if (FocusManager.getCurrentManager().getFocusOwner().getName() == null) {
-//               //System.out.println(FocusManager.getCurrentManager().getFocusOwner());
-                focuslb.setText("See in OutPrint /*(Im Moment ausgeschaltet)*/");
-            } else {
-                if (FocusManager.getCurrentManager().getFocusOwner().getName().equals("null.contentPane")) {
-                    this.requestFocus();
-                }
-                focuslb.setText(FocusManager.getCurrentManager().getFocusOwner().getName());
-            }
-        } catch (Exception e) {
-            focuslb.setText("Focus outside");
         }
     }
 
@@ -376,7 +342,6 @@ public class GUI extends JFrame implements ActionListener, MouseListener, MouseM
         if (!game.isActive() && e.getSource().equals(gamePanel)) {
             editor.mouseDragged(e);
         }
-        System.out.println("Dragged");
     }
 
     @Override
@@ -387,8 +352,7 @@ public class GUI extends JFrame implements ActionListener, MouseListener, MouseM
 
     @Override
     public void componentResized(ComponentEvent e) {
-        menuUI.setSize(getSize());
-        //System.out.println("Groesse vom GUI.GamePanel hat sich geändert " + getSize());
+
     }
 
     @Override

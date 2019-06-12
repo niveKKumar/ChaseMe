@@ -5,15 +5,15 @@ public class Camera {
     private int xOffset, yOffset;
     private int clickXOffset = 0, clickYOffset = 0;
 
-     public Camera() {
-     }
+    public Camera() {
+    }
 
     public Camera(int pXSize, int pYSize, int chapterOffsetX, int chapterOffsetY) {
-         xSize = pXSize;
-         ySize = pYSize;
+        xSize = pXSize;
+        ySize = pYSize;
         this.chapterOffsetX = chapterOffsetX;
         this.chapterOffsetY = chapterOffsetY;
-     }
+    }
 
     public void centerOnObject(Pointer pointer) {
 //        int virtualSpace = this.virtualSpace;
@@ -37,13 +37,13 @@ public class Camera {
 //        } // end of if-else
 
 
-        clickXOffset = (int) pointer.getLocation().getX() - (GUI.GAMEPANEL_WIDTH / 2);
-        clickYOffset = (int) pointer.getLocation().getY() - (GUI.GAMEPANEL_HEIGHT / 2);
+        clickXOffset = (int) pointer.getLocation().getX() - (GUI.GAMEPANEL_WIDTH / 2) + 80;
+        clickYOffset = (int) pointer.getLocation().getY() - (GUI.GAMEPANEL_HEIGHT / 2) + 80;
 //        Edge Snapping
 
-         //https://gamedev.stackexchange.com/questions/138756/smooth-camera-movement-java
+        //https://gamedev.stackexchange.com/questions/138756/smooth-camera-movement-java
 
-         //Lerp:
+        //Lerp:
         int targetX = clickXOffset + Character.MOVER_WIDTH / 2;
         int targetY = clickYOffset + Character.MOVER_HEIGHT / 2;
 
@@ -62,23 +62,24 @@ public class Camera {
 //            yOffset = ySize * Tile.TILEHEIGHT / 2;
 //        }
 
-     }
+    }
 
 
-     public void setxOffset(int xOffset) {
-         this.xOffset = xOffset;
-     }
+    public void setxOffset(int xOffset) {
+        this.xOffset = xOffset;
+    }
 
-     public void setyOffset(int yOffset) {
-         this.yOffset = yOffset;
-     }
+    public void setyOffset(int yOffset) {
+        this.yOffset = yOffset;
+    }
 
-     public int getXOffset() {
-         return Math.round(xOffset);
- }
-     public int getYOffset() {
-         return Math.round(yOffset);
-  }
+    public int getXOffset() {
+        return Math.round(xOffset);
+    }
+
+    public int getYOffset() {
+        return Math.round(yOffset);
+    }
 
     public int getxSize() {
         return xSize;
@@ -88,20 +89,20 @@ public class Camera {
         return ySize;
     }
 
-    public void setClickXOffset(int clickXOffset) {
-        this.clickXOffset = clickXOffset;
-    }
-
     public int getClickYOffset() {
         return clickYOffset;
+    }
+
+    public void setClickYOffset(int clickYOffset) {
+        this.clickYOffset = clickYOffset;
     }
 
     public int getClickXOffset() {
         return clickXOffset;
     }
 
-    public void setClickYOffset(int clickYOffset) {
-        this.clickYOffset = clickYOffset;
+    public void setClickXOffset(int clickXOffset) {
+        this.clickXOffset = clickXOffset;
     }
 }
  

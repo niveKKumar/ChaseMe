@@ -3,10 +3,10 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 
 class EditorTileButton extends JButton {
+    public static int SIZE = 50;
     private int id;
     private BufferedImage img;
     private String tileSetPath;
-    public static int SIZE = 50;
 
 
     public EditorTileButton(int id, BufferedImage img) {
@@ -39,6 +39,7 @@ class EditorTileButton extends JButton {
 
 
     }
+
     public BufferedImage getImg() {
         return img;
     }

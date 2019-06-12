@@ -2,7 +2,7 @@ import java.awt.*;
 
 class Pointer {
     protected double xPos, yPos;
-    protected double speed = 10;
+    protected double speed = 20;
     /**
      * Objekt was sich bewegen kann
      */
@@ -27,35 +27,10 @@ class Pointer {
     }
 
 
-    public void setMove(Point pMove) {
-        speed = Math.round(speed);
-        xPos += pMove.getX() * speed;
-        yPos += pMove.getY() * speed;
+    public void setMove(int xMove, int yMove) {
+        xPos += xMove * speed;
+        yPos += yMove * speed;
     }
-
-    // FIXME: 14.04.2019 Richtige Implenmentierung nur wo ?
-    //  BorderCheck wird halt nur im Editor benutzt und daher Implementierung im Pointer nicht nötig EDIT: Implementierung  ist im Editor
-    public void checkBorder(int mapSizeX, int mapSizeY) {
-        this.mapSizeX = mapSizeX;
-        this.mapSizeY = mapSizeY;
-        double oldXPos = xPos;
-        double oldYPos = yPos;
-
-        boolean leftBorder;
-        boolean rightBorder;
-        boolean upBorder;
-        boolean downBorder;
-        leftBorder = xPos < 0 + gamePanel.getWidth() / 2;
-        rightBorder = xPos > mapSizeX * Tile.TILEWIDTH - gamePanel.getWidth() / 2;
-        upBorder = yPos < 0 + gamePanel.getHeight() / 2;
-        downBorder = yPos > mapSizeY * Tile.TILEHEIGHT - gamePanel.getHeight() / 2;
-        //BEWEGENDER POINTER:
-        if (leftBorder || rightBorder || upBorder || downBorder) {
-            xPos = oldXPos;
-            yPos = oldYPos;
-        }
-    }
-
 
     public Point getLocation() {
         return new Point((int) xPos, (int) yPos);

@@ -1,3 +1,4 @@
+import javax.swing.*;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.BufferedReader;
@@ -74,7 +75,7 @@ public class Map extends MapBase {
             }
             temp = mapString.split(";");
         } catch (Exception e) {
-            System.out.println("LESEFEHLER im Dateipfad " + pMapPlanPath);
+            JOptionPane.showMessageDialog(null, "Die Map Datei im angegebenen Pfad " + pMapPlanPath + " existiert nicht!");
         }
         return temp;
     }

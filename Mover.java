@@ -4,22 +4,22 @@ import java.awt.geom.Point2D;
 import java.util.LinkedList;
 
 public class Mover extends Pointer {
+    public static int MOVER_WIDTH, MOVER_HEIGHT;
     /**
      * Spieler Objekt mit Bild
      * kann sprechen
      */
     public Character.SpeechBubble speechBubble;
+    public Point[] cPoints = new Point[4];
     protected boolean speaking = false;
-    public static int MOVER_WIDTH, MOVER_HEIGHT;
     protected Image img;
     protected SpriteSheet sprites;
     protected int moveSeq = 1;
     protected int moveSeqSleep;
     protected MapBase[] map;
     protected double angleCheck;
-    protected double angle ;
+    protected double angle;
     protected GamePanel gamePanel;
-    public Point[] cPoints = new Point[4];
 
     public Mover(GamePanel gp, int pXpos, int pYpos, SpriteSheet pSpriteSheet, MapBase[] pMap) { //Image Initialisierung nachher...
         super(gp, pXpos, pYpos);
@@ -32,27 +32,24 @@ public class Mover extends Pointer {
     }
 
     @Override
-    public void setMove(Point pMove){
-        double oldXPos = xPos;
-        double oldYPos = yPos;
-
-        super.setMove(pMove);
-
+    public void setMove(int xMove, int yMove) {
+        int oldXPos = (int) xPos;
+        int oldYPos = (int) yPos;
+        super.setMove(xMove, yMove);
         moveSeqSleep++;
         if (moveSeqSleep == 5) {
             if (moveSeq < 2) {
                 moveSeq++;
             } else {
-                //       //System.out.println("else moveSeqSleep");
                 moveSeq = 0;
             } // end of if-else
             moveSeqSleep = 0;
         } // end of if
-        setCurrentImage((int) pMove.getX(), (int) pMove.getY(), moveSeq);
+        setCurrentImage(xMove, yMove, moveSeq);
         if (collisionCheck()) {
-            xPos = oldXPos;
-            yPos = oldYPos;
+            setLocation(oldXPos, oldYPos);
         }
+
     }
 
     public void setPathMove(Point2D from, Point2D to) {
@@ -87,11 +84,11 @@ public class Mover extends Pointer {
 
     public void setCurrentImage(int pXMove, int pYMove, int pMoveSeq) {
         moveSeq = pMoveSeq;
-        if (pXMove == 0 || pYMove == 0) img = sprites.getSpriteElement(0,moveSeq);  //nix = gerade aus
-        if (pXMove == -1) img = sprites.getSpriteElement(1,moveSeq);  //links
-        if (pXMove == 1) img = sprites.getSpriteElement(2,moveSeq);   //rechts
-        if (pYMove == -1) img = sprites.getSpriteElement(3,moveSeq);  //oben
-        if (pYMove == 1) img = sprites.getSpriteElement(0,moveSeq);   //unten
+        if (pXMove == 0 || pYMove == 0) img = sprites.getSpriteElement(0, moveSeq);  //nix = gerade aus
+        if (pXMove == -1) img = sprites.getSpriteElement(1, moveSeq);  //links
+        if (pXMove == 1) img = sprites.getSpriteElement(2, moveSeq);   //rechts
+        if (pYMove == -1) img = sprites.getSpriteElement(3, moveSeq);  //oben
+        if (pYMove == 1) img = sprites.getSpriteElement(0, moveSeq);   //unten
     }
 
     public void saySomething(String text, boolean clear, int speakingSpeed) {
@@ -117,15 +114,12 @@ public class Mover extends Pointer {
         }
         speaking = false;
     }
-    // FIXME: 07.05.2019 MoverOnMapTile und collsiionCheck zusammen integrieren und vereinfachen: MoverOnMapTIle gibt TileIDs zurück
-    //                                                                                            CollisionCheck guckt ob diese IDs geblockt sind
-
     public boolean collisionCheck() {
         LinkedList<Point> tileList = moverIsOnTileID();
         for (int i = 0; i < map.length; i++) {
             for (int j = 0; j < tileList.size(); j++) {
                 Point moverCPpos = tileList.get(j);
-                if (map[i] != null && map[i].isActiveInPosition(moverCPpos) &&
+                if (map[i] != null && map[i].isActiveInTileID(moverCPpos) &&
                         map[i].mapTiles[(int) moverCPpos.getX()][(int) moverCPpos.getY()].isBlocked()) {
                     return true;
                 }
@@ -140,7 +134,7 @@ public class Mover extends Pointer {
         for (int i = 0; i < map.length; i++) {
             for (int j = 0; j < tileList.size(); j++) {
                 Point moverCPpos = tileList.get(j);
-                if (map[i] != null && map[i].isActiveInPosition(moverCPpos) &&
+                if (map[i] != null && map[i].isActiveInTileID(moverCPpos) &&
                         map[i].mapTiles[(int) moverCPpos.getX()][(int) moverCPpos.getY()].isDanger()) {
                     activeCP++;
                 }
@@ -183,13 +177,13 @@ public class Mover extends Pointer {
     public Point getTileLocation() {
         return new Point((int) (getLocation().getX()) / Tile.TILEWIDTH, (int) (getLocation().getY()) / Tile.TILEHEIGHT);
     }
+
     protected void getAngle(Point2D from, Point2D to) {
-        angleCheck = Math.atan2(from.getY() - to.getY(), from.getX() - to.getX())-Math.PI;
+        angleCheck = Math.atan2(from.getY() - to.getY(), from.getX() - to.getX()) - Math.PI;
         angleCheck = (int) Math.abs(Math.toDegrees(angleCheck));
-        //   //System.out.println(angleCheck);
     }
 
-    public void setSprite(){
+    public void setSprite() {
         if (angleCheck >= 0 && angleCheck < 30) { // rechts
             img = sprites.getSpriteElement(2, moveSeq);
             angle = 0;
@@ -197,7 +191,7 @@ public class Mover extends Pointer {
         }
         if (angleCheck >= 30 && angleCheck < 60) { //oben rechts
             img = sprites.getSpriteElement(2, moveSeq);
-            angle = Math.toRadians(angleCheck) - Math.PI/2;
+            angle = Math.toRadians(angleCheck) - Math.PI / 2;
             return;
         }
         if (angleCheck >= 60 && angleCheck < 120) { //oben
@@ -207,7 +201,7 @@ public class Mover extends Pointer {
         }
         if (angleCheck >= 120 && angleCheck < 150) { // oben links
             img = sprites.getSpriteElement(1, moveSeq);
-            angle = Math.toRadians(angleCheck) - Math.PI/2;
+            angle = Math.toRadians(angleCheck) - Math.PI / 2;
             return;
         }
         if (angleCheck >= 150 && angleCheck < 210) { //links
@@ -217,7 +211,7 @@ public class Mover extends Pointer {
         }
         if (angleCheck >= 210 && angleCheck < 240) { // unten links
             img = sprites.getSpriteElement(1, moveSeq);
-            angle = Math.toRadians(angleCheck) + Math.PI/2 ;
+            angle = Math.toRadians(angleCheck) + Math.PI / 2;
             return;
         }
         if (angleCheck >= 240 && angleCheck < 300) { //unten
@@ -227,7 +221,7 @@ public class Mover extends Pointer {
         }
         if (angleCheck >= 300 && angleCheck < 330) { // unten rechts
             img = sprites.getSpriteElement(2, moveSeq);
-            angle = Math.toRadians(angleCheck) - Math.PI/2;
+            angle = Math.toRadians(angleCheck) - Math.PI / 2;
             return;
         }
         if (angleCheck >= 330 && angleCheck < 360) { // rechts
@@ -243,6 +237,10 @@ public class Mover extends Pointer {
         //3: Oben
         //4: Unten
         img = sprites.getSpriteElement(direction, 1);
+    }
+
+    public void setImg(Image img) {
+        this.img = img;
     }
 
     public double getSpeed() {
@@ -261,8 +259,9 @@ public class Mover extends Pointer {
     }
 
     public void setLocationAtTile(int xTileID, int yTileID) {
-        setLocation(xTileID * Tile.TILEWIDTH, yTileID * Tile.TILEHEIGHT);
+        setLocation((xTileID - 1) * Tile.TILEWIDTH, (yTileID - 1) * Tile.TILEHEIGHT);
     }
+
     public static class SpeechBubble {
 
         private Mover character;
@@ -288,7 +287,7 @@ public class Mover extends Pointer {
 
         public void renderSpeechBubble(Graphics2D g2d) {
             if (visible) {
-                g2d.setStroke(new BasicStroke(1.5f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_ROUND));
+                g2d.setStroke(new BasicStroke(1.25f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_ROUND));
                 int xPos = (int) (character.xPos - character.gamePanel.getCamera().getXOffset());
                 int yPos = (int) (character.yPos - character.gamePanel.getCamera().getYOffset());
 
@@ -301,10 +300,11 @@ public class Mover extends Pointer {
                     showText = new String[1];
                     showText[0] = text;
                 }
-                int width = getMaxWidth(showText, metric); // Gibt GesamtBreite der Textfolge an
-                int height = showText.length * metric.getHeight(); //Gibt den Standard-Zeilenabstand (Abstand zwischen Grundlinie und Grundlinie) in Pixeln zurück
+
+                int width = getMaxWidth(showText, metric);
+                int height = showText.length * metric.getHeight();
                 int rounded = height / 8;
-                int gap = metric.getMaxAdvance() / 4; //Liefert die Breite des breitesten Zeichens, –1, wenn unbekannt.
+                int gap = metric.getMaxAdvance() / 4;
 
                 g2d.setColor(Color.white);
                 g2d.fillRoundRect(xPos - width / 2 - gap / 2, yPos - height - gap / 2, width + gap, height + gap, rounded, rounded);

@@ -11,17 +11,16 @@ public class Level {
     public LinkedList<Runner> enemy = new LinkedList<>();
     public Map[] maps;
     private int level;
-    private Camera cam;
     private GamePanel gamePanel;
     private KeyManager keyListener;
     private boolean gridlines;
 
 
-    public Level(GamePanel gp, int level, KeyManager keyListener, Camera camera) {
+    public Level(GamePanel gp, int level, KeyManager keyListener) {
         this.level = level;
         gamePanel = gp;
         this.keyListener = keyListener;
-        cam = camera;
+
     }
 
     public void createLevelObjects(int mapAmount, int enemyAmount) {
@@ -40,7 +39,7 @@ public class Level {
 
     public void update() {
         if (GUI.keyInputToMove(keyListener).getX() != 0 || GUI.keyInputToMove(keyListener).getY() != 0) {
-            mover.setMove(GUI.keyInputToMove(keyListener));
+            mover.setMove((int) GUI.keyInputToMove(keyListener).getX(), (int) GUI.keyInputToMove(keyListener).getY());
             gamePanel.getCamera().centerOnObject(mover);
         } // end of if
     }
@@ -48,8 +47,6 @@ public class Level {
     public void renderLevel(Graphics2D g2d) {
         if (maps[0] != null) {
             maps[0].renderMap(g2d);
-        } else {
-            System.out.println("Keine Base Map");
         }
         if (enemy.size() > 0) {
             for (int enemyamount = 0; enemyamount < enemy.size(); enemyamount++) {
@@ -65,15 +62,6 @@ public class Level {
                 maps[mapsAmount].renderMap(g2d);
             }
         }
-//        // Zum Testen
-//        if (enemy.length > 0) {
-//            for (int enemyamount = 0; enemyamount < enemy.length; enemyamount++) {
-//                if (enemy[enemyamount] != null) {
-//                    enemy[enemyamount].draw(g2d);
-//                }
-//            }
-//            mover.draw(g2d);
-//        }
     }
 
     public void setMap(int mapNumber, String tsPath, String pStatus, Point chapterOffset) {
@@ -97,7 +85,6 @@ public class Level {
 
     public void addNewEnemyOnTile(int xTile, int yTile, double pSpeed) {
         addNewEnemy(xTile * Tile.TILEWIDTH, yTile * Tile.TILEHEIGHT, pSpeed);
-        System.out.println("ADD new " + pSpeed);
     }
 
     public void addNewEnemy(int xPos, int yPos, double pSpeed) {
@@ -115,6 +102,9 @@ public class Level {
         for (int i = 0; i < enemy.size(); i++) {
             enemy.get(i).setSpeaking(true);
         }
+    }
+
+    public void clear() {
     }
 
     public Map[] getMaps() {
@@ -141,8 +131,8 @@ public class Level {
         return level;
     }
 
-
     public boolean isGridlines() {
         return gridlines;
     }
+
 }

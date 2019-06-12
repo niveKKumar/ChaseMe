@@ -10,6 +10,7 @@ import java.io.File;
 public class Meldungen extends JDialog implements ActionListener {
     public static JFileChooser fileChooser = new JFileChooser();
     private static Frame owner;
+    public TileSet selectedTS;
     private JPanel contentPane;
     private JButton buttonOK;
     private JButton buttonCancel;
@@ -21,7 +22,6 @@ public class Meldungen extends JDialog implements ActionListener {
     private JButton[] button;
     private String[] userInput;
     private boolean firstStart = true;
-    public TileSet selectedTS;
     private JCheckBox notificationCheckBox;
 
     public Meldungen(Frame owner, boolean modal, String bestimmteAbfrage) {
@@ -60,13 +60,11 @@ public class Meldungen extends JDialog implements ActionListener {
             }
         }, KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
 
-        setVisible(false);
         switch (bestimmteAbfrage) {
             case "Map":
                 mapGroesseAbfrage();
                 break;
             case "null":
-                //System.out.println("Nur Fenster erstellen :)");
                 setVisible(false);
                 break;
             case "TileSet":
@@ -93,7 +91,6 @@ public class Meldungen extends JDialog implements ActionListener {
             if (fileChooser.showSaveDialog(owner) == JFileChooser.APPROVE_OPTION) {  //Wenn der Ok-Button gedrueckt wird...
                 File saveFile = fileChooser.getSelectedFile();
                 if (!saveFile.getName().contains(extension)) {
-                    //System.out.println("Datei Ende entspricht nicht der angegebenen Extension");
                     saveFile = new File(saveFile.getPath() + extension);
                 }
                 return saveFile;
@@ -141,57 +138,29 @@ public class Meldungen extends JDialog implements ActionListener {
 
     //Templates von Meldungen!
     public void mapGroesseAbfrage() {
-        createComponents(2, "Bitte Mapgroesse angeben:");
+        createComponents(1, "Geben Sie bitte die Mapgröße an!", false);
         //On Release:
-//        eingabe[0].setText("Map - Breite");
-//        eingabe[1].setText("Map - Höhe");
+        Font f = new Font(eingabe[0].getFont().getName(), Font.BOLD, 20);
+        eingabe[0].setFont(f);
+        eingabe[0].setText("Map - Groesse");
 
-        eingabe[0].setText("50");
-        eingabe[1].setText("50");
         setVisible(true);
     }
 
     // Manuelles TileSet (wird von TileSet beim fehlschlagen aufgerufen):
     public void tileSetAbfrage(String pPath) {
         // Manuelles laden:
-        //System.out.println("Automatisch ging nicht");
-        createComponents(3, "Bitte nähere Angaben zu den Tiles (Tiles pro Länge und Breite + Abstand zwischen Tiles); ");
+        createComponents(3, "Bitte nähere Angaben zu den Tiles (Tiles pro Länge und Breite + Abstand zwischen Tiles)", false);
         eingabe[0].setText("Breite");
         eingabe[1].setText("Höhe");
         eingabe[2].setText("Border");
 
-        /** Nicht mehr nötig*/
-
-            /*button = new JButton[2];
-            button[0] = new JButton("Tile Set - Base Tiles");
-            button[0].addActionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    eingabe[0].setText("12");
-                    eingabe[1].setText("12");
-                    eingabe[2].setText("3");
-                }
-            });
-            button[1] = new JButton("Tile Set - Item Tiles");
-            button[1].addActionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    eingabe[0].setText("16");
-                    eingabe[1].setText("16");
-                    eingabe[2].setText("0");
-                }
-            });
-
-            for (int i = 0; i < button.length; i++) {
-                button[i].setFocusable(false);
-                center.add(button[i]);
-            }*/
         setVisible(true);
     }
 
 
     public void chapterAbfrage() {
-        createComponents(2, "Um wie viele Tiles soll die Map verschoben werden ?");
+        createComponents(2, "Um wie viele Tiles soll die Map verschoben werden ?", false);
         eingabe[0].setText("In X - Tiles");
         eingabe[1].setText("In Y - Tiles");
         button = new JButton[1];
@@ -212,7 +181,7 @@ public class Meldungen extends JDialog implements ActionListener {
     }
 
     public void unSimilarTS(EditorMap current, TileSet tsSelected) {
-        createComponents(0, "TileSets sind ungleich. Es kann pro Map nur ein TileSet verwendet werden !");
+        createComponents(0, "TileSets sind ungleich. Es kann pro Map nur ein TileSet verwendet werden !", false);
 
         notificationCheckBox = new JCheckBox("Warnung ausblenden", false);
         notificationCheckBox.addActionListener(new ActionListener() {
@@ -251,12 +220,14 @@ public class Meldungen extends JDialog implements ActionListener {
         setVisible(true);
     }
 
-    public void createComponents(int eingabeAnzahl, String abfrageText) {
+    public void createComponents(int eingabeAnzahl, String abfrageText, boolean visible) {
         eingabe = new JTextArea[eingabeAnzahl];
         userInput = new String[eingabeAnzahl];
         for (int i = 0; i < eingabe.length; i++) {
             eingabe[i] = new JTextArea("Test");
-            eingabe[i].setSize(100, 100);
+            Font f = new Font(eingabe[i].getFont().getName(), Font.BOLD, 15);
+            eingabe[i].setFont(f);
+            abfrage.setFont(f);
             eingabe[i].setVisible(true);
             eingabe[i].getDocument().addDocumentListener(new DocumentListener() {
                 @Override
@@ -296,7 +267,9 @@ public class Meldungen extends JDialog implements ActionListener {
             center.add(eingabe[i]);
         }
         abfrage.setText(abfrageText);
-        setVisible(true);
+        if (visible) {
+            setVisible(true);
+        }
     }
 
     private void setUserInput() {
@@ -307,6 +280,10 @@ public class Meldungen extends JDialog implements ActionListener {
             }
             userInput[i] = eingabe[i].getText();
         }
+    }
+
+    public JTextArea[] getEingabe() {
+        return eingabe;
     }
 
     public String getUserInput(int welcheAWBox) {
@@ -320,7 +297,6 @@ public class Meldungen extends JDialog implements ActionListener {
     }
 
     private void onCancel() {
-        //System.out.println("Don´t do anything new because canceled");
         dispose();
     }
 
